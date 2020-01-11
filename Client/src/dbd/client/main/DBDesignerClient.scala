@@ -11,6 +11,7 @@ import utopia.genesis.color.{Color, RGB}
 import utopia.genesis.generic.GenesisDataType
 import utopia.genesis.handling.mutable.ActorHandler
 import utopia.reflection.container.swing.window.Frame
+import utopia.reflection.shape.Margins
 import utopia.reflection.text.Font
 import utopia.reflection.util.{ColorScheme, ColorSet, ComponentContextBuilder, SingleFrameSetup}
 import utopia.vault.database.ConnectionPool
@@ -41,9 +42,11 @@ object DBDesignerClient extends App
 	val baseFont = Font("Roboto Condensed", 12, scaling = 2.0)
 	implicit val fonts: Fonts = Fonts(baseFont)
 	
+	implicit val margins: Margins = Margins(8)
+	
 	implicit val baseCB: ComponentContextBuilder = ComponentContextBuilder(actorHandler, baseFont, secondaryColors,
-		secondaryColors.light, 320, insideMargins = 8.any x 8.any, stackMargin = 8.downscaling,
-		relatedItemsStackMargin = Some(4.downscaling))
+		secondaryColors.light, 320, insideMargins = margins.medium.any.square, stackMargin = margins.medium.downscaling,
+		relatedItemsStackMargin = Some(margins.small.downscaling))
 	
 	implicit val exc: ExecutionContext = new ThreadPool("DB Designer Client").executionContext
 	
