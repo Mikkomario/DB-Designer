@@ -3,6 +3,9 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../Utopia-Flow-Scala" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../Utopia-Genesis-Scala" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../Utopia-Inception-Scala" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../Utopia-Reflection" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../Utopia-Vault-Scala" vcs="Git" />
   </component>
 </project>
