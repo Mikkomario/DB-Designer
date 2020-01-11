@@ -8,6 +8,7 @@ import utopia.genesis.image.Image
 import utopia.reflection.component.Refreshable
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
 import utopia.reflection.component.swing.label.{ImageLabel, TextLabel}
+import utopia.reflection.container.stack.StackLayout.Center
 import utopia.reflection.container.stack.segmented.SegmentedGroup
 import utopia.reflection.container.swing.SegmentedRow
 import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
@@ -26,11 +27,15 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 	
 	private implicit val baseContext: ComponentContext = baseCB.result
 	
-	private val imageLabel = ImageLabel.contextual(iconForType(initialAttribute.configuration.dataType),
-		alwaysFillsArea = false)
+	private val imageLabel = ImageLabel.contextual(iconForType(initialAttribute.configuration.dataType))
 	private val attNameLabel = TextLabel.contextual(initialAttribute.configuration.name.noLanguageLocalizationSkipped)
 	
-	private val row = SegmentedRow.partOfGroupWithItems(group, Vector(imageLabel, attNameLabel))
+	private val row = SegmentedRow.partOfGroupWithItems(group, Vector(imageLabel, attNameLabel), layout = Center)
+	
+	
+	// INITIAL CODE	----------------------
+	
+	updateFont()
 	
 	
 	// IMPLEMENTED	----------------------
@@ -42,6 +47,7 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 		_content = newContent
 		imageLabel.image = iconForType(newContent.configuration.dataType)
 		attNameLabel.text = newContent.configuration.name.noLanguageLocalizationSkipped
+		updateFont()
 	}
 	
 	override def content = _content
@@ -53,6 +59,12 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 	 * Removes this component from the segmented row group it's part of
 	 */
 	def unregister() = group.remove(row)
+	
+	private def updateFont() = attNameLabel.font =
+	{
+		if (content.configuration.isOptional)
+			attNameLabel.font.plain else attNameLabel.font.bold
+	}
 	
 	private def iconForType(attributeType: AttributeType) =
 	{
