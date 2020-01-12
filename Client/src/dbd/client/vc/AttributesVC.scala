@@ -3,6 +3,7 @@ package dbd.client.vc
 import dbd.client.controller.Icons
 import dbd.client.dialog.EditAttributeDialog
 import dbd.core.model.existing.Attribute
+import dbd.core.model.partial.NewAttribute
 import utopia.reflection.shape.LengthExtensions._
 import dbd.core.util.Log
 import utopia.genesis.shape.Axis.X
@@ -24,7 +25,8 @@ import scala.concurrent.ExecutionContext
  * @author Mikko Hilpinen
  * @since 11.1.2020, v0.1
  */
-class AttributesVC(implicit baseCB: ComponentContextBuilder, margins: Margins, colorScheme: ColorScheme,
+class AttributesVC(onNewAttribute: NewAttribute => Unit)
+				  (implicit baseCB: ComponentContextBuilder, margins: Margins, colorScheme: ColorScheme,
 				   defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
 	extends StackableAwtComponentWrapperWrapper with Refreshable[Vector[Attribute]]
 {
@@ -41,9 +43,8 @@ class AttributesVC(implicit baseCB: ComponentContextBuilder, margins: Margins, c
 		{
 			parentWindow match
 			{
-				case Some(window) => new EditAttributeDialog(window).display().foreach {
-					case Some(edited) => println(s"New attribute config: $edited") // TODO: Add real attribute handling
-					case None => println("No new attribute")
+				case Some(window) => new EditAttributeDialog(window).display().foreach { _.foreach { added =>
+					onNewAttribute(NewAttribute(added)) }
 				}
 				case None => Log.warning("No parent window available for Add Attribute -dialog")
 			}

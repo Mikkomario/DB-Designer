@@ -1,8 +1,12 @@
 package dbd.client.vc
 
+import dbd.core.database
+import dbd.client.controller.ConnectionPool
 import utopia.reflection.shape.LengthExtensions._
 import dbd.client.model.Fonts
 import dbd.core.model.existing.Class
+import dbd.core.model.partial.NewAttribute
+import dbd.core.util.Log
 import utopia.genesis.color.Color
 import utopia.reflection.component.Refreshable
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
@@ -13,6 +17,7 @@ import utopia.reflection.shape.Margins
 import utopia.reflection.util.{ColorScheme, ComponentContextBuilder}
 
 import scala.concurrent.ExecutionContext
+import scala.util.{Failure, Success}
 
 /**
  * Displays interactive UI for a class
@@ -30,7 +35,7 @@ class ClassVC(initialClass: Class)
 	
 	private val header = ItemLabel.contextual(initialClass, DisplayFunction.noLocalization[Class] { _.info.name })(
 		baseCB.copy(textColor = Color.white, font = fonts.header, background = Some(colorScheme.primary)).result)
-	private val attributeSection = new AttributesVC
+	private val attributeSection = new AttributesVC(newAttributeAdded)
 	
 	private val view = Stack.columnWithItems(Vector(header, attributeSection), margin = 0.fixed)
 	
@@ -52,4 +57,20 @@ class ClassVC(initialClass: Class)
 	}
 	
 	override def content = header.content
+	
+	
+	// OTHER	---------------------------
+	
+	private def newAttributeAdded(attribute: NewAttribute): Unit =
+	{
+		// Inserts attribute data to DB, then updates this view
+		ConnectionPool.tryWith { implicit connection =>
+			database.Class(content.id).attributes.insert(attribute)
+		} match
+		{
+			case Success(savedAttribute) => content += savedAttribute
+			case Failure(error) =>
+				Log(error, s"Failed to insert a new attribute ($attribute) for class $content")
+		}
+	}
 }

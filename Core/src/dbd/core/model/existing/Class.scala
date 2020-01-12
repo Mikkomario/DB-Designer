@@ -10,4 +10,7 @@ import dbd.core.model.template.ClassLike
  * @param info Basic info about this class
  * @param attributes Attribute specifications for this class
  */
-case class Class(id: Int, info: ClassInfo, attributes: Vector[Attribute]) extends ClassLike[ClassInfo, Attribute]
+case class Class(id: Int, info: ClassInfo, attributes: Vector[Attribute]) extends ClassLike[ClassInfo, Attribute, Class]
+{
+	override protected def makeCopy(info: ClassInfo, attributes: Vector[Attribute]) = Class(id, info, attributes)
+}

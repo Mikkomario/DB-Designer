@@ -1,5 +1,6 @@
 package dbd.client.main
 
+import dbd.client.controller.ConnectionPool
 import utopia.flow.util.CollectionExtensions._
 import dbd.core.database
 import dbd.client.model.Fonts
@@ -15,7 +16,6 @@ import utopia.reflection.localization.{Localizer, NoLocalization}
 import utopia.reflection.shape.Margins
 import utopia.reflection.text.Font
 import utopia.reflection.util.{ColorScheme, ColorSet, ComponentContextBuilder, SingleFrameSetup}
-import utopia.vault.database.ConnectionPool
 import utopia.vault.util.ErrorHandling
 import utopia.vault.util.ErrorHandlingPrinciple.Throw
 
@@ -54,7 +54,7 @@ object DBDesignerClient extends App
 	
 	
 	// Reads displayed data from DB
-	new ConnectionPool().tryWith { implicit connection =>
+	ConnectionPool.tryWith { implicit connection =>
 		// Reads any class and displays that
 		database.Classes.get.headOption match
 		{
