@@ -11,6 +11,8 @@ import utopia.reflection.component.swing.button.ButtonImageSet
  */
 case class Icon(private val original: Image)
 {
+	// ATTRIBUTES	------------------------
+	
 	/**
 	 * A black version of this icon
 	 */
@@ -27,4 +29,13 @@ case class Icon(private val original: Image)
 	 * A version of this icon for dark image + text buttons
 	 */
 	lazy val forDarkButtons = ButtonImageSet.lowAlphaOnDisabled(white)
+	
+	
+	// OTHER	---------------------------
+	
+	/**
+	 * @param color Target icon color
+	 * @return A button image set to be used in buttons without text
+	 */
+	def forButtonWithoutText(color: Color) = ButtonImageSet.brightening(original.withColorOverlay(color))
 }

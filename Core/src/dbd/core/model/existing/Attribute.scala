@@ -10,3 +10,10 @@ import dbd.core.model.template.AttributeLike
  */
 case class Attribute(id: Int, classId: Int, configuration: AttributeConfiguration)
 	extends AttributeLike[AttributeConfiguration]
+{
+	/**
+	 * @param newConfiguration A new configuration for this attribute
+	 * @return A copy of this attribute with specified configuration
+	 */
+	def withConfiguration(newConfiguration: AttributeConfiguration) = copy(configuration = newConfiguration)
+}

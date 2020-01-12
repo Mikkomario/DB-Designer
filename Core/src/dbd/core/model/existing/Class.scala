@@ -1,5 +1,6 @@
 package dbd.core.model.existing
 
+import utopia.flow.util.CollectionExtensions._
 import dbd.core.model.template.ClassLike
 
 /**
@@ -13,4 +14,12 @@ import dbd.core.model.template.ClassLike
 case class Class(id: Int, info: ClassInfo, attributes: Vector[Attribute]) extends ClassLike[ClassInfo, Attribute, Class]
 {
 	override protected def makeCopy(info: ClassInfo, attributes: Vector[Attribute]) = Class(id, info, attributes)
+	
+	/**
+	 * Updates a singular attribute configuration in this class
+	 * @param newConfiguration A new configuration for an attribute
+	 * @return A modified version of this class
+	 */
+	def update(newConfiguration: AttributeConfiguration) = copy(attributes = attributes.mapFirstWhere {
+		_.id == newConfiguration.attributeId } { _.withConfiguration(newConfiguration) })
 }

@@ -1,11 +1,12 @@
 package dbd.client.vc
 
+import utopia.flow.util.CollectionExtensions._
 import dbd.core.database
 import dbd.client.controller.ConnectionPool
 import utopia.reflection.shape.LengthExtensions._
 import dbd.client.model.Fonts
-import dbd.core.model.existing.Class
-import dbd.core.model.partial.NewAttribute
+import dbd.core.model.existing.{Attribute, Class}
+import dbd.core.model.partial.{NewAttribute, NewAttributeConfiguration}
 import dbd.core.util.Log
 import utopia.genesis.color.Color
 import utopia.reflection.component.Refreshable
@@ -35,15 +36,14 @@ class ClassVC(initialClass: Class)
 	
 	private val header = ItemLabel.contextual(initialClass, DisplayFunction.noLocalization[Class] { _.info.name })(
 		baseCB.copy(textColor = Color.white, font = fonts.header, background = Some(colorScheme.primary)).result)
-	private val attributeSection = new AttributesVC(newAttributeAdded)
+	private val attributeSection = new AttributesVC(newAttributeAdded)(attributeEdited)
 	
 	private val view = Stack.columnWithItems(Vector(header, attributeSection), margin = 0.fixed)
 	
 	
 	// INITIAL CODE	------------------------
 	
-	// TODO: Add ordering
-	attributeSection.content = initialClass.attributes
+	attributeSection.content = orderedAttributes(initialClass)
 	
 	
 	// IMPLEMENTED	------------------------
@@ -53,7 +53,7 @@ class ClassVC(initialClass: Class)
 	override def content_=(newContent: Class) =
 	{
 		header.content = newContent
-		attributeSection.content = newContent.attributes // TODO: Add ordering
+		attributeSection.content = orderedAttributes(newContent)
 	}
 	
 	override def content = header.content
@@ -73,4 +73,19 @@ class ClassVC(initialClass: Class)
 				Log(error, s"Failed to insert a new attribute ($attribute) for class $content")
 		}
 	}
+	
+	private def attributeEdited(attribute: Attribute, edit: NewAttributeConfiguration): Unit =
+	{
+		// Updates attribute data to DB, then updates this view
+		ConnectionPool.tryWith { implicit connection =>
+			database.Class(attribute.classId).attribute(attribute.id).configuration.update(edit) } match
+		{
+			case Success(savedConfig) => content = content.update(savedConfig)
+			case Failure(error) =>
+				Log(error, s"Failed to update attribute ${attribute.id} with data: $edit")
+		}
+	}
+	
+	private def orderedAttributes(c: Class) = c.attributes.sortedWith(Ordering.by { !_.isSearchKey },
+		Ordering.by { _.isOptional }, Ordering.by { _.name })
 }

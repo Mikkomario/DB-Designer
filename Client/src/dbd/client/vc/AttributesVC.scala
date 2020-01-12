@@ -3,7 +3,7 @@ package dbd.client.vc
 import dbd.client.controller.Icons
 import dbd.client.dialog.EditAttributeDialog
 import dbd.core.model.existing.Attribute
-import dbd.core.model.partial.NewAttribute
+import dbd.core.model.partial.{NewAttribute, NewAttributeConfiguration}
 import utopia.reflection.shape.LengthExtensions._
 import dbd.core.util.Log
 import utopia.genesis.shape.Axis.X
@@ -25,7 +25,7 @@ import scala.concurrent.ExecutionContext
  * @author Mikko Hilpinen
  * @since 11.1.2020, v0.1
  */
-class AttributesVC(onNewAttribute: NewAttribute => Unit)
+class AttributesVC(onNewAttribute: NewAttribute => Unit)(onAttributeEdit: (Attribute, NewAttributeConfiguration) => Unit)
 				  (implicit baseCB: ComponentContextBuilder, margins: Margins, colorScheme: ColorScheme,
 				   defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
 	extends StackableAwtComponentWrapperWrapper with Refreshable[Vector[Attribute]]
@@ -50,7 +50,6 @@ class AttributesVC(onNewAttribute: NewAttribute => Unit)
 			}
 		}).alignedToSide(Direction2D.Right, useLowPriorityLength = true)
 	}.framed(margins.medium.downscaling.square, colorScheme.gray)
-	//attributesStack.
 	
 	
 	// IMPLEMENTED	-----------------------
@@ -71,7 +70,7 @@ class AttributesVC(onNewAttribute: NewAttribute => Unit)
 		override def displays = attributesStack.components
 		
 		override protected def addDisplaysFor(values: Vector[Attribute]) = attributesStack ++= values.map {
-			new AttributeRowVC(segmentGroup, _) }
+			new AttributeRowVC(segmentGroup, _)(onAttributeEdit) }
 		
 		override protected def dropDisplays(dropped: Vector[AttributeRowVC]) =
 		{

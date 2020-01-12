@@ -3,18 +3,27 @@ package dbd.client.vc
 import utopia.reflection.shape.LengthExtensions._
 import utopia.reflection.localization.LocalString._
 import dbd.client.controller.Icons
+import dbd.client.dialog.EditAttributeDialog
 import dbd.core.model.AttributeType.{DoubleType, IntType, ShortStringType}
 import dbd.core.model.AttributeType
 import dbd.core.model.existing.Attribute
+import dbd.core.model.partial.NewAttributeConfiguration
+import utopia.genesis.color.Color
 import utopia.genesis.image.Image
+import utopia.genesis.shape.shape2D.Line
 import utopia.reflection.component.Refreshable
+import utopia.reflection.component.drawing.{CustomDrawer, DrawLevel}
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
+import utopia.reflection.component.swing.button.ImageButton
 import utopia.reflection.component.swing.label.{ImageLabel, TextLabel}
 import utopia.reflection.container.stack.StackLayout.Center
 import utopia.reflection.container.stack.segmented.SegmentedGroup
 import utopia.reflection.container.swing.SegmentedRow
+import utopia.reflection.localization.Localizer
 import utopia.reflection.shape.Margins
-import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
+import utopia.reflection.util.{ColorScheme, ComponentContext, ComponentContextBuilder}
+
+import scala.concurrent.ExecutionContext
 
 /**
  * Displays attribute's information on a row
@@ -22,7 +31,9 @@ import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
  * @since 11.1.2020, v0.1
  */
 class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attribute)
-					(implicit baseCB: ComponentContextBuilder, margins: Margins)
+					(onAttributeEdited: (Attribute, NewAttributeConfiguration) => Unit)
+					(implicit baseCB: ComponentContextBuilder, margins: Margins, colorScheme: ColorScheme,
+					 defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
 	extends StackableAwtComponentWrapperWrapper with Refreshable[Attribute]
 {
 	// ATTRIBUTES	----------------------
@@ -33,14 +44,28 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 	
 	private val imageLabel = ImageLabel.contextual(iconForType(initialAttribute.configuration.dataType))
 	private val attNameLabel = TextLabel.contextual(initialAttribute.configuration.name.noLanguageLocalizationSkipped)
+	private val editAttributeButton = ImageButton.contextual(Icons.edit.forButtonWithoutText(colorScheme.secondary)) { () =>
+		parentWindow.foreach { window =>
+			val attributeToEdit = content
+			new EditAttributeDialog(window, Some(attributeToEdit)).display().foreach { _.foreach { edited =>
+				onAttributeEdited(attributeToEdit, edited)
+			} }
+		}
+	}
 	
-	private val row = SegmentedRow.partOfGroupWithItems(group, Vector(imageLabel, attNameLabel),
-		margin = margins.medium.downscaling, layout = Center)
+	private val row = SegmentedRow.partOfGroupWithItems(group, Vector(imageLabel, attNameLabel, editAttributeButton),
+			margin = margins.medium.downscaling, layout = Center)
+	
+	private lazy val searchKeyDrawer = CustomDrawer(DrawLevel.Foreground, (drawer, bounds) =>
+		drawer.withEdgeColor(Color.black.withAlpha(0.55)).withStroke(margins.verySmall.toInt)
+			.draw(Line(bounds.bottomLeft, bounds.bottomRight)))
 	
 	
 	// INITIAL CODE	----------------------
 	
 	updateFont()
+	if (initialAttribute.isSearchKey)
+		attNameLabel.addCustomDrawer(searchKeyDrawer)
 	
 	
 	// IMPLEMENTED	----------------------
@@ -49,10 +74,21 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 	
 	override def content_=(newContent: Attribute) =
 	{
+		val oldContentWasSearchKey = content.isSearchKey
+		
 		_content = newContent
 		imageLabel.image = iconForType(newContent.configuration.dataType)
 		attNameLabel.text = newContent.configuration.name.noLanguageLocalizationSkipped
 		updateFont()
+		
+		// A custom drawer is used for search keys
+		if (newContent.isSearchKey != oldContentWasSearchKey)
+		{
+			if (newContent.isSearchKey)
+				attNameLabel.addCustomDrawer(searchKeyDrawer)
+			else
+				attNameLabel.removeCustomDrawer(searchKeyDrawer)
+		}
 	}
 	
 	override def content = _content
