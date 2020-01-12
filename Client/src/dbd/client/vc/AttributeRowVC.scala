@@ -1,5 +1,6 @@
 package dbd.client.vc
 
+import utopia.reflection.shape.LengthExtensions._
 import utopia.reflection.localization.LocalString._
 import dbd.client.controller.Icons
 import dbd.core.model.AttributeType.{DoubleType, IntType, ShortStringType}
@@ -11,6 +12,7 @@ import utopia.reflection.component.swing.label.{ImageLabel, TextLabel}
 import utopia.reflection.container.stack.StackLayout.Center
 import utopia.reflection.container.stack.segmented.SegmentedGroup
 import utopia.reflection.container.swing.SegmentedRow
+import utopia.reflection.shape.Margins
 import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
 
 /**
@@ -18,7 +20,8 @@ import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
  * @author Mikko Hilpinen
  * @since 11.1.2020, v0.1
  */
-class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attribute)(implicit baseCB: ComponentContextBuilder)
+class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attribute)
+					(implicit baseCB: ComponentContextBuilder, margins: Margins)
 	extends StackableAwtComponentWrapperWrapper with Refreshable[Attribute]
 {
 	// ATTRIBUTES	----------------------
@@ -30,7 +33,8 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 	private val imageLabel = ImageLabel.contextual(iconForType(initialAttribute.configuration.dataType))
 	private val attNameLabel = TextLabel.contextual(initialAttribute.configuration.name.noLanguageLocalizationSkipped)
 	
-	private val row = SegmentedRow.partOfGroupWithItems(group, Vector(imageLabel, attNameLabel), layout = Center)
+	private val row = SegmentedRow.partOfGroupWithItems(group, Vector(imageLabel, attNameLabel),
+		margin = margins.medium.downscaling, layout = Center)
 	
 	
 	// INITIAL CODE	----------------------
@@ -70,9 +74,9 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 	{
 		val icon = attributeType match
 		{
-			case ShortStringType => Icons("text.png")
-			case IntType => Icons("numbers.png")
-			case DoubleType => Icons("decimal.png")
+			case ShortStringType => Icons.text.black
+			case IntType => Icons.numbers.black
+			case DoubleType => Icons.decimalNumber.black
 			case _ => Image.empty // TODO: Add support for other types
 		}
 		icon.withAlpha(0.55)

@@ -17,4 +17,10 @@ object Log
 		println(message)
 		error.printStackTrace()
 	}
+	
+	/**
+	 * Logs a warning
+	 * @param message Warning message
+	 */
+	def warning(message: String) = println(s"Warning: $message")
 }

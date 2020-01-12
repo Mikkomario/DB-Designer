@@ -11,6 +11,7 @@ import utopia.genesis.color.{Color, RGB}
 import utopia.genesis.generic.GenesisDataType
 import utopia.genesis.handling.mutable.ActorHandler
 import utopia.reflection.container.swing.window.Frame
+import utopia.reflection.localization.{Localizer, NoLocalization}
 import utopia.reflection.shape.Margins
 import utopia.reflection.text.Font
 import utopia.reflection.util.{ColorScheme, ColorSet, ComponentContextBuilder, SingleFrameSetup}
@@ -32,6 +33,7 @@ object DBDesignerClient extends App
 	
 	// Sets up required context
 	implicit val defaultLanguageCode: String = "EN"
+	implicit val localizer: Localizer = NoLocalization
 	
 	val actorHandler = ActorHandler()
 	

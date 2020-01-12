@@ -8,17 +8,20 @@ import utopia.reflection.component.Refreshable
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
 import utopia.reflection.component.swing.label.ItemLabel
 import utopia.reflection.container.swing.Stack
-import utopia.reflection.localization.DisplayFunction
+import utopia.reflection.localization.{DisplayFunction, Localizer}
 import utopia.reflection.shape.Margins
 import utopia.reflection.util.{ColorScheme, ComponentContextBuilder}
+
+import scala.concurrent.ExecutionContext
 
 /**
  * Displays interactive UI for a class
  * @author Mikko Hilpinen
  * @since 11.1.2020, v0.1
  */
-class ClassVC(initialClass: model.Class)(implicit baseCB: ComponentContextBuilder, fonts: Fonts, margins: Margins,
-										 colorScheme: ColorScheme, defaultLanguageCode: String)
+class ClassVC(initialClass: model.Class)
+			 (implicit baseCB: ComponentContextBuilder, fonts: Fonts, margins: Margins, colorScheme: ColorScheme,
+			  defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
 	extends StackableAwtComponentWrapperWrapper with Refreshable[model.Class]
 {
 	// ATTRIBUTES	------------------------
