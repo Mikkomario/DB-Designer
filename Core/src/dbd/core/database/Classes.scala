@@ -1,6 +1,7 @@
 package dbd.core.database
 
 import dbd.core
+import dbd.core.model.existing
 import utopia.vault.model.immutable.access.NonDeprecatedManyAccess
 
 /**
@@ -8,7 +9,7 @@ import utopia.vault.model.immutable.access.NonDeprecatedManyAccess
  * @author Mikko Hilpinen
  * @since 11.1.2020, v0.1
  */
-object Classes extends NonDeprecatedManyAccess[core.model.Class]
+object Classes extends NonDeprecatedManyAccess[existing.Class]
 {
 	override def factory = model.Class
 }

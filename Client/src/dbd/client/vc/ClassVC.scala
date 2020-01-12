@@ -2,7 +2,7 @@ package dbd.client.vc
 
 import utopia.reflection.shape.LengthExtensions._
 import dbd.client.model.Fonts
-import dbd.core.model
+import dbd.core.model.existing.Class
 import utopia.genesis.color.Color
 import utopia.reflection.component.Refreshable
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
@@ -19,16 +19,16 @@ import scala.concurrent.ExecutionContext
  * @author Mikko Hilpinen
  * @since 11.1.2020, v0.1
  */
-class ClassVC(initialClass: model.Class)
+class ClassVC(initialClass: Class)
 			 (implicit baseCB: ComponentContextBuilder, fonts: Fonts, margins: Margins, colorScheme: ColorScheme,
 			  defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
-	extends StackableAwtComponentWrapperWrapper with Refreshable[model.Class]
+	extends StackableAwtComponentWrapperWrapper with Refreshable[Class]
 {
 	// ATTRIBUTES	------------------------
 	
 	// private implicit val baseContext: ComponentContext = baseCB.result
 	
-	private val header = ItemLabel.contextual(initialClass, DisplayFunction.noLocalization[model.Class] { _.info.name })(
+	private val header = ItemLabel.contextual(initialClass, DisplayFunction.noLocalization[Class] { _.info.name })(
 		baseCB.copy(textColor = Color.white, font = fonts.header, background = Some(colorScheme.primary)).result)
 	private val attributeSection = new AttributesVC
 	
@@ -38,17 +38,17 @@ class ClassVC(initialClass: model.Class)
 	// INITIAL CODE	------------------------
 	
 	// TODO: Add ordering
-	attributeSection.content = initialClass.attributes.toVector
+	attributeSection.content = initialClass.attributes
 	
 	
 	// IMPLEMENTED	------------------------
 	
 	override protected def wrapped = view
 	
-	override def content_=(newContent: model.Class) =
+	override def content_=(newContent: Class) =
 	{
 		header.content = newContent
-		attributeSection.content = newContent.attributes.toVector // TODO: Add ordering
+		attributeSection.content = newContent.attributes // TODO: Add ordering
 	}
 	
 	override def content = header.content

@@ -1,8 +1,10 @@
 package dbd.client.dialog
 
 import dbd.client.controller.Icons
+import dbd.core.model.partial.NewAttributeConfiguration
 import utopia.reflection.shape.LengthExtensions._
-import dbd.core.model.{Attribute, AttributeConfiguration, AttributeType}
+import dbd.core.model.AttributeType
+import dbd.core.model.existing.Attribute
 import utopia.genesis.color.Color
 import utopia.genesis.shape.Axis.X
 import utopia.genesis.shape.shape2D.Direction2D
@@ -63,7 +65,7 @@ class EditAttributeDialog(parentWindow: java.awt.Window, attributeToEdit: Option
 	private val window = new Dialog(parentWindow, dialogContent,
 		if (attributeToEdit.isDefined) "Edit Attribute" else "Add Attribute", Program)
 	
-	private var _editedConfig: Option[AttributeConfiguration] = None
+	private var _editedConfig: Option[NewAttributeConfiguration] = None
 	
 	
 	// INITIAL CODE	-----------------------
@@ -85,8 +87,8 @@ class EditAttributeDialog(parentWindow: java.awt.Window, attributeToEdit: Option
 				typeSelectionField.value match
 				{
 					case Some(newType) =>
-						val newConfig = AttributeConfiguration(newName, newType, optionalSwitch.isOn, searchKeySwitch.isOn)
-						if (!attributeToEdit.exists { _.configuration == newConfig })
+						val newConfig = NewAttributeConfiguration(newName, newType, optionalSwitch.isOn, searchKeySwitch.isOn)
+						if (!attributeToEdit.exists { _.configuration ~== newConfig })
 							_editedConfig = Some(newConfig)
 						window.close()
 					case None =>
@@ -98,7 +100,7 @@ class EditAttributeDialog(parentWindow: java.awt.Window, attributeToEdit: Option
 				// TODO: Display pop-up or something to indicate that the value is required
 		}
 	})
-	cancelButton.registerAction(window.close)
+	cancelButton.registerAction(() => window.close())
 	window.registerButtons(okButton, cancelButton)
 	window.setToCloseOnEsc()
 	
@@ -119,7 +121,7 @@ class EditAttributeDialog(parentWindow: java.awt.Window, attributeToEdit: Option
 	 * @return A future of this dialog's closing. Will include possibly edited attribute configuration
 	 *         (None if cancelled or not edited)
 	 */
-	def display()(implicit exc: ExecutionContext): Future[Option[AttributeConfiguration]] =
+	def display()(implicit exc: ExecutionContext): Future[Option[NewAttributeConfiguration]] =
 	{
 		window.startEventGenerators(baseContext.actorHandler)
 		window.display()

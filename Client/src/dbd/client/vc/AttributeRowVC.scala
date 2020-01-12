@@ -4,7 +4,8 @@ import utopia.reflection.shape.LengthExtensions._
 import utopia.reflection.localization.LocalString._
 import dbd.client.controller.Icons
 import dbd.core.model.AttributeType.{DoubleType, IntType, ShortStringType}
-import dbd.core.model.{Attribute, AttributeType}
+import dbd.core.model.AttributeType
+import dbd.core.model.existing.Attribute
 import utopia.genesis.image.Image
 import utopia.reflection.component.Refreshable
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper

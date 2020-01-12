@@ -2,8 +2,8 @@ package dbd.client.vc
 
 import dbd.client.controller.Icons
 import dbd.client.dialog.EditAttributeDialog
+import dbd.core.model.existing.Attribute
 import utopia.reflection.shape.LengthExtensions._
-import dbd.core.model.Attribute
 import dbd.core.util.Log
 import utopia.genesis.shape.Axis.X
 import utopia.genesis.shape.shape2D.Direction2D

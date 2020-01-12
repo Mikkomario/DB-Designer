@@ -1,7 +1,7 @@
 package dbd.core.database.model
 
-import dbd.core
 import dbd.core.database.Tables
+import dbd.core.model.existing
 import dbd.core.util.Log
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.model.immutable.{Result, Storable}
@@ -9,7 +9,7 @@ import utopia.vault.model.immutable.factory.{Deprecatable, FromResultFactory}
 
 import scala.util.{Failure, Success}
 
-object Class extends FromResultFactory[core.model.Class] with Deprecatable
+object Class extends FromResultFactory[existing.Class] with Deprecatable
 {
 	// IMPLEMENTED	------------------------------
 	
@@ -22,7 +22,7 @@ object Class extends FromResultFactory[core.model.Class] with Deprecatable
 	override def apply(result: Result) =
 	{
 		// Groups rows based on class
-		result.grouped(table, Attribute.table).flatMap { case (_, data) =>
+		result.grouped(table, Attribute.table).flatMap { case (id, data) =>
 			val (baseRow, attributeRows) = data
 			// Class must be parseable
 			table.requirementDeclaration.validate(baseRow(table)).toTry match
@@ -31,8 +31,8 @@ object Class extends FromResultFactory[core.model.Class] with Deprecatable
 					// Class info must be present in row
 					ClassInfo(baseRow).map { classInfo =>
 						// Parses attribute rows
-						val attributes = attributeRows.flatMap { Attribute(_) }
-						core.model.Class(classInfo, attributes.toSet)
+						val attributes = attributeRows.flatMap { Attribute(_) }.toVector
+						existing.Class(id.getInt, classInfo, attributes)
 					}
 				case Failure(error) =>
 					Log(error, s"Couldn't create class from row $baseRow")
