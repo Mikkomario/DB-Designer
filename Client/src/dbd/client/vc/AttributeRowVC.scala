@@ -3,7 +3,7 @@ package dbd.client.vc
 import utopia.reflection.shape.LengthExtensions._
 import utopia.reflection.localization.LocalString._
 import dbd.client.controller.Icons
-import dbd.client.dialog.EditAttributeDialog
+import dbd.client.dialog.{DeleteAttributeDialog, EditAttributeDialog}
 import dbd.core.model.AttributeType.{DoubleType, IntType, ShortStringType}
 import dbd.core.model.AttributeType
 import dbd.core.model.existing.Attribute
@@ -32,6 +32,7 @@ import scala.concurrent.ExecutionContext
  */
 class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attribute)
 					(onAttributeEdited: (Attribute, NewAttributeConfiguration) => Unit)
+					(onAttributeDeleted: Attribute => Unit)
 					(implicit baseCB: ComponentContextBuilder, margins: Margins, colorScheme: ColorScheme,
 					 defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
 	extends StackableAwtComponentWrapperWrapper with Refreshable[Attribute]
@@ -52,9 +53,17 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 			} }
 		}
 	}
+	// TODO: WET WET
+	private val deleteAttributeButton = ImageButton.contextual(Icons.close.forButtonWithoutText(colorScheme.secondary)) { () =>
+		parentWindow.foreach { window =>
+			val attributeToDelete = content
+			new DeleteAttributeDialog(window, attributeToDelete.name).display().foreach {
+				if (_) onAttributeDeleted(attributeToDelete) }
+		}
+	}
 	
-	private val row = SegmentedRow.partOfGroupWithItems(group, Vector(imageLabel, attNameLabel, editAttributeButton),
-			margin = margins.medium.downscaling, layout = Center)
+	private val row = SegmentedRow.partOfGroupWithItems(group, Vector(imageLabel, attNameLabel, editAttributeButton,
+		deleteAttributeButton), margin = margins.small.downscaling, layout = Center)
 	
 	private lazy val searchKeyDrawer = CustomDrawer(DrawLevel.Foreground, (drawer, bounds) =>
 		drawer.withEdgeColor(Color.black.withAlpha(0.55)).withStroke(margins.verySmall.toInt)

@@ -1,6 +1,5 @@
 package dbd.core.database
 
-import dbd.core
 import dbd.core.model.existing
 import utopia.vault.model.immutable.access.NonDeprecatedManyAccess
 

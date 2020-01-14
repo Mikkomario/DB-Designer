@@ -92,6 +92,19 @@ object Class extends NonDeprecatedSingleAccess[existing.Class]
 				 */
 				def configuration = Configuration
 				
+				
+				// OTHER	----------
+				
+				/**
+				 * Marks this attribute now deleted
+				 * @param connection A DB connection (implicit)
+				 * @return Whether a row was marked deleted
+				 */
+				def markDeleted()(implicit connection: Connection) = attributeFactory.withId(attId).nowDeleted.update()
+				
+				
+				// NESTED	----------
+				
 				/**
 				 * Used for accessing the current configuration of an attribute
 				 */

@@ -1,5 +1,7 @@
 package dbd.core.database.model
 
+import java.time.Instant
+
 import utopia.flow.generic.ValueConversions._
 import dbd.core.database.Tables
 import dbd.core.model.existing
@@ -11,18 +13,24 @@ object Attribute extends LinkedStorableFactory[existing.Attribute, existing.Attr
 {
 	// IMPLEMENTED	-----------------------
 	
-	override def nonDeprecatedCondition = AttributeConfiguration.nonDeprecatedCondition
+	override def nonDeprecatedCondition = table("deletedAfter").isNull && AttributeConfiguration.nonDeprecatedCondition
 	
 	override def childFactory = AttributeConfiguration
 	
 	override def apply(model: Model[Constant], child: existing.AttributeConfiguration) =
 		table.requirementDeclaration.validate(model).toTry.map { valid => existing.Attribute(valid("id").getInt,
-			valid("classID").getInt, child) }
+			valid("classID").getInt, child, valid("deletedAfter").instant) }
 	
 	override def table = Tables.attribute
 	
 	
 	// OTHER	--------------------------
+	
+	/**
+	 * @param id Attribute id
+	 * @return A model with only id set
+	 */
+	def withId(id: Int) = apply(Some(id))
 	
 	/**
 	 * @param classId Id of target class
@@ -43,9 +51,20 @@ object Attribute extends LinkedStorableFactory[existing.Attribute, existing.Attr
  * @author Mikko Hilpinen
  * @since 11.1.2020, v0.1
  */
-case class Attribute(id: Option[Int] = None, classId: Option[Int] = None) extends StorableWithFactory[existing.Attribute]
+case class Attribute(id: Option[Int] = None, classId: Option[Int] = None, deletedAfter: Option[Instant] = None)
+	extends StorableWithFactory[existing.Attribute]
 {
+	// IMPLEMENTED	-----------------------
+	
 	override def factory = Attribute
 	
-	override def valueProperties = Vector("id" -> id, "classId" -> classId)
+	override def valueProperties = Vector("id" -> id, "classId" -> classId, "deletedAfter" -> deletedAfter)
+	
+	
+	// COMPUTED	--------------------------
+	
+	/**
+	 * @return A copy of this model that has just been marked as deleted
+	 */
+	def nowDeleted = copy(deletedAfter = Some(Instant.now()))
 }

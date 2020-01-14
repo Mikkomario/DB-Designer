@@ -2,7 +2,7 @@ package dbd.client.vc
 
 import utopia.flow.util.CollectionExtensions._
 import dbd.core.database
-import dbd.client.controller.ConnectionPool
+import dbd.client.controller.{ConnectionPool, Icons}
 import utopia.reflection.shape.LengthExtensions._
 import dbd.client.model.Fonts
 import dbd.core.model.existing.{Attribute, Class}
@@ -11,11 +11,14 @@ import dbd.core.util.Log
 import utopia.genesis.color.Color
 import utopia.reflection.component.Refreshable
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
+import utopia.reflection.component.swing.button.ImageCheckBox
 import utopia.reflection.component.swing.label.ItemLabel
+import utopia.reflection.container.stack.StackLayout.Center
 import utopia.reflection.container.swing.Stack
 import utopia.reflection.localization.{DisplayFunction, Localizer}
 import utopia.reflection.shape.Margins
-import utopia.reflection.util.{ColorScheme, ComponentContextBuilder}
+import utopia.reflection.util.{ColorScheme, ComponentContext, ComponentContextBuilder}
+import utopia.vault.database.Connection
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -32,18 +35,30 @@ class ClassVC(initialClass: Class)
 {
 	// ATTRIBUTES	------------------------
 	
-	// private implicit val baseContext: ComponentContext = baseCB.result
+	private implicit val headerContext: ComponentContext = baseCB.copy(textColor = Color.white).result
 	
-	private val header = ItemLabel.contextual(initialClass, DisplayFunction.noLocalization[Class] { _.info.name })(
-		baseCB.copy(textColor = Color.white, font = fonts.header, background = Some(colorScheme.primary)).result)
-	private val attributeSection = new AttributesVC(newAttributeAdded)(attributeEdited)
+	private val headerButtonColor = colorScheme.secondary.dark
+	private val expandButton = new ImageCheckBox(Icons.expandMore.forButtonWithoutText(headerButtonColor),
+		Icons.expandLess.forButtonWithoutText(headerButtonColor))
+	
+	private val classNameLabel = ItemLabel.contextual(initialClass,
+		DisplayFunction.noLocalization[Class] { _.info.name })(headerContext)
+	
+	private val header = Stack.buildRowWithContext(layout = Center) { headerRow =>
+		headerRow += expandButton
+		headerRow += classNameLabel
+	}.framed(margins.small.downscaling x margins.small.any, colorScheme.primary)
+	
+	private val attributeSection = new AttributesVC(newAttributeAdded)(attributeEdited)(attributeDeleted)
 	
 	private val view = Stack.columnWithItems(Vector(header, attributeSection), margin = 0.fixed)
 	
 	
 	// INITIAL CODE	------------------------
 	
+	attributeSection.isVisible = false
 	attributeSection.content = orderedAttributes(initialClass)
+	expandButton.addValueListener { e => attributeSection.isVisible = e.newValue }
 	
 	
 	// IMPLEMENTED	------------------------
@@ -52,11 +67,12 @@ class ClassVC(initialClass: Class)
 	
 	override def content_=(newContent: Class) =
 	{
-		header.content = newContent
+		expandButton.value = false
+		classNameLabel.content = newContent
 		attributeSection.content = orderedAttributes(newContent)
 	}
 	
-	override def content = header.content
+	override def content = classNameLabel.content
 	
 	
 	// OTHER	---------------------------
@@ -64,28 +80,33 @@ class ClassVC(initialClass: Class)
 	private def newAttributeAdded(attribute: NewAttribute): Unit =
 	{
 		// Inserts attribute data to DB, then updates this view
-		ConnectionPool.tryWith { implicit connection =>
-			database.Class(content.id).attributes.insert(attribute)
-		} match
-		{
-			case Success(savedAttribute) => content += savedAttribute
-			case Failure(error) =>
-				Log(error, s"Failed to insert a new attribute ($attribute) for class $content")
-		}
+		editAttributes { implicit connection => database.Class(content.id).attributes.insert(attribute) } { _ + _ }
 	}
 	
 	private def attributeEdited(attribute: Attribute, edit: NewAttributeConfiguration): Unit =
 	{
 		// Updates attribute data to DB, then updates this view
-		ConnectionPool.tryWith { implicit connection =>
-			database.Class(attribute.classId).attribute(attribute.id).configuration.update(edit) } match
-		{
-			case Success(savedConfig) => content = content.update(savedConfig)
-			case Failure(error) =>
-				Log(error, s"Failed to update attribute ${attribute.id} with data: $edit")
-		}
+		editAttributes { implicit connection =>
+			database.Class(attribute.classId).attribute(attribute.id).configuration.update(edit) } { _.update(_) }
+	}
+	
+	private def attributeDeleted(attribute: Attribute): Unit =
+	{
+		// Deletes attribute from DB, then from this class
+		editAttributes { implicit connection =>
+			database.Class(attribute.classId).attribute(attribute.id).markDeleted() } { (c, _) => c - attribute }
 	}
 	
 	private def orderedAttributes(c: Class) = c.attributes.sortedWith(Ordering.by { !_.isSearchKey },
 		Ordering.by { _.isOptional }, Ordering.by { _.name })
+	
+	private def editAttributes[R](databaseAction: Connection => R)(modifyClass: (Class, R) => Class) =
+	{
+		ConnectionPool.tryWith(databaseAction) match
+		{
+			// TODO: Might not target right class
+			case Success(editResult) => content = modifyClass(content, editResult)
+			case Failure(error) => Log(error, s"Failed to modify attributes for class $content")
+		}
+	}
 }

@@ -48,4 +48,10 @@ trait ClassLike[Info <: ClassInfoLike, Attribute <: AttributeLike[_], Repr <: Cl
 	 * @return A copy of this class with specified attribute added
 	 */
 	def +(attribute: Attribute) = makeCopy(info, attributes :+ attribute)
+	
+	/**
+	 * @param attribute Attribute to remove
+	 * @return A copy of this class with specified attribute removed
+	 */
+	def -(attribute: Attribute) = makeCopy(info, attributes.filter { _ != attribute })
 }

@@ -58,9 +58,24 @@ object Icons
 	def addBox = apply("add_box.png")
 	
 	/**
-	 * @return An icon for edit option
+	 * @return An icon for editing items
 	 */
 	def edit = apply("edit.png")
+	
+	/**
+	 * @return An icon for deleting items
+	 */
+	def delete = apply("delete.png")
+	
+	/**
+	 * @return An icon for expanding collections
+	 */
+	def expandMore = apply("expand.png")
+	
+	/**
+	 * @return An icon for closing collections
+	 */
+	def expandLess = expandMore.map { _.flippedVertically }
 	
 	
 	// OTHER	------------------------------

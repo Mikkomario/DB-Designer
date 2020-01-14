@@ -17,5 +17,5 @@ case class NewAttribute(configuration: NewAttributeConfiguration) extends Attrib
 	 * @return An attribute with id data included
 	 */
 	def withId(id: Int, classId: Int, currentConfigurationId: Int) = Attribute(id, classId,
-		configuration.withId(currentConfigurationId, id))
+		configuration.withId(currentConfigurationId, id), None)
 }

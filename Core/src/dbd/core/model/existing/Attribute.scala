@@ -1,5 +1,7 @@
 package dbd.core.model.existing
 
+import java.time.Instant
+
 import dbd.core.model.template.AttributeLike
 
 /**
@@ -8,7 +10,7 @@ import dbd.core.model.template.AttributeLike
  * @since 10.1.2020, v0.1
  * @param configuration Current configuration for this attribute
  */
-case class Attribute(id: Int, classId: Int, configuration: AttributeConfiguration)
+case class Attribute(id: Int, classId: Int, configuration: AttributeConfiguration, deletedAfter: Option[Instant])
 	extends AttributeLike[AttributeConfiguration]
 {
 	/**

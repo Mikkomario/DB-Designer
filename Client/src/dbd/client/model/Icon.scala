@@ -38,4 +38,10 @@ case class Icon(private val original: Image)
 	 * @return A button image set to be used in buttons without text
 	 */
 	def forButtonWithoutText(color: Color) = ButtonImageSet.brightening(original.withColorOverlay(color))
+	
+	/**
+	 * @param f A mapping function
+	 * @return A mapped copy of this icon
+	 */
+	def map(f: Image => Image) = Icon(f(original))
 }

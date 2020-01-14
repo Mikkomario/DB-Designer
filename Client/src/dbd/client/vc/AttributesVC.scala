@@ -26,6 +26,7 @@ import scala.concurrent.ExecutionContext
  * @since 11.1.2020, v0.1
  */
 class AttributesVC(onNewAttribute: NewAttribute => Unit)(onAttributeEdit: (Attribute, NewAttributeConfiguration) => Unit)
+				  (onAttributeDeleted: Attribute => Unit)
 				  (implicit baseCB: ComponentContextBuilder, margins: Margins, colorScheme: ColorScheme,
 				   defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
 	extends StackableAwtComponentWrapperWrapper with Refreshable[Vector[Attribute]]
@@ -43,13 +44,14 @@ class AttributesVC(onNewAttribute: NewAttribute => Unit)(onAttributeEdit: (Attri
 		{
 			parentWindow match
 			{
+					// TODO: Handle cases where class changes while editing or adding attributes
 				case Some(window) => new EditAttributeDialog(window).display().foreach { _.foreach { added =>
 					onNewAttribute(NewAttribute(added)) }
 				}
 				case None => Log.warning("No parent window available for Add Attribute -dialog")
 			}
 		}).alignedToSide(Direction2D.Right, useLowPriorityLength = true)
-	}.framed(margins.medium.downscaling.square, colorScheme.gray)
+	}.framed(margins.medium.downscaling.square, colorScheme.gray.dark)
 	
 	
 	// IMPLEMENTED	-----------------------
@@ -70,7 +72,7 @@ class AttributesVC(onNewAttribute: NewAttribute => Unit)(onAttributeEdit: (Attri
 		override def displays = attributesStack.components
 		
 		override protected def addDisplaysFor(values: Vector[Attribute]) = attributesStack ++= values.map {
-			new AttributeRowVC(segmentGroup, _)(onAttributeEdit) }
+			new AttributeRowVC(segmentGroup, _)(onAttributeEdit)(onAttributeDeleted) }
 		
 		override protected def dropDisplays(dropped: Vector[AttributeRowVC]) =
 		{
