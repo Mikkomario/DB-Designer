@@ -13,6 +13,7 @@ import utopia.genesis.generic.GenesisDataType
 import utopia.genesis.handling.mutable.ActorHandler
 import utopia.reflection.color.{ColorScheme, ColorSet}
 import utopia.reflection.container.swing.window.Frame
+import utopia.reflection.container.swing.window.WindowResizePolicy.Program
 import utopia.reflection.localization.{Localizer, NoLocalization}
 import utopia.reflection.shape.Margins
 import utopia.reflection.text.Font
@@ -63,7 +64,7 @@ object DBDesignerClient extends App
 				// Creates and displays UI content
 				val content = new ClassVC(anyClass)
 				new SingleFrameSetup(actorHandler, Frame.windowed(content.framed(8.any x 8.any, primaryColors.light),
-					"DB Designer")).start()
+					"DB Designer", Program)).start()
 			case None =>
 				println("No class data in DB")
 		}

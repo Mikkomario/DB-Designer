@@ -2,8 +2,8 @@ package dbd.core.database
 
 import utopia.flow.generic.ValueConversions._
 import dbd.core.model.existing
-import dbd.core.model.existing.{Attribute, AttributeConfiguration}
-import dbd.core.model.partial.{NewAttribute, NewAttributeConfiguration}
+import dbd.core.model.existing.{Attribute, AttributeConfiguration, ClassInfo}
+import dbd.core.model.partial.{NewAttribute, NewAttributeConfiguration, NewClassInfo}
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.access.{ConditionalManyAccess, ConditionalSingleAccess, ItemAccess, NonDeprecatedSingleAccess}
 import utopia.vault.sql.Where
@@ -44,6 +44,11 @@ object Class extends NonDeprecatedSingleAccess[existing.Class]
 			attributeFactory.nonDeprecatedCondition
 		
 		/**
+		 * @return An access point to this class' current information
+		 */
+		def info = Info
+		
+		/**
 		 * @return An access point to individual attributes that belong to this class
 		 */
 		def attribute = Attribute
@@ -55,6 +60,33 @@ object Class extends NonDeprecatedSingleAccess[existing.Class]
 		
 		
 		// NESTED	-------------------
+		
+		object Info extends ConditionalSingleAccess[ClassInfo]
+		{
+			// IMPLEMENTED	-----------
+			
+			override def condition = factory.withClassId(classId).toCondition && factory.nonDeprecatedCondition
+			
+			override def factory = model.ClassInfo
+			
+			
+			// OTHER	--------------
+			
+			/**
+			 * Updates the current information of this class
+			 * @param newInfo New information for this class
+			 * @param connection DB Connection (implicit)
+			 * @return Newly updated information
+			 */
+			def update(newInfo: NewClassInfo)(implicit connection: Connection) =
+			{
+				// Deprecates the existing information
+				connection(factory.deprecatedNow.toUpdateStatement() + Where(condition))
+				// Inserts a new row
+				val infoId = factory.forInsert(classId, newInfo).insert().getInt
+				newInfo.withId(infoId, classId)
+			}
+		}
 		
 		/**
 		 * Provides access to individual class attributes

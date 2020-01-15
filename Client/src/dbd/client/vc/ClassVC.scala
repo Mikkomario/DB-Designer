@@ -3,16 +3,19 @@ package dbd.client.vc
 import utopia.flow.util.CollectionExtensions._
 import dbd.core.database
 import dbd.client.controller.{ConnectionPool, Icons}
+import dbd.client.dialog.EditClassDialog
 import utopia.reflection.shape.LengthExtensions._
 import dbd.client.model.Fonts
 import dbd.core.model.existing.{Attribute, Class}
 import dbd.core.model.partial.{NewAttribute, NewAttributeConfiguration}
 import dbd.core.util.Log
 import utopia.genesis.color.Color
+import utopia.genesis.event.{ConsumeEvent, MouseButton}
+import utopia.genesis.handling.MouseButtonStateListener
 import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Refreshable
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
-import utopia.reflection.component.swing.button.ImageCheckBox
+import utopia.reflection.component.swing.button.{ImageButton, ImageCheckBox}
 import utopia.reflection.component.swing.label.ItemLabel
 import utopia.reflection.container.stack.StackLayout.Center
 import utopia.reflection.container.swing.Stack
@@ -48,6 +51,23 @@ class ClassVC(initialClass: Class)
 	private val header = Stack.buildRowWithContext(layout = Center) { headerRow =>
 		headerRow += expandButton
 		headerRow += classNameLabel
+		headerRow += ImageButton.contextual(Icons.edit.forButtonWithoutText(headerButtonColor)) { () =>
+			parentWindow.foreach { window =>
+				val classToEdit = content
+				new EditClassDialog(Some(classToEdit.info)).display(window).foreach { _.foreach { editedInfo =>
+					ConnectionPool.tryWith { implicit connection =>
+						database.Class(classToEdit.id).info.update(editedInfo)
+					} match
+					{
+						case Success(info) =>
+							if (info.classId == content.id)
+								content = content.update(info)
+						case Failure(error) =>
+							Log(error, "Failed to edit class info")
+					}
+				} }
+			}
+		}
 	}.framed(margins.small.downscaling x margins.small.any, colorScheme.primary)
 	
 	private val attributeSection = new AttributesVC(newAttributeAdded)(attributeEdited)(attributeDeleted)
@@ -60,6 +80,8 @@ class ClassVC(initialClass: Class)
 	attributeSection.isVisible = false
 	attributeSection.content = orderedAttributes(initialClass)
 	expandButton.addValueListener { e => attributeSection.isVisible = e.newValue }
+	classNameLabel.addMouseButtonListener(MouseButtonStateListener.onButtonPressedInside(MouseButton.Left,
+		classNameLabel.bounds, _ => { expandButton.value = true; Some(ConsumeEvent("Class expanded")) }))
 	
 	
 	// IMPLEMENTED	------------------------
@@ -68,7 +90,9 @@ class ClassVC(initialClass: Class)
 	
 	override def content_=(newContent: Class) =
 	{
-		expandButton.value = false
+		// Content is shrinked if class is changed
+		if (content.id != newContent.id)
+			expandButton.value = false
 		classNameLabel.content = newContent
 		attributeSection.content = orderedAttributes(newContent)
 	}

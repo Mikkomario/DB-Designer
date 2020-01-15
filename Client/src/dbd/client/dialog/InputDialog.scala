@@ -17,7 +17,7 @@ import utopia.reflection.container.stack.segmented.SegmentedGroup
 import utopia.reflection.container.swing.window.Popup
 import utopia.reflection.container.swing.{SegmentedRow, Stack}
 import utopia.reflection.localization.LocalizedString
-import utopia.reflection.shape.Margins
+import utopia.reflection.shape.{Alignment, Margins}
 import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
 
 import scala.concurrent.ExecutionContext
@@ -81,7 +81,7 @@ abstract class InputDialog[A](implicit colorScheme: ColorScheme, baseCB: Compone
 	
 	override protected def dialogContent =
 	{
-		implicit val context: ComponentContext = baseCB.result
+		implicit val context: ComponentContext = baseCB.withAlignment(Alignment.Right).result
 		
 		// Places rows in an aligned stack
 		val group = new SegmentedGroup(X)
