@@ -9,6 +9,7 @@ import dbd.core.model.existing.{Attribute, Class}
 import dbd.core.model.partial.{NewAttribute, NewAttributeConfiguration}
 import dbd.core.util.Log
 import utopia.genesis.color.Color
+import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Refreshable
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
 import utopia.reflection.component.swing.button.ImageCheckBox
@@ -17,7 +18,7 @@ import utopia.reflection.container.stack.StackLayout.Center
 import utopia.reflection.container.swing.Stack
 import utopia.reflection.localization.{DisplayFunction, Localizer}
 import utopia.reflection.shape.Margins
-import utopia.reflection.util.{ColorScheme, ComponentContext, ComponentContextBuilder}
+import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
 import utopia.vault.database.Connection
 
 import scala.concurrent.ExecutionContext

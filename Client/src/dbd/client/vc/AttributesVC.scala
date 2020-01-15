@@ -8,6 +8,7 @@ import utopia.reflection.shape.LengthExtensions._
 import dbd.core.util.Log
 import utopia.genesis.shape.Axis.X
 import utopia.genesis.shape.shape2D.Direction2D
+import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Refreshable
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
 import utopia.reflection.component.swing.button.ImageAndTextButton
@@ -16,7 +17,7 @@ import utopia.reflection.container.swing.Stack
 import utopia.reflection.controller.data.ContentManager
 import utopia.reflection.localization.Localizer
 import utopia.reflection.shape.Margins
-import utopia.reflection.util.{ColorScheme, ComponentContext, ComponentContextBuilder}
+import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
 
 import scala.concurrent.ExecutionContext
 
@@ -45,7 +46,7 @@ class AttributesVC(onNewAttribute: NewAttribute => Unit)(onAttributeEdit: (Attri
 			parentWindow match
 			{
 					// TODO: Handle cases where class changes while editing or adding attributes
-				case Some(window) => new EditAttributeDialog(window).display().foreach { _.foreach { added =>
+				case Some(window) => new EditAttributeDialog().display(window).foreach { _.foreach { added =>
 					onNewAttribute(NewAttribute(added)) }
 				}
 				case None => Log.warning("No parent window available for Add Attribute -dialog")

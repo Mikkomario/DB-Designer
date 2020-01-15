@@ -11,11 +11,12 @@ import utopia.reflection.shape.LengthExtensions._
 import utopia.genesis.color.{Color, RGB}
 import utopia.genesis.generic.GenesisDataType
 import utopia.genesis.handling.mutable.ActorHandler
+import utopia.reflection.color.{ColorScheme, ColorSet}
 import utopia.reflection.container.swing.window.Frame
 import utopia.reflection.localization.{Localizer, NoLocalization}
 import utopia.reflection.shape.Margins
 import utopia.reflection.text.Font
-import utopia.reflection.util.{ColorScheme, ColorSet, ComponentContextBuilder, SingleFrameSetup}
+import utopia.reflection.util.{ComponentContextBuilder, SingleFrameSetup}
 import utopia.vault.util.ErrorHandling
 import utopia.vault.util.ErrorHandlingPrinciple.Throw
 

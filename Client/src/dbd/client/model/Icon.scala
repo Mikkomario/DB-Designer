@@ -2,6 +2,8 @@ package dbd.client.model
 
 import utopia.genesis.color.Color
 import utopia.genesis.image.Image
+import utopia.reflection.color.ComponentColor
+import utopia.reflection.color.TextColorStandard.{Dark, Light}
 import utopia.reflection.component.swing.button.ButtonImageSet
 
 /**
@@ -44,4 +46,14 @@ case class Icon(private val original: Image)
 	 * @return A mapped copy of this icon
 	 */
 	def map(f: Image => Image) = Icon(f(original))
+	
+	/**
+	 * @param color Button background color
+	 * @return Images used with specified button background
+	 */
+	def forButtonWithBackground(color: ComponentColor) = color.textColorStandard match
+	{
+		case Dark => forLightButtons
+		case Light => forDarkButtons
+	}
 }

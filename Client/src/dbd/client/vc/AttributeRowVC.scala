@@ -11,6 +11,7 @@ import dbd.core.model.partial.NewAttributeConfiguration
 import utopia.genesis.color.Color
 import utopia.genesis.image.Image
 import utopia.genesis.shape.shape2D.Line
+import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Refreshable
 import utopia.reflection.component.drawing.{CustomDrawer, DrawLevel}
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
@@ -21,7 +22,7 @@ import utopia.reflection.container.stack.segmented.SegmentedGroup
 import utopia.reflection.container.swing.SegmentedRow
 import utopia.reflection.localization.Localizer
 import utopia.reflection.shape.Margins
-import utopia.reflection.util.{ColorScheme, ComponentContext, ComponentContextBuilder}
+import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
 
 import scala.concurrent.ExecutionContext
 
@@ -48,7 +49,7 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 	private val editAttributeButton = ImageButton.contextual(Icons.edit.forButtonWithoutText(colorScheme.secondary)) { () =>
 		parentWindow.foreach { window =>
 			val attributeToEdit = content
-			new EditAttributeDialog(window, Some(attributeToEdit)).display().foreach { _.foreach { edited =>
+			new EditAttributeDialog(Some(attributeToEdit)).display(window).foreach { _.foreach { edited =>
 				onAttributeEdited(attributeToEdit, edited)
 			} }
 		}
@@ -57,7 +58,7 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 	private val deleteAttributeButton = ImageButton.contextual(Icons.close.forButtonWithoutText(colorScheme.secondary)) { () =>
 		parentWindow.foreach { window =>
 			val attributeToDelete = content
-			new DeleteAttributeDialog(window, attributeToDelete.name).display().foreach {
+			new DeleteAttributeDialog(attributeToDelete.name).display(window).foreach {
 				if (_) onAttributeDeleted(attributeToDelete) }
 		}
 	}
