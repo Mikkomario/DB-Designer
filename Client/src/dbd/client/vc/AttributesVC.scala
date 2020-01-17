@@ -5,7 +5,6 @@ import dbd.client.dialog.EditAttributeDialog
 import dbd.core.model.existing.Attribute
 import dbd.core.model.partial.{NewAttribute, NewAttributeConfiguration}
 import utopia.reflection.shape.LengthExtensions._
-import dbd.core.util.Log
 import utopia.genesis.shape.Axis.X
 import utopia.genesis.shape.shape2D.Direction2D
 import utopia.reflection.color.ColorScheme
@@ -26,13 +25,17 @@ import scala.concurrent.ExecutionContext
  * @author Mikko Hilpinen
  * @since 11.1.2020, v0.1
  */
-class AttributesVC(onNewAttribute: NewAttribute => Unit)(onAttributeEdit: (Attribute, NewAttributeConfiguration) => Unit)
+class AttributesVC(initialClassId: Int, initialAttributes: Vector[Attribute] = Vector())
+				  (onNewAttribute: (Int, NewAttribute) => Unit)
+				  (onAttributeEdit: (Attribute, NewAttributeConfiguration) => Unit)
 				  (onAttributeDeleted: Attribute => Unit)
 				  (implicit baseCB: ComponentContextBuilder, margins: Margins, colorScheme: ColorScheme,
 				   defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
-	extends StackableAwtComponentWrapperWrapper with Refreshable[Vector[Attribute]]
+	extends StackableAwtComponentWrapperWrapper with Refreshable[(Int, Vector[Attribute])]
 {
 	// ATTRIBUTES	-----------------------
+	
+	private var classId = initialClassId
 	
 	private implicit val baseContext: ComponentContext = baseCB.result
 	
@@ -43,25 +46,33 @@ class AttributesVC(onNewAttribute: NewAttribute => Unit)(onAttributeEdit: (Attri
 		mainStack += attributesStack
 		mainStack += ImageAndTextButton.contextual(Icons.addBox.forLightButtons, "Add Attribute")(() =>
 		{
-			parentWindow match
-			{
-					// TODO: Handle cases where class changes while editing or adding attributes
-				case Some(window) => new EditAttributeDialog().display(window).foreach { _.foreach { added =>
-					onNewAttribute(NewAttribute(added)) }
-				}
-				case None => Log.warning("No parent window available for Add Attribute -dialog")
+			parentWindow.foreach { window =>
+				// Remembers the class for which the attribute is being added
+				val editedClassId = classId
+				new EditAttributeDialog().display(window).foreach { _.foreach { added =>
+					onNewAttribute(editedClassId, NewAttribute(added))
+				} }
 			}
 		}).alignedToSide(Direction2D.Right, useLowPriorityLength = true)
 	}.framed(margins.medium.downscaling.square, colorScheme.gray.dark)
+	
+	
+	// INITIAL CODE	-----------------------
+	
+	AttributesManager.content = initialAttributes
 	
 	
 	// IMPLEMENTED	-----------------------
 	
 	override protected def wrapped = view
 	
-	override def content_=(newContent: Vector[Attribute]) = AttributesManager.content = newContent
+	override def content_=(newContent: (Int, Vector[Attribute])) =
+	{
+		classId = newContent._1
+		AttributesManager.content = newContent._2
+	}
 	
-	override def content = AttributesManager.content
+	override def content = classId -> AttributesManager.content
 	
 	
 	// NESTED	---------------------------
