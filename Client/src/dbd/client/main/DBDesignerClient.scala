@@ -59,7 +59,7 @@ object DBDesignerClient extends App
 	ConnectionPool.tryWith { implicit connection =>
 		val classes = database.Classes.get
 		val content = new ClassesVC(Screen.height / 3)
-		content.content = classes
+		content.content = classes.map { _ -> false }
 		new SingleFrameSetup(actorHandler, Frame.windowed(content.framed(margins.medium.any.square, primaryColors.light),
 			"DB Designer", Program)).start()
 	}.failure.foreach { Log(_, "Failed to run DB Designer client") }

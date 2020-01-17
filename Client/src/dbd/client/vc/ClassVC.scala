@@ -32,10 +32,10 @@ import scala.util.{Failure, Success}
  * @author Mikko Hilpinen
  * @since 11.1.2020, v0.1
  */
-class ClassVC(initialClass: Class)
+class ClassVC(initialClass: Class, isInitiallyExpanded: Boolean = false)
 			 (implicit baseCB: ComponentContextBuilder, fonts: Fonts, margins: Margins, colorScheme: ColorScheme,
 			  defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
-	extends StackableAwtComponentWrapperWrapper with Refreshable[Class]
+	extends StackableAwtComponentWrapperWrapper with Refreshable[(Class, Boolean)]
 {
 	// ATTRIBUTES	------------------------
 	
@@ -43,7 +43,7 @@ class ClassVC(initialClass: Class)
 	
 	private val headerButtonColor = colorScheme.secondary.dark
 	private val expandButton = new ImageCheckBox(Icons.expandMore.forButtonWithoutText(headerButtonColor),
-		Icons.expandLess.forButtonWithoutText(headerButtonColor))
+		Icons.expandLess.forButtonWithoutText(headerButtonColor), isInitiallyExpanded)
 	
 	private val classNameLabel = ItemLabel.contextual(initialClass,
 		DisplayFunction.noLocalization[Class] { _.info.name })(headerContext)
@@ -53,15 +53,15 @@ class ClassVC(initialClass: Class)
 		headerRow += classNameLabel
 		headerRow += ImageButton.contextual(Icons.edit.forButtonWithoutText(headerButtonColor)) { () =>
 			parentWindow.foreach { window =>
-				val classToEdit = content
+				val classToEdit = displayedClass
 				new EditClassDialog(Some(classToEdit.info)).display(window).foreach { _.foreach { editedInfo =>
 					ConnectionPool.tryWith { implicit connection =>
 						database.Class(classToEdit.id).info.update(editedInfo)
 					} match
 					{
 						case Success(info) =>
-							if (info.classId == content.id)
-								content = content.update(info)
+							if (info.classId == displayedClass.id)
+								displayedClass = displayedClass.update(info)
 						case Failure(error) =>
 							Log(error, "Failed to edit class info")
 					}
@@ -77,27 +77,37 @@ class ClassVC(initialClass: Class)
 	
 	// INITIAL CODE	------------------------
 	
-	attributeSection.isVisible = false
+	attributeSection.isVisible = isInitiallyExpanded
 	attributeSection.content = orderedAttributes(initialClass)
 	expandButton.addValueListener { e => attributeSection.isVisible = e.newValue }
 	classNameLabel.addMouseButtonListener(MouseButtonStateListener.onButtonPressedInside(MouseButton.Left,
 		classNameLabel.bounds, _ => { expandButton.value = true; Some(ConsumeEvent("Class expanded")) }))
 	
 	
+	// COMPUTED	----------------------------
+	
+	def displayedClass = classNameLabel.content
+	def displayedClass_=(newClass: Class) = content = newClass -> isExpanded
+	
+	def isExpanded = expandButton.value
+	
+	
 	// IMPLEMENTED	------------------------
 	
 	override protected def wrapped = view
 	
-	override def content_=(newContent: Class) =
+	override def content_=(newContent: (Class, Boolean)) =
 	{
-		// Content is shrinked if class is changed
-		if (content.id != newContent.id)
-			expandButton.value = false
-		classNameLabel.content = newContent
-		attributeSection.content = orderedAttributes(newContent)
+		// TODO: Handle expand parameter
+		val (newClass, expand) = newContent
+		
+		// Content may be shrinked or expanded
+		expandButton.value = expand
+		classNameLabel.content = newClass
+		attributeSection.content = orderedAttributes(newClass)
 	}
 	
-	override def content = classNameLabel.content
+	override def content = classNameLabel.content -> expandButton.value
 	
 	
 	// OTHER	---------------------------
@@ -105,7 +115,7 @@ class ClassVC(initialClass: Class)
 	private def newAttributeAdded(attribute: NewAttribute): Unit =
 	{
 		// Inserts attribute data to DB, then updates this view
-		editAttributes { implicit connection => database.Class(content.id).attributes.insert(attribute) } { _ + _ }
+		editAttributes { implicit connection => database.Class(displayedClass.id).attributes.insert(attribute) } { _ + _ }
 	}
 	
 	private def attributeEdited(attribute: Attribute, edit: NewAttributeConfiguration): Unit =
@@ -130,7 +140,7 @@ class ClassVC(initialClass: Class)
 		ConnectionPool.tryWith(databaseAction) match
 		{
 			// TODO: Might not target right class
-			case Success(editResult) => content = modifyClass(content, editResult)
+			case Success(editResult) => displayedClass = modifyClass(displayedClass, editResult)
 			case Failure(error) => Log(error, s"Failed to modify attributes for class $content")
 		}
 	}

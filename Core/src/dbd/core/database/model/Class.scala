@@ -2,6 +2,7 @@ package dbd.core.database.model
 
 import dbd.core.database.Tables
 import dbd.core.model.existing
+import dbd.core.model.partial.NewClass
 import dbd.core.util.Log
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.model.immutable.{Result, Storable}
@@ -40,6 +41,14 @@ object Class extends FromResultFactory[existing.Class] with Deprecatable
 			}
 		}.toVector
 	}
+	
+	
+	// OTHER	---------------------------------
+	
+	/**
+	 * @return A new model ready to be inserted to DB
+	 */
+	def forInsert() = apply()
 }
 
 /**

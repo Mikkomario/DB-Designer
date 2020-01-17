@@ -15,7 +15,7 @@ import scala.concurrent.ExecutionContext
  * @author Mikko Hilpinen
  * @since 15.1.2020, v0.1
  */
-class EditClassDialog(classToEdit: Option[ClassInfo])
+class EditClassDialog(classToEdit: Option[ClassInfo] = None)
 					 (implicit baseCB: ComponentContextBuilder, margins: Margins, colorScheme: ColorScheme,
 					  exc: ExecutionContext, defaultLanguageCode: String, localizer: Localizer)
 	extends InputDialog[Option[NewClassInfo]]

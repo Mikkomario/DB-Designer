@@ -58,6 +58,11 @@ object Icons
 	def addBox = apply("add_box.png")
 	
 	/**
+	 * @return Check box icon
+	 */
+	def checkBox = apply("check_box.png")
+	
+	/**
 	 * @return An icon for editing items
 	 */
 	def edit = apply("edit.png")
