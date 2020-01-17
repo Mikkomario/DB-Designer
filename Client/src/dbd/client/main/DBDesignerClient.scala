@@ -4,7 +4,7 @@ import dbd.client.controller.ConnectionPool
 import utopia.flow.util.CollectionExtensions._
 import dbd.core.database
 import dbd.client.model.Fonts
-import dbd.client.vc.ClassVC
+import dbd.client.vc.ClassesVC
 import dbd.core.util.Log
 import utopia.flow.async.ThreadPool
 import utopia.reflection.shape.LengthExtensions._
@@ -17,7 +17,7 @@ import utopia.reflection.container.swing.window.WindowResizePolicy.Program
 import utopia.reflection.localization.{Localizer, NoLocalization}
 import utopia.reflection.shape.Margins
 import utopia.reflection.text.Font
-import utopia.reflection.util.{ComponentContextBuilder, SingleFrameSetup}
+import utopia.reflection.util.{ComponentContextBuilder, Screen, SingleFrameSetup}
 import utopia.vault.util.ErrorHandling
 import utopia.vault.util.ErrorHandlingPrinciple.Throw
 
@@ -57,16 +57,10 @@ object DBDesignerClient extends App
 	
 	// Reads displayed data from DB
 	ConnectionPool.tryWith { implicit connection =>
-		// Reads any class and displays that
-		database.Classes.get.headOption match
-		{
-			case Some(anyClass) =>
-				// Creates and displays UI content
-				val content = new ClassVC(anyClass)
-				new SingleFrameSetup(actorHandler, Frame.windowed(content.framed(8.any x 8.any, primaryColors.light),
-					"DB Designer", Program)).start()
-			case None =>
-				println("No class data in DB")
-		}
+		val classes = database.Classes.get
+		val content = new ClassesVC(Screen.height / 3)
+		content.content = classes
+		new SingleFrameSetup(actorHandler, Frame.windowed(content.framed(margins.medium.any.square, primaryColors.light),
+			"DB Designer", Program)).start()
 	}.failure.foreach { Log(_, "Failed to run DB Designer client") }
 }
