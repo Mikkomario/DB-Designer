@@ -1,34 +1,28 @@
 package dbd.client.dialog
 
 import utopia.reflection.localization.LocalString._
-import dbd.client.controller.Icons
 import utopia.reflection.color.ColorScheme
-import utopia.reflection.component.swing.MultiLineTextView
-import utopia.reflection.localization.{LocalizedString, Localizer}
-import utopia.reflection.util.{ComponentContext, Screen}
+import utopia.reflection.localization.Localizer
+import utopia.reflection.util.ComponentContext
 
 /**
- * Used for checking whether the user really wants to delete the specified attribute
+ * Used for checking whether user wishes to delete an attribute
  * @author Mikko Hilpinen
- * @since 13.1.2020, v0.1
+ * @since 18.1.2020, v0.1
  */
-class DeleteAttributeDialog(attributeName: String)
-						   (implicit baseContext: ComponentContext, defaultLanguageCode: String, localizer: Localizer,
-							colorScheme: ColorScheme)
-	extends InteractionDialog[Boolean]
+object DeleteAttributeDialog
 {
-	// IMPLEMENTED	------------------------
+	private implicit val language: String = "en"
 	
-	override protected def buttonData = Vector(new DialogButtonInfo[Boolean]("Yes", Icons.delete,
-		colorScheme.error, () => Some(true) -> true), DialogButtonInfo.cancel("No"))
-	
-	override protected def dialogContent =
-	{
-		val question: LocalizedString = "Are you sure you wish to permanently delete attribute '%s'?"
-		MultiLineTextView.contextual(question.interpolate(attributeName), Screen.size.width / 3)
-	}
-	
-	override protected def defaultResult = false
-	
-	override protected def title = "Delete Attribute %s".localized.interpolate(attributeName)
+	/**
+	 * Creates a new dialog that checks whether the user wishes to delete an attribute
+	 * @param attributeName Name of the attribute to delete
+	 * @param baseContext Component creation context (implicit)
+	 * @param localizer Localizer used (implicit)
+	 * @param colorScheme Color scheme (implicit)
+	 * @return A new dialog
+	 */
+	def apply(attributeName: String)
+			 (implicit baseContext: ComponentContext, localizer: Localizer, colorScheme: ColorScheme) =
+		DeleteQuestionDialog.personalized("attribute", attributeName.noLanguageLocalizationSkipped)
 }

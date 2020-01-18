@@ -55,7 +55,7 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 	private val deleteAttributeButton = ImageButton.contextual(Icons.close.forButtonWithoutText(colorScheme.secondary)) { () =>
 		parentWindow.foreach { window =>
 			val attributeToDelete = content
-			new DeleteAttributeDialog(attributeToDelete.name).display(window).foreach {
+			DeleteAttributeDialog(attributeToDelete.name).display(window).foreach {
 				if (_) classManager.deleteAttribute(attributeToDelete) }
 		}
 	}
