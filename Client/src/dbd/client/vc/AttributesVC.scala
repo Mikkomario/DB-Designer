@@ -1,9 +1,9 @@
 package dbd.client.vc
 
-import dbd.client.controller.Icons
+import dbd.client.controller.{ClassDisplayManager, Icons}
 import dbd.client.dialog.EditAttributeDialog
 import dbd.core.model.existing.Attribute
-import dbd.core.model.partial.{NewAttribute, NewAttributeConfiguration}
+import dbd.core.model.partial.NewAttribute
 import utopia.reflection.shape.LengthExtensions._
 import utopia.genesis.shape.Axis.X
 import utopia.genesis.shape.shape2D.Direction2D
@@ -25,10 +25,7 @@ import scala.concurrent.ExecutionContext
  * @author Mikko Hilpinen
  * @since 11.1.2020, v0.1
  */
-class AttributesVC(initialClassId: Int, initialAttributes: Vector[Attribute] = Vector())
-				  (onNewAttribute: (Int, NewAttribute) => Unit)
-				  (onAttributeEdit: (Attribute, NewAttributeConfiguration) => Unit)
-				  (onAttributeDeleted: Attribute => Unit)
+class AttributesVC(initialClassId: Int, initialAttributes: Vector[Attribute] = Vector(), classManager: ClassDisplayManager)
 				  (implicit baseCB: ComponentContextBuilder, margins: Margins, colorScheme: ColorScheme,
 				   defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
 	extends StackableAwtComponentWrapperWrapper with Refreshable[(Int, Vector[Attribute])]
@@ -50,7 +47,7 @@ class AttributesVC(initialClassId: Int, initialAttributes: Vector[Attribute] = V
 				// Remembers the class for which the attribute is being added
 				val editedClassId = classId
 				new EditAttributeDialog().display(window).foreach { _.foreach { added =>
-					onNewAttribute(editedClassId, NewAttribute(added))
+					classManager.addNewAttribute(editedClassId, NewAttribute(added))
 				} }
 			}
 		}).alignedToSide(Direction2D.Right, useLowPriorityLength = true)
@@ -84,7 +81,7 @@ class AttributesVC(initialClassId: Int, initialAttributes: Vector[Attribute] = V
 		override def displays = attributesStack.components
 		
 		override protected def addDisplaysFor(values: Vector[Attribute]) = attributesStack ++= values.map {
-			new AttributeRowVC(segmentGroup, _)(onAttributeEdit)(onAttributeDeleted) }
+			new AttributeRowVC(segmentGroup, _, classManager) }
 		
 		override protected def dropDisplays(dropped: Vector[AttributeRowVC]) =
 		{

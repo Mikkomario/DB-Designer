@@ -2,12 +2,11 @@ package dbd.client.vc
 
 import utopia.reflection.shape.LengthExtensions._
 import utopia.reflection.localization.LocalString._
-import dbd.client.controller.Icons
+import dbd.client.controller.{ClassDisplayManager, Icons}
 import dbd.client.dialog.{DeleteAttributeDialog, EditAttributeDialog}
 import dbd.core.model.AttributeType.{BooleanType, DoubleType, IntType, ShortStringType}
 import dbd.core.model.AttributeType
 import dbd.core.model.existing.Attribute
-import dbd.core.model.partial.NewAttributeConfiguration
 import utopia.genesis.color.Color
 import utopia.genesis.image.Image
 import utopia.genesis.shape.shape2D.Line
@@ -31,9 +30,7 @@ import scala.concurrent.ExecutionContext
  * @author Mikko Hilpinen
  * @since 11.1.2020, v0.1
  */
-class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attribute)
-					(onAttributeEdited: (Attribute, NewAttributeConfiguration) => Unit)
-					(onAttributeDeleted: Attribute => Unit)
+class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attribute, classManager: ClassDisplayManager)
 					(implicit baseCB: ComponentContextBuilder, margins: Margins, colorScheme: ColorScheme,
 					 defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
 	extends StackableAwtComponentWrapperWrapper with Refreshable[Attribute]
@@ -50,7 +47,7 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 		parentWindow.foreach { window =>
 			val attributeToEdit = content
 			new EditAttributeDialog(Some(attributeToEdit)).display(window).foreach { _.foreach { edited =>
-				onAttributeEdited(attributeToEdit, edited)
+				classManager.editAttribute(attributeToEdit, edited)
 			} }
 		}
 	}
@@ -59,7 +56,7 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 		parentWindow.foreach { window =>
 			val attributeToDelete = content
 			new DeleteAttributeDialog(attributeToDelete.name).display(window).foreach {
-				if (_) onAttributeDeleted(attributeToDelete) }
+				if (_) classManager.deleteAttribute(attributeToDelete) }
 		}
 	}
 	

@@ -1,12 +1,11 @@
 package dbd.client.vc
 
 import utopia.flow.util.CollectionExtensions._
-import dbd.client.controller.Icons
+import dbd.client.controller.{ClassDisplayManager, Icons}
 import dbd.client.dialog.EditClassDialog
 import utopia.reflection.shape.LengthExtensions._
 import dbd.client.model.Fonts
-import dbd.core.model.existing.{Attribute, Class}
-import dbd.core.model.partial.{NewAttribute, NewAttributeConfiguration, NewClassInfo}
+import dbd.core.model.existing.Class
 import utopia.genesis.color.Color
 import utopia.genesis.event.{ConsumeEvent, MouseButton}
 import utopia.genesis.handling.MouseButtonStateListener
@@ -28,9 +27,7 @@ import scala.concurrent.ExecutionContext
  * @author Mikko Hilpinen
  * @since 11.1.2020, v0.1
  */
-class ClassVC(initialClass: Class, isInitiallyExpanded: Boolean = false)(onAttributeAdded: (Int, NewAttribute) => Unit)
-			 (onAttributeEdited: (Attribute, NewAttributeConfiguration) => Unit)(onAttributeDeleted: Attribute => Unit)
-			 (onClassEdited: (Class, NewClassInfo) => Unit)(onClassExpandChanged: (Class, Boolean) => Unit)
+class ClassVC(initialClass: Class, isInitiallyExpanded: Boolean, classManager: ClassDisplayManager)
 			 (implicit baseCB: ComponentContextBuilder, fonts: Fonts, margins: Margins, colorScheme: ColorScheme,
 			  defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
 	extends StackableAwtComponentWrapperWrapper with Refreshable[(Class, Boolean)]
@@ -53,25 +50,13 @@ class ClassVC(initialClass: Class, isInitiallyExpanded: Boolean = false)(onAttri
 			parentWindow.foreach { window =>
 				val classToEdit = displayedClass
 				new EditClassDialog(Some(classToEdit.info)).display(window).foreach { _.foreach { editedInfo =>
-					onClassEdited(classToEdit, editedInfo)
-					/*
-					ConnectionPool.tryWith { implicit connection =>
-						database.Class(classToEdit.id).info.update(editedInfo)
-					} match
-					{
-						case Success(info) =>
-							if (info.classId == displayedClass.id)
-								displayedClass = displayedClass.update(info)
-						case Failure(error) =>
-							Log(error, "Failed to edit class info")
-					}*/
+					classManager.editClass(classToEdit, editedInfo)
 				} }
 			}
 		}
 	}.framed(margins.small.downscaling x margins.small.any, colorScheme.primary)
 	
-	private val attributeSection = new AttributesVC(initialClass.id, orderedAttributes(initialClass))(
-		onAttributeAdded)(onAttributeEdited)(onAttributeDeleted)
+	private val attributeSection = new AttributesVC(initialClass.id, orderedAttributes(initialClass), classManager)
 	
 	private val view = Stack.columnWithItems(Vector(header, attributeSection), margin = 0.fixed)
 	
@@ -79,7 +64,7 @@ class ClassVC(initialClass: Class, isInitiallyExpanded: Boolean = false)(onAttri
 	// INITIAL CODE	------------------------
 	
 	attributeSection.isVisible = isInitiallyExpanded
-	expandButton.addValueListener { e => onClassExpandChanged(displayedClass, e.newValue) }
+	expandButton.addValueListener { e => classManager.changeClassExpand(displayedClass, e.newValue) }
 	classNameLabel.addMouseButtonListener(MouseButtonStateListener.onButtonPressedInside(MouseButton.Left,
 		classNameLabel.bounds, _ => { expandButton.value = true; Some(ConsumeEvent("Class expanded")) }))
 	
