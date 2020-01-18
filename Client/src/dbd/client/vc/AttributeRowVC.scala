@@ -3,7 +3,7 @@ package dbd.client.vc
 import utopia.reflection.shape.LengthExtensions._
 import utopia.reflection.localization.LocalString._
 import dbd.client.controller.{ClassDisplayManager, Icons}
-import dbd.client.dialog.{DeleteAttributeDialog, EditAttributeDialog}
+import dbd.client.dialog.{DeleteQuestionDialog, EditAttributeDialog}
 import dbd.core.model.AttributeType.{BooleanType, DoubleType, IntType, ShortStringType}
 import dbd.core.model.AttributeType
 import dbd.core.model.existing.Attribute
@@ -55,7 +55,7 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 	private val deleteAttributeButton = ImageButton.contextual(Icons.close.forButtonWithoutText(colorScheme.secondary)) { () =>
 		parentWindow.foreach { window =>
 			val attributeToDelete = content
-			DeleteAttributeDialog(attributeToDelete.name).display(window).foreach {
+			DeleteQuestionDialog.forAttribute(attributeToDelete.name).display(window).foreach {
 				if (_) classManager.deleteAttribute(attributeToDelete) }
 		}
 	}

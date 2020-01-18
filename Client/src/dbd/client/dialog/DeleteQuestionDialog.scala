@@ -24,6 +24,30 @@ object DeleteQuestionDialog
 					(implicit baseContext: ComponentContext, colorScheme: ColorScheme, localizer: Localizer) =
 		new DeleteQuestionDialog("Delete %s '%s'".localized.interpolate(deletedItemType, deletedItemName),
 			"Are you sure you wish to permanently delete %s '%s'?".localized.interpolate(deletedItemType, deletedItemName))
+	
+	/**
+	 * Creates a new dialog that checks whether the user wishes to delete an attribute
+	 * @param attributeName Name of the attribute to delete
+	 * @param baseContext Component creation context (implicit)
+	 * @param localizer Localizer used (implicit)
+	 * @param colorScheme Color scheme (implicit)
+	 * @return A new dialog
+	 */
+	def forAttribute(attributeName: String)
+			 (implicit baseContext: ComponentContext, localizer: Localizer, colorScheme: ColorScheme) =
+		DeleteQuestionDialog.personalized("attribute", attributeName.noLanguageLocalizationSkipped)
+	
+	/**
+	 * Creates a new dialog that checks whether the user wishes to delete an attribute
+	 * @param className Name of the class to delete
+	 * @param baseContext Component creation context (implicit)
+	 * @param localizer Localizer used (implicit)
+	 * @param colorScheme Color scheme (implicit)
+	 * @return A new dialog
+	 */
+	def forClass(className: String)
+				(implicit baseContext: ComponentContext, localizer: Localizer, colorScheme: ColorScheme) =
+		DeleteQuestionDialog.personalized("class", className.noLanguageLocalizationSkipped)
 }
 
 /**

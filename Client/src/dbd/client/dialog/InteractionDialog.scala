@@ -75,7 +75,7 @@ trait InteractionDialog[A]
 			mainStack += Stack.buildRowWithContext() { buttonRow =>
 				actualizedButtons.foreach { buttonRow += _._2 }
 			}.alignedToSide(Direction2D.Right)
-		}.framed(margins.medium.any.square, colorScheme.gray)
+		}.framed(margins.medium.any.square, colorScheme.gray.light)
 		
 		// Creates and sets up the dialog
 		val dialog = new Dialog(parentWindow, content, title)

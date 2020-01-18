@@ -2,7 +2,7 @@ package dbd.client.vc
 
 import utopia.flow.util.CollectionExtensions._
 import dbd.client.controller.{ClassDisplayManager, Icons}
-import dbd.client.dialog.EditClassDialog
+import dbd.client.dialog.{DeleteQuestionDialog, EditClassDialog}
 import utopia.reflection.shape.LengthExtensions._
 import dbd.client.model.Fonts
 import dbd.core.model.existing.Class
@@ -34,24 +34,34 @@ class ClassVC(initialClass: Class, isInitiallyExpanded: Boolean, classManager: C
 {
 	// ATTRIBUTES	------------------------
 	
-	private implicit val headerContext: ComponentContext = baseCB.copy(textColor = Color.white).result
+	private implicit val baseContext: ComponentContext = baseCB.result
 	
 	private val headerButtonColor = colorScheme.secondary.dark
 	private val expandButton = new ImageCheckBox(Icons.expandMore.forButtonWithoutText(headerButtonColor),
 		Icons.expandLess.forButtonWithoutText(headerButtonColor), isInitiallyExpanded)
 	
 	private val classNameLabel = ItemLabel.contextual(initialClass,
-		DisplayFunction.noLocalization[Class] { _.info.name })(headerContext)
+		DisplayFunction.noLocalization[Class] { _.info.name })(baseCB.copy(textColor = Color.white).result)
 	
 	private val header = Stack.buildRowWithContext(layout = Center) { headerRow =>
 		headerRow += expandButton
 		headerRow += classNameLabel
+		// Adds edit class button
 		headerRow += ImageButton.contextual(Icons.edit.forButtonWithoutText(headerButtonColor)) { () =>
 			parentWindow.foreach { window =>
 				val classToEdit = displayedClass
 				new EditClassDialog(Some(classToEdit.info)).display(window).foreach { _.foreach { editedInfo =>
 					classManager.editClass(classToEdit, editedInfo)
 				} }
+			}
+		}
+		// Adds delete class button
+		// TODO: WET WET
+		headerRow += ImageButton.contextual(Icons.close.forButtonWithoutText(headerButtonColor)) { () =>
+			parentWindow.foreach { window =>
+				val classToDelete = displayedClass
+				DeleteQuestionDialog.forClass(classToDelete.name).display(window).foreach {
+					if (_) classManager.deleteClass(classToDelete) }
 			}
 		}
 	}.framed(margins.small.downscaling x margins.small.any, colorScheme.primary)
