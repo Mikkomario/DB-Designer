@@ -59,6 +59,18 @@ object Class extends NonDeprecatedSingleAccess[existing.Class]
 		def attributes = Attributes
 		
 		
+		// OTHER	-------------------
+		
+		/**
+		 * Marks this class as deleted (if class was already deleted, doesn't update it)
+		 * @param connection DB Connection (implicit)
+		 * @return Whether a row in the database was affected
+		 */
+		def markDeleted()(implicit connection: Connection) = connection(
+				Class.factory.nowDeleted.toUpdateStatement() +
+					Where(condition && Class.factory.notDeletedCondition)).updatedRows
+		
+		
 		// NESTED	-------------------
 		
 		object Info extends ConditionalSingleAccess[ClassInfo]
