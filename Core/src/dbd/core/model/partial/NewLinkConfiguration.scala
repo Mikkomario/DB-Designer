@@ -1,6 +1,7 @@
 package dbd.core.model.partial
 
 import dbd.core.model.enumeration.LinkType
+import dbd.core.model.existing.LinkConfiguration
 import dbd.core.model.template.LinkConfigurationLike
 
 /**
@@ -10,3 +11,11 @@ import dbd.core.model.template.LinkConfigurationLike
  */
 case class NewLinkConfiguration(name: String, linkType: LinkType, originClassId: Int, targetClassId: Int,
 								isOwned: Boolean = false) extends LinkConfigurationLike
+{
+	/**
+	 * @param id A new id for this model
+	 * @param linkId The id of the described link
+	 * @return A new model with id data included
+	 */
+	def withId(id: Int, linkId: Int) = LinkConfiguration(id, linkId, name, linkType, originClassId, targetClassId, isOwned)
+}

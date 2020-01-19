@@ -8,6 +8,7 @@ import dbd.core.model.enumeration.LinkType
 import dbd.core.model.error.NoSuchTypeException
 import utopia.flow.generic.ValueConversions._
 import dbd.core.model.existing
+import dbd.core.model.partial.NewLinkConfiguration
 import utopia.flow.datastructure.template
 import utopia.flow.datastructure.template.Property
 import utopia.vault.model.immutable.StorableWithFactory
@@ -31,6 +32,14 @@ object LinkConfiguration extends StorableFactory[existing.LinkConfiguration] wit
 	override def table = Tables.linkConfiguration
 	
 	
+	// COMPUTED	-------------------------------
+	
+	/**
+	 * @return a model that has just been marked as deprecated
+	 */
+	def nowDeprecated = apply(deprecatedAfter = Some(Instant.now()))
+	
+	
 	// OTHER	-------------------------------
 	
 	/**
@@ -38,6 +47,16 @@ object LinkConfiguration extends StorableFactory[existing.LinkConfiguration] wit
 	 * @return A model with only link id set
 	 */
 	def withLinkId(linkId: Int) = apply(linkId = Some(linkId))
+	
+	/**
+	 * Creates a model to be inserted to DB
+	 * @param linkId Id of modified link
+	 * @param newData New configuration data for the link
+	 * @return A model ready to be inserted to DB
+	 */
+	def forInsert(linkId: Int, newData: NewLinkConfiguration) = apply(None, Some(linkId),
+		Some(newData.name), Some(newData.linkType), Some(newData.originClassId), Some(newData.targetClassId),
+		Some(newData.isOwned))
 }
 
 /**

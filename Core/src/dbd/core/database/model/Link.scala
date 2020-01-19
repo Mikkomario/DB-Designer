@@ -11,6 +11,8 @@ import utopia.vault.model.immutable.factory.{Deprecatable, LinkedStorableFactory
 
 object Link extends LinkedStorableFactory[existing.Link, existing.LinkConfiguration] with Deprecatable
 {
+	// IMPLEMENTED	---------------------------
+	
 	override def childFactory = LinkConfiguration
 	
 	override def apply(model: Model[Constant], child: existing.LinkConfiguration) =
@@ -18,9 +20,30 @@ object Link extends LinkedStorableFactory[existing.Link, existing.LinkConfigurat
 			existing.Link(valid("id").getInt, child, valid("deletedAfter").instant)
 		}
 	
-	override def nonDeprecatedCondition = childFactory.nonDeprecatedCondition && table("deletedAfter").isNull
+	override def nonDeprecatedCondition = childFactory.nonDeprecatedCondition && notDeletedCondition
 	
 	override def table = Tables.link
+	
+	
+	// COMPUTED	--------------------------------
+	
+	/**
+	 * @return A condition that only returns non-deleted links
+	 */
+	def notDeletedCondition = table("deletedAfter").isNull
+	
+	/**
+	 * @return A model that has just been marked as deleted
+	 */
+	def nowDeleted = apply(deletedAfter = Some(Instant.now()))
+	
+	
+	// OTHER	--------------------------------
+	
+	/**
+	 * @return A model ready to be inserted to DB
+	 */
+	def forInsert() = apply()
 }
 
 /**
