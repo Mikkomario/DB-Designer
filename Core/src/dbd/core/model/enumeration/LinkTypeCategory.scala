@@ -1,4 +1,4 @@
-package dbd.core.model
+package dbd.core.model.enumeration
 
 /**
  * Provides a set of main categories for link types

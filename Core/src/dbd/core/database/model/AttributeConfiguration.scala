@@ -3,9 +3,10 @@ package dbd.core.database.model
 import java.time.Instant
 
 import dbd.core.database.Tables
+import dbd.core.model.enumeration.AttributeType
 import utopia.flow.util.CollectionExtensions._
 import utopia.flow.generic.ValueConversions._
-import dbd.core.model.{AttributeType, existing}
+import dbd.core.model.existing
 import dbd.core.model.error.NoSuchTypeException
 import dbd.core.model.partial.NewAttributeConfiguration
 import utopia.flow.datastructure.template.{Model, Property}

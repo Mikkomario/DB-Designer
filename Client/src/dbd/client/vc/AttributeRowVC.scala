@@ -4,8 +4,8 @@ import utopia.reflection.shape.LengthExtensions._
 import utopia.reflection.localization.LocalString._
 import dbd.client.controller.{ClassDisplayManager, Icons}
 import dbd.client.dialog.{DeleteQuestionDialog, EditAttributeDialog}
-import dbd.core.model.AttributeType.{BooleanType, DoubleType, IntType, ShortStringType}
-import dbd.core.model.AttributeType
+import dbd.core.model.enumeration.AttributeType.{BooleanType, DoubleType, IntType, ShortStringType}
+import dbd.core.model.enumeration.AttributeType
 import dbd.core.model.existing.Attribute
 import utopia.genesis.color.Color
 import utopia.genesis.image.Image

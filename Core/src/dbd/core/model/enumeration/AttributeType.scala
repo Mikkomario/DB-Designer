@@ -1,4 +1,4 @@
-package dbd.core.model
+package dbd.core.model.enumeration
 
 import utopia.flow.generic
 import utopia.flow.generic.{DataType, StringType}

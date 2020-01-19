@@ -1,6 +1,6 @@
 package dbd.core.model.partial
 
-import dbd.core.model.AttributeType
+import dbd.core.model.enumeration.AttributeType
 import dbd.core.model.existing.AttributeConfiguration
 import dbd.core.model.template.AttributeConfigurationLike
 

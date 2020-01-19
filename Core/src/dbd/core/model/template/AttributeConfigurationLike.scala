@@ -1,6 +1,6 @@
 package dbd.core.model.template
 
-import dbd.core.model.AttributeType
+import dbd.core.model.enumeration.AttributeType
 
 /**
  * A common trait for attribute configuration models

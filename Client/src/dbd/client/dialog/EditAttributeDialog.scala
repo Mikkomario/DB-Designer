@@ -1,7 +1,7 @@
 package dbd.client.dialog
 
+import dbd.core.model.enumeration.AttributeType
 import dbd.core.model.partial.NewAttributeConfiguration
-import dbd.core.model.AttributeType
 import dbd.core.model.existing.Attribute
 import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.swing.{DropDown, Switch, TextField}
