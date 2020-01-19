@@ -15,6 +15,8 @@ import utopia.vault.model.immutable.factory.{Deprecatable, StorableFactory}
 
 object LinkConfiguration extends StorableFactory[existing.LinkConfiguration] with Deprecatable
 {
+	// IMPLEMENTED	---------------------------
+	
 	override def nonDeprecatedCondition = table("deprecatedAfter").isNull
 	
 	override def apply(model: template.Model[Property]) = table.requirementDeclaration.validate(model).toTry.flatMap { valid =>
@@ -27,6 +29,15 @@ object LinkConfiguration extends StorableFactory[existing.LinkConfiguration] wit
 	}
 	
 	override def table = Tables.linkConfiguration
+	
+	
+	// OTHER	-------------------------------
+	
+	/**
+	 * @param linkId Targeted link's id
+	 * @return A model with only link id set
+	 */
+	def withLinkId(linkId: Int) = apply(linkId = Some(linkId))
 }
 
 /**
