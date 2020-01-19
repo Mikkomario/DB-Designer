@@ -34,6 +34,16 @@ object Tables
 	 */
 	def attributeConfiguration = apply("attribute_configuration")
 	
+	/**
+	 * @return Table that contains links between classes
+	 */
+	def link = apply("link")
+	
+	/**
+	 * @return Table that contains configurations for links between classes
+	 */
+	def linkConfiguration = apply("linkConfiguration")
+	
 	
 	// OTHER	--------------------------
 	
