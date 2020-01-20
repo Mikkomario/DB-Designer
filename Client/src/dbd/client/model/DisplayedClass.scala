@@ -45,4 +45,10 @@ case class DisplayedClass(classData: Class, links: Vector[DisplayedLink] = Vecto
 	 * @return A copy of this display with specified class
 	 */
 	def withClass(newClass: Class) = copy(classData = newClass)
+	
+	/**
+	 * @param classId Id of another class
+	 * @return A copy of this class display without any links to specified class
+	 */
+	def withoutLinksToClassWithId(classId: Int) = copy(links = links.filterNot { _.otherClass.id == classId })
 }

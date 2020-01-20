@@ -76,7 +76,8 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 		{
 			case Success(wasDeleted) =>
 				if (wasDeleted)
-					content = content.filterNot { _.classData.id == classToDelete.id }
+					content = content.filterNot { _.classData.id == classToDelete.id }.map {
+						_.withoutLinksToClassWithId(classToDelete.id) }
 			case Failure(error) => Log(error, s"Failed to delete class $classToDelete")
 		}
 	}
