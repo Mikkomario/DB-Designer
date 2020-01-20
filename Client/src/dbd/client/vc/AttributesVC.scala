@@ -1,10 +1,10 @@
 package dbd.client.vc
 
+import utopia.reflection.shape.LengthExtensions._
 import dbd.client.controller.{ClassDisplayManager, Icons}
 import dbd.client.dialog.EditAttributeDialog
 import dbd.core.model.existing.Attribute
 import dbd.core.model.partial.NewAttribute
-import utopia.reflection.shape.LengthExtensions._
 import utopia.genesis.shape.Axis.X
 import utopia.genesis.shape.shape2D.Direction2D
 import utopia.reflection.color.ColorScheme
@@ -37,9 +37,9 @@ class AttributesVC(initialClassId: Int, initialAttributes: Vector[Attribute] = V
 	private implicit val baseContext: ComponentContext = baseCB.result
 	
 	private val segmentGroup = new SegmentedGroup(X)
-	private val attributesStack = Stack.column[AttributeRowVC]()
+	private val attributesStack = Stack.column[AttributeRowVC](margin = margins.small.downscaling)
 	
-	private val view = Stack.buildColumnWithContext() { mainStack =>
+	private val view = Stack.buildColumnWithContext(isRelated = true) { mainStack =>
 		mainStack += attributesStack
 		mainStack += ImageAndTextButton.contextual(Icons.addBox.forLightButtons, "Add Attribute")(() =>
 		{
@@ -51,7 +51,7 @@ class AttributesVC(initialClassId: Int, initialAttributes: Vector[Attribute] = V
 				} }
 			}
 		}).alignedToSide(Direction2D.Right, useLowPriorityLength = true)
-	}.framed(margins.medium.downscaling.square, colorScheme.gray.dark)
+	}
 	
 	
 	// INITIAL CODE	-----------------------

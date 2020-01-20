@@ -46,10 +46,10 @@ object DBDesignerClient extends App
 	val baseFont = Font("Roboto Condensed", 12, scaling = 2.0)
 	implicit val fonts: Fonts = Fonts(baseFont)
 	
-	implicit val margins: Margins = Margins(8)
+	implicit val margins: Margins = Margins(16)
 	
 	implicit val baseCB: ComponentContextBuilder = ComponentContextBuilder(actorHandler, baseFont, secondaryColors,
-		secondaryColors.light, 320, insideMargins = margins.medium.any.square, stackMargin = margins.medium.downscaling,
+		secondaryColors.light, 320, insideMargins = margins.small.any.square, stackMargin = margins.medium.downscaling,
 		relatedItemsStackMargin = Some(margins.small.downscaling))
 	
 	implicit val exc: ExecutionContext = new ThreadPool("DB Designer Client").executionContext
@@ -58,8 +58,9 @@ object DBDesignerClient extends App
 	// Reads displayed data from DB
 	ConnectionPool.tryWith { implicit connection =>
 		val classes = database.Classes.get
-		println(s"Found ${classes.size} classes from DB")
-		val content = new ClassesVC(Screen.height / 3, classes)
+		val links = database.Links.get
+		println(s"Found ${classes.size} classes and ${links.size} links from DB")
+		val content = new ClassesVC(Screen.height / 3, classes, links)
 		new SingleFrameSetup(actorHandler, Frame.windowed(content.framed(margins.medium.any.square, primaryColors.light),
 			"DB Designer", Program)).start()
 	}.failure.foreach { Log(_, "Failed to run DB Designer client") }

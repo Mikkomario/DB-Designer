@@ -24,7 +24,7 @@ object LinkConfiguration extends StorableFactory[existing.LinkConfiguration] wit
 		// Link type must be parseable
 		LinkType.forId(valid("linkType").getInt).toTry(
 			new NoSuchTypeException(s"No link type for id ${valid("linkType")}")).map { linkType =>
-			existing.LinkConfiguration(valid("id").getInt, valid("linkId").getInt, valid("name").getString, linkType,
+			existing.LinkConfiguration(valid("id").getInt, valid("linkId").getInt, linkType,
 				valid("originClassId").getInt, valid("targetClassId").getInt, valid("isOwned").getBoolean,
 				valid("deprecatedAfter").instant) }
 	}
@@ -55,8 +55,7 @@ object LinkConfiguration extends StorableFactory[existing.LinkConfiguration] wit
 	 * @return A model ready to be inserted to DB
 	 */
 	def forInsert(linkId: Int, newData: NewLinkConfiguration) = apply(None, Some(linkId),
-		Some(newData.name), Some(newData.linkType), Some(newData.originClassId), Some(newData.targetClassId),
-		Some(newData.isOwned))
+		Some(newData.linkType), Some(newData.originClassId), Some(newData.targetClassId), Some(newData.isOwned))
 }
 
 /**
@@ -64,15 +63,14 @@ object LinkConfiguration extends StorableFactory[existing.LinkConfiguration] wit
  * @author Mikko Hilpinen
  * @since 19.1.2020, v0.1
  */
-case class LinkConfiguration(id: Option[Int] = None, linkId: Option[Int] = None, name: Option[String] = None,
-							 linkType: Option[LinkType] = None, originClassId: Option[Int] = None,
-							 targetClassId: Option[Int] = None, isOwned: Option[Boolean] = None,
-							 deprecatedAfter: Option[Instant] = None)
+case class LinkConfiguration(id: Option[Int] = None, linkId: Option[Int] = None, linkType: Option[LinkType] = None,
+							 originClassId: Option[Int] = None, targetClassId: Option[Int] = None,
+							 isOwned: Option[Boolean] = None, deprecatedAfter: Option[Instant] = None)
 	extends StorableWithFactory[existing.LinkConfiguration]
 {
 	override def factory = LinkConfiguration
 	
-	override def valueProperties = Vector("id" -> id, "linkId" -> linkId, "name" -> name,
+	override def valueProperties = Vector("id" -> id, "linkId" -> linkId,
 		"linkType" -> linkType.map { _.id }, "originClassId" -> originClassId, "targetClassId" -> targetClassId,
 		"isOwned" -> isOwned, "deprecatedAfter" -> deprecatedAfter)
 }

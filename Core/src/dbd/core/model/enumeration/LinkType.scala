@@ -1,6 +1,6 @@
 package dbd.core.model.enumeration
 
-import dbd.core.model.enumeration.LinkTypeCategory.{ManyToMany, OneToMany, OneToOne}
+import dbd.core.model.enumeration.LinkTypeCategory.{ManyToMany, ManyToOne, OneToOne}
 
 /**
  * A common trait for various link types
@@ -52,7 +52,7 @@ object LinkType
 	 */
 	sealed trait OneToManyType extends LinkType
 	{
-		override def category = OneToMany
+		override def category = ManyToOne
 		override def isOwnable = true
 		override def isFixedLinkOrigin = true
 	}

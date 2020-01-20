@@ -2,9 +2,9 @@ package dbd.client.vc
 
 import dbd.client.controller.{ClassDisplayManager, Icons}
 import dbd.client.dialog.EditClassDialog
-import dbd.client.model.Fonts
+import dbd.client.model.{DisplayedClass, Fonts}
 import utopia.reflection.shape.LengthExtensions._
-import dbd.core.model.existing.Class
+import dbd.core.model.existing.{Class, Link}
 import utopia.genesis.shape.shape2D.Direction2D
 import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.RefreshableWithPointer
@@ -23,19 +23,19 @@ import scala.concurrent.ExecutionContext
  * @author Mikko Hilpinen
  * @since 17.1.2020, v0.1
  */
-class ClassesVC(targetHeight: Double, classesToDisplay: Vector[Class] = Vector())
+class ClassesVC(targetHeight: Double, classesToDisplay: Vector[Class] = Vector(), linksToDisplay: Vector[Link] = Vector())
 			   (implicit margins: Margins, baseCB: ComponentContextBuilder, fonts: Fonts, colorScheme: ColorScheme,
 				defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
-	extends StackableAwtComponentWrapperWrapper with RefreshableWithPointer[Vector[(Class, Boolean)]]
+	extends StackableAwtComponentWrapperWrapper with RefreshableWithPointer[Vector[DisplayedClass]]
 {
 	// ATTRIBUTES	---------------------
 	
-	private val dataManager = new ClassDisplayManager(classesToDisplay)
+	private val dataManager = new ClassDisplayManager(classesToDisplay, linksToDisplay)
 	private val addClassButton = ImageAndTextButton.contextual(Icons.addBox.forButtonWithBackground(colorScheme.secondary.dark),
 		"Add Class") { () => addButtonPressed() }(baseCB.withColors(colorScheme.secondary.dark).result)
 	private val classView = new CollectionView[ClassVC](Direction2D.Down, targetHeight, margins.medium.downscaling)
-	private val displayManager = new ContainerContentManager[(Class, Boolean), CollectionView[ClassVC], ClassVC](classView)(
-		c => new ClassVC(c._1, c._2, dataManager))
+	private val displayManager = new ContainerContentManager[DisplayedClass, CollectionView[ClassVC], ClassVC](classView)(
+		c => new ClassVC(c, dataManager))
 	private val view = Stack.buildColumnWithContext() { stack =>
 		stack += classView
 		stack += addClassButton.alignedToSide(Direction2D.Right, useLowPriorityLength = true)

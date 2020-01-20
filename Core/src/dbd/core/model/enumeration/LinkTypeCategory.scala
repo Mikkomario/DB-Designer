@@ -22,10 +22,10 @@ object LinkTypeCategory
 	/**
 	 * This category of links points from one class to 0-n other classes
 	 */
-	case object OneToMany extends LinkTypeCategory
+	case object ManyToOne extends LinkTypeCategory
 	{
-		override def allowsMultipleOrigins = false
-		override def allowsMultipleTargets = true
+		override def allowsMultipleOrigins = true
+		override def allowsMultipleTargets = false
 	}
 	
 	/**

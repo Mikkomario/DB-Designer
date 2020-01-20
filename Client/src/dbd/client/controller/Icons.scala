@@ -82,6 +82,26 @@ object Icons
 	 */
 	def expandLess = expandMore.map { _.flippedVertically }
 	
+	/**
+	 * @return Icon used with one-to-one links
+	 */
+	def oneOnOneLink = apply("double_arrow.png")
+	
+	/**
+	 * @return Icon used with many-to-one links
+	 */
+	def manyToOneLink = apply("one_to_many_arrow.png")
+	
+	/**
+	 * @return Icon used with one-to-many links
+	 */
+	def oneToManyLink = manyToOneLink.map { _.flippedHorizontally }
+	
+	/**
+	 * @return Icon used with many-to-many links
+	 */
+	def manyToManyLink = apply("many_to_many_arrow.png")
+	
 	
 	// OTHER	------------------------------
 	

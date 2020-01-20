@@ -9,6 +9,7 @@ import dbd.core.model.enumeration.AttributeType
 import dbd.core.model.existing.Attribute
 import utopia.genesis.color.Color
 import utopia.genesis.image.Image
+import utopia.genesis.shape.Axis.X
 import utopia.genesis.shape.shape2D.Line
 import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Refreshable
@@ -42,7 +43,8 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 	private implicit val baseContext: ComponentContext = baseCB.result
 	
 	private val imageLabel = ImageLabel.contextual(iconForType(initialAttribute.configuration.dataType))
-	private val attNameLabel = TextLabel.contextual(initialAttribute.configuration.name.noLanguageLocalizationSkipped)
+	private val attNameLabel = TextLabel.contextual(initialAttribute.configuration.name.noLanguageLocalizationSkipped)(
+		baseCB.mapInnerMargins { _.withLowPriorityFor(X) }.result)
 	private val editAttributeButton = ImageButton.contextual(Icons.edit.forButtonWithoutText(colorScheme.secondary)) { () =>
 		parentWindow.foreach { window =>
 			val attributeToEdit = content

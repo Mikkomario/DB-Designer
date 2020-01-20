@@ -16,7 +16,7 @@ object Class extends FromResultFactory[existing.Class] with Deprecatable
 	// IMPLEMENTED	------------------------------
 	
 	override def nonDeprecatedCondition = ClassInfo.nonDeprecatedCondition && Attribute.nonDeprecatedCondition &&
-		Link.nonDeprecatedCondition && notDeletedCondition
+		notDeletedCondition
 	
 	override def table = Tables.classTable
 	

@@ -42,7 +42,7 @@ object Tables
 	/**
 	 * @return Table that contains configurations for links between classes
 	 */
-	def linkConfiguration = apply("linkConfiguration")
+	def linkConfiguration = apply("link_configuration")
 	
 	
 	// OTHER	--------------------------

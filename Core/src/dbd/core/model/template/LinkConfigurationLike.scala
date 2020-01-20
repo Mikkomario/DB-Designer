@@ -10,10 +10,6 @@ import dbd.core.model.enumeration.LinkType
 trait LinkConfigurationLike
 {
 	/**
-	 * @return Name of this link
-	 */
-	def name: String
-	/**
 	 * @return Type of this link
 	 */
 	def linkType: LinkType

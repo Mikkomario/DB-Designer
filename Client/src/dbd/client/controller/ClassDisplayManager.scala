@@ -1,8 +1,9 @@
 package dbd.client.controller
 
+import dbd.client.model.{DisplayedClass, DisplayedLink}
 import utopia.flow.util.CollectionExtensions._
 import dbd.core.database
-import dbd.core.model.existing.{Attribute, Class}
+import dbd.core.model.existing.{Attribute, Class, Link}
 import dbd.core.model.partial.{NewAttribute, NewAttributeConfiguration, NewClass, NewClassInfo}
 import dbd.core.util.Log
 import utopia.flow.datastructure.mutable.PointerWithEvents
@@ -17,15 +18,40 @@ import scala.util.{Failure, Success}
  * @author Mikko Hilpinen
  * @since 18.1.2020, v0.1
  */
-class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector())(implicit exc: ExecutionContext)
-	extends RefreshableWithPointer[Vector[(Class, Boolean)]]
+class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDisplay: Vector[Link] = Vector())
+						 (implicit exc: ExecutionContext)
+	extends RefreshableWithPointer[Vector[DisplayedClass]]
 {
 	// ATTRIBUTES	-----------------------
 	
-	override val contentPointer = new PointerWithEvents(classesToDisplay.map { _ -> false })
+	override val contentPointer = new PointerWithEvents(pairData(classesToDisplay, linksToDisplay))
 	
 	
 	// OTHER	---------------------------
+	
+	/**
+	 * Moves the opened class next to the triggering class and expands it
+	 * @param triggerClassId Id of triggering class
+	 * @param openedClassId Id of opened class
+	 */
+	def openLink(triggerClassId: Int, openedClassId: Int) =
+	{
+		// Moves the opened class next to the triggering class and expands it
+		val cachedClasses = content
+		cachedClasses.indexWhereOption { _.classId == triggerClassId }.foreach { triggerIndex =>
+			cachedClasses.indexWhereOption { _.classId == openedClassId }.foreach { openedIndex =>
+				val firstCutIndex = triggerIndex min openedIndex
+				val secondCutIndex = triggerIndex max openedIndex
+				val beginning = cachedClasses.take(firstCutIndex)
+				val end = cachedClasses.slice(firstCutIndex + 1, secondCutIndex) ++ cachedClasses.drop(secondCutIndex + 1)
+				
+				val triggerClass = cachedClasses(triggerIndex)
+				val openedClass = cachedClasses(openedIndex).withExpandState(true)
+				
+				content = (beginning :+ triggerClass :+ openedClass) ++ end
+			}
+		}
+	}
 	
 	/**
 	 * Adds a completely new class
@@ -50,36 +76,37 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector())(implicit e
 		{
 			case Success(wasDeleted) =>
 				if (wasDeleted)
-					content = content.filterNot { _._1.id == classToDelete.id }
+					content = content.filterNot { _.classData.id == classToDelete.id }
 			case Failure(error) => Log(error, s"Failed to delete class $classToDelete")
 		}
 	}
 	
 	/**
 	 * Expands or shrinks a class (affects display)
-	 * @param targetClass Targeted class
+	 * @param targetClassId Id of Targeted class
 	 * @param newExpandState Whether the class should be expanded (true) or shrinked (false)
 	 */
-	def changeClassExpand(targetClass: Class, newExpandState: Boolean): Unit =
+	def changeClassExpand(targetClassId: Int, newExpandState: Boolean): Unit =
 	{
 		val cachedContent = content
-		cachedContent.indexWhereOption { _._1.id == targetClass.id }.foreach { index =>
-			if (cachedContent(index)._2 != newExpandState)
-				content = cachedContent.updated(index, targetClass -> newExpandState)
+		cachedContent.indexWhereOption { _.classData.id == targetClassId }.foreach { index =>
+			val existingVersion = cachedContent(index)
+			if (existingVersion.isExpanded != newExpandState)
+				content = cachedContent.updated(index, existingVersion.withExpandState(newExpandState))
 		}
 	}
 	
 	/**
 	 * Expands specified class in view
-	 * @param targetClass Class to expand
+	 * @param targetClassId Id of Targeted class
 	 */
-	def expandClass(targetClass: Class) = changeClassExpand(targetClass, newExpandState = true)
+	def expandClass(targetClassId: Int) = changeClassExpand(targetClassId, newExpandState = true)
 	
 	/**
 	 * Shrinks specified class in view
-	 * @param targetClass Class to shrink
+	 * @param targetClassId Id of Targeted class
 	 */
-	def shrinkClass(targetClass: Class) = changeClassExpand(targetClass, newExpandState = false)
+	def shrinkClass(targetClassId: Int) = changeClassExpand(targetClassId, newExpandState = false)
 	
 	/**
 	 * Edits specified class' info
@@ -126,8 +153,8 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector())(implicit e
 	private def editAttributes[R](classId: Int)(databaseAction: Connection => R)(modifyClass: (Class, R) => Class) =
 	{
 		// Finds targeted class, performs database modification + class modification and finally updates class in displays
-		content.find { _._1.id == classId }.foreach { case (classToEdit, _) => editClass { connection =>
-			modifyClass(classToEdit, databaseAction(connection)) } }
+		content.find { _.classId == classId }.foreach { classToEdit => editClass { connection =>
+			modifyClass(classToEdit.classData, databaseAction(connection)) } }
 	}
 	
 	private def editClass(databaseAction: Connection => Class) =
@@ -137,13 +164,25 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector())(implicit e
 			case Success(editedClass) =>
 				// Either replaces an existing class or adds a new one
 				val cachedContent = content
-				cachedContent.indexWhereOption { _._1.id == editedClass.id } match
+				cachedContent.indexWhereOption { _.classId == editedClass.id } match
 				{
 					case Some(editedIndex) =>
-						content = cachedContent.updated(editedIndex, editedClass -> cachedContent(editedIndex)._2)
-					case None => content :+= editedClass -> true
+						content = cachedContent.updated(editedIndex, cachedContent(editedIndex).withClass(editedClass))
+					case None => content :+= DisplayedClass(editedClass, isExpanded = true)
 				}
 			case Failure(error) => Log(error, "Failed to modify a class")
 		}
+	}
+	
+	private def pairData(classData: Vector[Class], linkData: Vector[Link]) =
+	{
+		classData.map { c =>
+			val fromLinks = linkData.filter { _.originClassId == c.id }.flatMap { l => classData.find {
+				_.id == l.targetClassId }.map { otherClass => DisplayedLink(l, otherClass) } }
+			val toLinks = linkData.filter { _.targetClassId == c.id }.flatMap { l => classData.find {
+				_.id == l.originClassId }.map { otherClass => DisplayedLink(l, otherClass) } }
+			
+			DisplayedClass(c, fromLinks ++ toLinks)
+		}.sortBy { _.name }
 	}
 }
