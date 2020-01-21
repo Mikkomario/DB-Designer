@@ -94,8 +94,14 @@ abstract class InputDialog[A](implicit colorScheme: ColorScheme, baseCB: Compone
 					else
 						row.field.alignedToSide(Direction2D.Left)
 				}
-				stack += SegmentedRow.partOfGroupWithItems(group, Vector(TextLabel.contextual(row.fieldName), fieldInRow),
-					margin = margins.medium.downscaling)
+				val rowComponent = SegmentedRow.partOfGroupWithItems(group, Vector(TextLabel.contextual(row.fieldName),
+					fieldInRow), margin = margins.medium.downscaling)
+				// Some rows have dependent visibility state
+				row.rowVisibilityPointer.foreach { pointer =>
+					rowComponent.isVisible = pointer.value
+					pointer.addListener { e => rowComponent.isVisible = e.newValue }
+				}
+				stack += rowComponent
 			}
 		}
 	}

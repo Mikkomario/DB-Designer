@@ -10,12 +10,15 @@ import dbd.core.model.template.LinkConfigurationLike
  * @since 19.1.2020, v0.1
  */
 case class NewLinkConfiguration(linkType: LinkType, originClassId: Int, targetClassId: Int,
-								isOwned: Boolean = false) extends LinkConfigurationLike
+								nameInOrigin: Option[String] = None, nameInTarget: Option[String] = None,
+								isOwned: Boolean = false, mappingKeyAttributeId: Option[Int] = None)
+	extends LinkConfigurationLike
 {
 	/**
 	 * @param id A new id for this model
 	 * @param linkId The id of the described link
 	 * @return A new model with id data included
 	 */
-	def withId(id: Int, linkId: Int) = LinkConfiguration(id, linkId, linkType, originClassId, targetClassId, isOwned)
+	def withId(id: Int, linkId: Int) = LinkConfiguration(id, linkId, linkType, originClassId, targetClassId,
+		nameInOrigin, nameInTarget, isOwned, mappingKeyAttributeId)
 }

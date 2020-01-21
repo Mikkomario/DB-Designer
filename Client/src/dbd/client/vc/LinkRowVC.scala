@@ -26,7 +26,7 @@ class LinkRowVC(initialClassId: Int, initialLink: DisplayedLink, classManager: C
 	
 	private val buttonColor = colorScheme.secondary
 	private val linkButton = ImageAndTextButton.contextual(iconForLinkType,
-		initialLink.otherClass.name.noLanguageLocalizationSkipped){ () => classManager.openLink(classId,
+		initialLink.displayName.noLanguageLocalizationSkipped){ () => classManager.openLink(classId,
 		displayedLink.otherClass.id) }(baseCB.withColors(buttonColor).result)
 	
 	
@@ -48,7 +48,7 @@ class LinkRowVC(initialClassId: Int, initialLink: DisplayedLink, classManager: C
 	{
 		_content = newContent
 		linkButton.images = iconForLinkType
-		linkButton.text = displayedLink.otherClass.name.noLanguageLocalizationSkipped
+		linkButton.text = displayedLink.displayName.noLanguageLocalizationSkipped
 	}
 	
 	override def content = _content

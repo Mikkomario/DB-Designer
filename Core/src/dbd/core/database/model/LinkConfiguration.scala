@@ -25,7 +25,8 @@ object LinkConfiguration extends StorableFactory[existing.LinkConfiguration] wit
 		LinkType.forId(valid("linkType").getInt).toTry(
 			new NoSuchTypeException(s"No link type for id ${valid("linkType")}")).map { linkType =>
 			existing.LinkConfiguration(valid("id").getInt, valid("linkId").getInt, linkType,
-				valid("originClassId").getInt, valid("targetClassId").getInt, valid("isOwned").getBoolean,
+				valid("originClassId").getInt, valid("targetClassId").getInt, valid("nameInOrigin").string,
+				valid("nameInTarget").string, valid("isOwned").getBoolean, valid("mappingAttributeId").int,
 				valid("deprecatedAfter").instant) }
 	}
 	
@@ -55,7 +56,8 @@ object LinkConfiguration extends StorableFactory[existing.LinkConfiguration] wit
 	 * @return A model ready to be inserted to DB
 	 */
 	def forInsert(linkId: Int, newData: NewLinkConfiguration) = apply(None, Some(linkId),
-		Some(newData.linkType), Some(newData.originClassId), Some(newData.targetClassId), Some(newData.isOwned))
+		Some(newData.linkType), Some(newData.originClassId), Some(newData.targetClassId), newData.nameInOrigin,
+		newData.nameInTarget, Some(newData.isOwned), newData.mappingKeyAttributeId)
 }
 
 /**
@@ -65,12 +67,15 @@ object LinkConfiguration extends StorableFactory[existing.LinkConfiguration] wit
  */
 case class LinkConfiguration(id: Option[Int] = None, linkId: Option[Int] = None, linkType: Option[LinkType] = None,
 							 originClassId: Option[Int] = None, targetClassId: Option[Int] = None,
-							 isOwned: Option[Boolean] = None, deprecatedAfter: Option[Instant] = None)
+							 nameInOrigin: Option[String] = None, nameInTarget: Option[String] = None,
+							 isOwned: Option[Boolean] = None, mappingAttributeId: Option[Int] = None,
+							 deprecatedAfter: Option[Instant] = None)
 	extends StorableWithFactory[existing.LinkConfiguration]
 {
 	override def factory = LinkConfiguration
 	
 	override def valueProperties = Vector("id" -> id, "linkId" -> linkId,
 		"linkType" -> linkType.map { _.id }, "originClassId" -> originClassId, "targetClassId" -> targetClassId,
-		"isOwned" -> isOwned, "deprecatedAfter" -> deprecatedAfter)
+		"nameInOrigin" -> nameInOrigin, "nameInTarget" -> nameInTarget, "isOwned" -> isOwned,
+		"mappingAttributeId" -> mappingAttributeId, "deprecatedAfter" -> deprecatedAfter)
 }

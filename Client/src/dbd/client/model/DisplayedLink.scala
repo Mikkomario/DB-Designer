@@ -12,6 +12,24 @@ import dbd.core.model.template.LinkLike
  */
 case class DisplayedLink(link: Link, otherClass: Class) extends LinkLike
 {
+	// COMPUTED	------------------------
+	
+	/**
+	 * @return The name that should be displayed on this link
+	 */
+	def displayName =
+	{
+		{
+			if (originClassId == otherClass.id)
+				configuration.nameInTarget
+			else if (targetClassId == otherClass.id)
+				configuration.nameInOrigin
+			else
+				None
+		}.getOrElse(otherClass.name)
+	}
+	
+	
 	// IMPLEMENTED	--------------------
 	
 	override def configuration = link.configuration

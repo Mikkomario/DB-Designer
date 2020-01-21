@@ -31,6 +31,15 @@ sealed trait LinkType
 	 * @return Whether this link type utilizes deprecation of some description
 	 */
 	def usesDeprecation: Boolean
+	/**
+	 * @return Whether this link utilizes attributes as map keys
+	 */
+	def usesMapping: Boolean
+	/**
+	 * @return The english name of this link type. Contains two %s placeholders for class names where the first
+	 *         passed class is origin and second one is target.
+	 */
+	def nameWithClassSlots: String
 	
 	
 	// COMPUTED	--------------------
@@ -50,7 +59,7 @@ object LinkType
 	/**
 	 * A common trait for links that have one origin and multiple target items
 	 */
-	sealed trait OneToManyType extends LinkType
+	sealed trait ManyToOneType extends LinkType
 	{
 		override def category = ManyToOne
 		override def isOwnable = true
@@ -64,41 +73,52 @@ object LinkType
 	{
 		override def category = OneToOne
 		override def isOwnable = true
+		override def usesMapping = false
 	}
 	
 	/**
 	 * This link type allows one to link multiple targets to one origin without any added features
 	 */
-	case object BasicOneToMany extends OneToManyType
+	case object BasicManyToOne extends ManyToOneType
 	{
 		override def id = 1
 		override def usesDeprecation = false
+		override def usesMapping = false
+		override def nameWithClassSlots = "Many %s to one %s"
 	}
 	/**
 	 * This link type allows one to link multiple targets to one origin. The targets support deprecation.
 	 */
-	case object DeprecatingOneToMany extends OneToManyType
+	case object DeprecatingManyToOne extends ManyToOneType
 	{
 		override def id = 2
 		override def usesDeprecation = true
+		override def usesMapping = false
+		override def nameWithClassSlots = "Many versioned %s to a single %s"
 	}
 	/**
 	 * This link type allows one to link a single active item per key to one origin. Previous map values will be
 	 * deprecated as new ones are added.
 	 */
-	case object DeprecatingMap extends OneToManyType
+	case object DeprecatingMap extends ManyToOneType
 	{
 		override def id = 3
 		override def usesDeprecation = true
+		override def usesMapping = true
+		
+		override def nameWithClassSlots = "A single versioned %s per key to one %s"
 	}
 	/**
 	 * This link type allows one to link multiple items to a single link origin. The items must be unique by a
 	 * search key, however
 	 */
-	case object EnforcedMap extends OneToManyType
+	case object EnforcedMap extends ManyToOneType
 	{
 		override def id = 4
 		override def usesDeprecation = false
+		override def usesMapping = true
+		
+		override def nameWithClassSlots = "A single %s per key to one %s"
 	}
 	
 	/**
@@ -109,6 +129,8 @@ object LinkType
 		override def id = 5
 		override def isFixedLinkOrigin = false
 		override def usesDeprecation = false
+		
+		override def nameWithClassSlots = "One %s to one %s"
 	}
 	/**
 	 * This link type allows one to link a changing target item to a single origin item. Whenever a new target item
@@ -119,6 +141,8 @@ object LinkType
 		override def id = 6
 		override def isFixedLinkOrigin = true
 		override def usesDeprecation = true
+		
+		override def nameWithClassSlots = "One %s to one %s with versions"
 	}
 	
 	/**
@@ -131,6 +155,9 @@ object LinkType
 		override def isOwnable = false
 		override def isFixedLinkOrigin = true
 		override def usesDeprecation = false
+		override def usesMapping = false
+		
+		override def nameWithClassSlots = "Many %s to many %s"
 	}
 	
 	
@@ -139,7 +166,7 @@ object LinkType
 	/**
 	 * All currently known link types
 	 */
-	val values: Vector[LinkType] = Vector(BasicOneToMany, DeprecatingOneToMany, DeprecatingMap, EnforcedMap,
+	val values: Vector[LinkType] = Vector(BasicManyToOne, DeprecatingManyToOne, DeprecatingMap, EnforcedMap,
 		EnforcedOneToOne, DeprecatingOneToOne, BasicManyToMany)
 	
 	/**
