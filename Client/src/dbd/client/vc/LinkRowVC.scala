@@ -24,7 +24,7 @@ class LinkRowVC(initialClassId: Int, initialLink: DisplayedLink, classManager: C
 	
 	private var _content = initialClassId -> initialLink
 	
-	private val buttonColor = colorScheme.secondary
+	private val buttonColor = colorScheme.primary
 	private val linkButton = ImageAndTextButton.contextual(iconForLinkType,
 		initialLink.displayName.noLanguageLocalizationSkipped){ () => classManager.openLink(classId,
 		displayedLink.otherClass.id) }(baseCB.withColors(buttonColor).result)

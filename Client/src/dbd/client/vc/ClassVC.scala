@@ -69,7 +69,7 @@ class ClassVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)
 	}.framed(margins.small.downscaling x margins.small.any, colorScheme.primary)
 	
 	private val attributeSection = new AttributesVC(initialClass.classId, orderedAttributes(initialClass.classData), classManager)
-	private val linksSection = new LinksVC(initialClass.classId, orderedLinks(initialClass), classManager)
+	private val linksSection = new LinksVC(initialClass, classManager)
 	private val classContentView = Stack.buildColumnWithContext() { stack =>
 		stack += attributeSection
 		stack += linksSection
@@ -105,7 +105,7 @@ class ClassVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)
 		classContentView.isVisible = newContent.isExpanded
 		classNameLabel.content = newContent.classData
 		attributeSection.content = newContent.classId -> orderedAttributes(newContent.classData)
-		linksSection.content = newContent.classId -> orderedLinks(newContent)
+		linksSection.content = newContent
 	}
 	
 	override def content = _content
@@ -115,6 +115,4 @@ class ClassVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)
 	
 	private def orderedAttributes(c: Class) = c.attributes.sortedWith(Ordering.by { !_.isSearchKey },
 		Ordering.by { _.isOptional }, Ordering.by { _.name })
-	
-	private def orderedLinks(c: DisplayedClass) = c.links.sortBy { _.otherClass.name }
 }

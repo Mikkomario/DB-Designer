@@ -1,6 +1,6 @@
 package dbd.client.model
 
-import dbd.core.model.existing.{Attribute, Class, ClassInfo}
+import dbd.core.model.existing.{Attribute, Class, ClassInfo, Link}
 import dbd.core.model.template.ClassLike
 
 /**
@@ -51,4 +51,10 @@ case class DisplayedClass(classData: Class, links: Vector[DisplayedLink] = Vecto
 	 * @return A copy of this class display without any links to specified class
 	 */
 	def withoutLinksToClassWithId(classId: Int) = copy(links = links.filterNot { _.otherClass.id == classId })
+	
+	/**
+	 * @param link A link to attach to this class
+	 * @return A copy of this class with specified link attached
+	 */
+	def withLinkAdded(link: DisplayedLink) = copy(links = links :+ link)
 }

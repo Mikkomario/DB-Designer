@@ -4,7 +4,7 @@ import dbd.client.model.{DisplayedClass, DisplayedLink}
 import utopia.flow.util.CollectionExtensions._
 import dbd.core.database
 import dbd.core.model.existing.{Attribute, Class, Link}
-import dbd.core.model.partial.{NewAttribute, NewAttributeConfiguration, NewClass, NewClassInfo}
+import dbd.core.model.partial.{NewAttribute, NewAttributeConfiguration, NewClass, NewClassInfo, NewLinkConfiguration}
 import dbd.core.util.Log
 import utopia.flow.datastructure.mutable.PointerWithEvents
 import utopia.reflection.component.RefreshableWithPointer
@@ -28,6 +28,12 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 	
 	
 	// OTHER	---------------------------
+	
+	/**
+	 * @param linkingClassId Id of the linking class
+	 * @return A list of classes that can be linked with specified class
+	 */
+	def linkableClasses(linkingClassId: Int) = content.filter { _.classId != linkingClassId }.map { _.classData }
 	
 	/**
 	 * Moves the opened class next to the triggering class and expands it
@@ -149,6 +155,33 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 		// Deletes attribute from DB, then from this class
 		editAttributes(attribute.classId) { implicit connection =>
 			database.Class(attribute.classId).attribute(attribute.id).markDeleted() } { (c, _) => c - attribute }
+	}
+	
+	/**
+	 * Adds an entirely new link between two classes
+	 * @param link A new link to add
+	 */
+	def addNewLink(link: NewLinkConfiguration) =
+	{
+		// Inserts the new link to database, then updates displayed classes
+		ConnectionPool.tryWith { implicit connection =>
+			database.Links.insert(link)
+		} match
+		{
+			case Success(newLink) =>
+				val cachedContent = content
+				cachedContent.indexWhereOption { _.classId == newLink.originClassId }.foreach { originIndex =>
+					cachedContent.indexWhereOption { _.classId == newLink.targetClassId }.foreach { targetIndex =>
+						val originClass = cachedContent(originIndex)
+						val targetClass = cachedContent(targetIndex)
+						// Updates both origin and target class displays
+						content = cachedContent.updated(originIndex,
+							originClass.withLinkAdded(DisplayedLink(newLink, targetClass.classData))).updated(
+							targetIndex, targetClass.withLinkAdded(DisplayedLink(newLink, originClass.classData)))
+					}
+				}
+			case Failure(error) => Log(error, s"Failed to insert link: $link")
+		}
 	}
 	
 	private def editAttributes[R](classId: Int)(databaseAction: Connection => R)(modifyClass: (Class, R) => Class) =
