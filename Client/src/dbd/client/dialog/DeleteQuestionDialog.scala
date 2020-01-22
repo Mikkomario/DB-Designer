@@ -22,8 +22,8 @@ object DeleteQuestionDialog
 	 */
 	def personalized(deletedItemType: LocalizedString, deletedItemName: LocalizedString)
 					(implicit baseContext: ComponentContext, colorScheme: ColorScheme, localizer: Localizer) =
-		new DeleteQuestionDialog("Delete %s '%s'".localized.interpolate(deletedItemType, deletedItemName),
-			"Are you sure you wish to permanently delete %s '%s'?".localized.interpolate(deletedItemType, deletedItemName))
+		new DeleteQuestionDialog("Delete %s '%s'".autoLocalized.interpolate(deletedItemType, deletedItemName),
+			"Are you sure you wish to permanently delete %s '%s'?".autoLocalized.interpolate(deletedItemType, deletedItemName))
 	
 	/**
 	 * Creates a new dialog that checks whether the user wishes to delete an attribute
@@ -38,7 +38,7 @@ object DeleteQuestionDialog
 		DeleteQuestionDialog.personalized("attribute", attributeName.noLanguageLocalizationSkipped)
 	
 	/**
-	 * Creates a new dialog that checks whether the user wishes to delete an attribute
+	 * Creates a new dialog that checks whether the user wishes to delete a class
 	 * @param className Name of the class to delete
 	 * @param baseContext Component creation context (implicit)
 	 * @param localizer Localizer used (implicit)
@@ -48,6 +48,18 @@ object DeleteQuestionDialog
 	def forClass(className: String)
 				(implicit baseContext: ComponentContext, localizer: Localizer, colorScheme: ColorScheme) =
 		DeleteQuestionDialog.personalized("class", className.noLanguageLocalizationSkipped)
+	
+	/**
+	 * Creates a new dialog that checks whether the user wishes to delete a link
+	 * @param linkName Name of the link to delete
+	 * @param baseContext Component creation context (implicit)
+	 * @param localizer Localizer used (implicit)
+	 * @param colorScheme Color scheme (implicit)
+	 * @return A new dialog
+	 */
+	def forLink(linkName: String)
+				(implicit baseContext: ComponentContext, localizer: Localizer, colorScheme: ColorScheme) =
+		DeleteQuestionDialog.personalized("link", linkName.noLanguageLocalizationSkipped)
 }
 
 /**

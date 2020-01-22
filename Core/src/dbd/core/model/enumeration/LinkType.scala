@@ -106,7 +106,7 @@ object LinkType
 		override def usesDeprecation = true
 		override def usesMapping = true
 		
-		override def nameWithClassSlots = "A single versioned %s per key to one %s"
+		override def nameWithClassSlots = "A single %s version per key to one %s"
 	}
 	/**
 	 * This link type allows one to link multiple items to a single link origin. The items must be unique by a
@@ -142,7 +142,7 @@ object LinkType
 		override def isFixedLinkOrigin = true
 		override def usesDeprecation = true
 		
-		override def nameWithClassSlots = "One %s to one %s with versions"
+		override def nameWithClassSlots = "One %s version to one %s"
 	}
 	
 	/**

@@ -2,7 +2,7 @@ package dbd.client.vc
 
 import utopia.reflection.localization.LocalString._
 import dbd.client.controller.{ClassDisplayManager, Icons}
-import dbd.client.dialog.EditLinkDialog
+import dbd.client.dialog.{DeleteQuestionDialog, EditLinkDialog}
 import dbd.client.model.DisplayedLink
 import dbd.core.model.enumeration.LinkTypeCategory.{ManyToMany, ManyToOne, OneToOne}
 import dbd.core.model.existing.Class
@@ -48,6 +48,14 @@ class LinkRowVC(initialClass: Class, initialLink: DisplayedLink, classManager: C
 				new EditLinkDialog(Some(linkToEdit.configuration), displayedClass, classManager.linkableClasses(classId))
 					.display(window).foreach { _.foreach { newLinkVersion => classManager.editLink(linkToEdit.link, newLinkVersion)
 				} } }
+		}
+		// Adds delete link button
+		row += ImageButton.contextual(Icons.close.forButtonWithoutText(colorScheme.secondary)) { () =>
+			parentWindow.foreach { window =>
+				val linkToDelete = displayedLink
+				DeleteQuestionDialog.forLink(linkToDelete.displayName).display(window).foreach {
+					if (_) classManager.deleteLink(linkToDelete.link) }
+			}
 		}
 	}
 	

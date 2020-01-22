@@ -187,6 +187,11 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 		}
 	}
 	
+	/**
+	 * Edits an existing link
+	 * @param link Targeted link
+	 * @param newConfiguration A new configuration for the specified link
+	 */
 	def editLink(link: Link, newConfiguration: NewLinkConfiguration) =
 	{
 		ConnectionPool.tryWith { implicit connection =>
@@ -199,6 +204,21 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 				content = displaysWithLinkAdded(withoutLink, link.withConfiguration(updatedConfiguration)).getOrElse(withoutLink)
 			
 			case Failure(error) => Log(error, s"Failed to edit link $link with $newConfiguration")
+		}
+	}
+	
+	/**
+	 * Deletes an existing link
+	 * @param linkToDelete The link to delete permanently
+	 */
+	def deleteLink(linkToDelete: Link) =
+	{
+		ConnectionPool.tryWith { implicit connection =>
+			database.Link(linkToDelete.id).markDeleted()
+		} match
+		{
+			case Success(wasDeleted) => if (wasDeleted) content = currentDisplaysWithoutLink(linkToDelete)
+			case Failure(error) => Log(error, s"Failed to delete link $linkToDelete")
 		}
 	}
 	
