@@ -4,6 +4,7 @@ import dbd.client.controller.{ClassDisplayManager, Icons}
 import dbd.client.dialog.EditLinkDialog
 import utopia.reflection.shape.LengthExtensions._
 import dbd.client.model.{DisplayedClass, DisplayedLink}
+import dbd.core.model.existing.Class
 import utopia.genesis.shape.shape2D.Direction2D
 import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Refreshable
@@ -35,8 +36,8 @@ class LinksVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)
 	private var _content = initialClass
 	
 	private val buttonsStack = Stack.column[LinkRowVC](margins.small.downscaling)
-	private val manager = new ContainerContentManager[(Int, DisplayedLink), Stack[LinkRowVC], LinkRowVC](buttonsStack)({
-		case (id, link) => new LinkRowVC(id, link, classManager) })
+	private val manager = new ContainerContentManager[(Class, DisplayedLink), Stack[LinkRowVC], LinkRowVC](buttonsStack)({
+		case (c, link) => new LinkRowVC(c, link, classManager) })
 	
 	private val view = Stack.buildColumnWithContext(isRelated = true) { mainStack =>
 		mainStack += GroupHeader("Links")
@@ -55,7 +56,7 @@ class LinksVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)
 	
 	// INITIAL CODE	------------------------
 	
-	manager.content = initialClass.links.map { initialClass.classId -> _ }
+	manager.content = initialClass.links.map { initialClass.classData -> _ }
 	
 	
 	// IMPLEMENTED	------------------------
@@ -65,7 +66,7 @@ class LinksVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)
 	override def content_=(newContent: DisplayedClass) =
 	{
 		_content = newContent
-		manager.content = newContent.links.map { newContent.classId -> _ }
+		manager.content = newContent.links.map { newContent.classData -> _ }
 	}
 	
 	override def content = _content

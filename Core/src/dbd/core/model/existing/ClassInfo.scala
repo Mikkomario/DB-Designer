@@ -10,3 +10,6 @@ import dbd.core.model.template.ClassInfoLike
  * @param isMutable Whether the class attributes are mutable
  */
 case class ClassInfo(id: Int, classId: Int, name: String, isMutable: Boolean) extends ClassInfoLike
+{
+	override def toString = s"$name${if (isMutable) " (mutable)" else ""}"
+}

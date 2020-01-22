@@ -13,6 +13,8 @@ import dbd.core.model.template.AttributeLike
 case class Attribute(id: Int, classId: Int, configuration: AttributeConfiguration, deletedAfter: Option[Instant])
 	extends AttributeLike[AttributeConfiguration]
 {
+	override def toString = configuration.toString
+	
 	/**
 	 * @param newConfiguration A new configuration for this attribute
 	 * @return A copy of this attribute with specified configuration

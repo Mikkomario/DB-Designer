@@ -3,6 +3,8 @@ package dbd.core.model.existing
 import dbd.core.model.enumeration.AttributeType
 import dbd.core.model.template.AttributeConfigurationLike
 
+import scala.collection.immutable.VectorBuilder
+
 /**
  * Specifies a configuration (name, type etc.) that should be used for an attribute
  * @author Mikko Hilpinen
@@ -16,3 +18,15 @@ import dbd.core.model.template.AttributeConfigurationLike
  */
 case class AttributeConfiguration(id: Int, attributeId: Int, name: String, dataType: AttributeType,
 								  isOptional: Boolean, isSearchKey: Boolean) extends AttributeConfigurationLike
+{
+	override def toString =
+	{
+		val extrasBuilder = new VectorBuilder[String]
+		if (isOptional)
+			extrasBuilder += "optional"
+		if (isSearchKey)
+			extrasBuilder += "search key"
+		val extras = extrasBuilder.result()
+		s"$name ($dataType)${if (extras.isEmpty) "" else s"(${extras.mkString(", ")})"}"
+	}
+}

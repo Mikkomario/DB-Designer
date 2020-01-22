@@ -31,6 +31,8 @@ case class DisplayedClass(classData: Class, links: Vector[DisplayedLink] = Vecto
 	override protected def makeCopy(info: ClassInfo, attributes: Vector[Attribute]) =
 		copy(classData = classData.copy(info = info, attributes = attributes))
 	
+	override def toString = s"$classData, links: [${links.mkString(", ")}]"
+	
 	
 	// OTHER	--------------------------
 	
@@ -57,4 +59,17 @@ case class DisplayedClass(classData: Class, links: Vector[DisplayedLink] = Vecto
 	 * @return A copy of this class with specified link attached
 	 */
 	def withLinkAdded(link: DisplayedLink) = copy(links = links :+ link)
+	
+	/**
+	 * @param link Targeted link
+	 * @return a copy of this class without specified link
+	 */
+	def withoutLink(link: Link) =
+	{
+		val filteredLinks = links.filterNot { _.link.id == link.id }
+		if (filteredLinks.size == links.size)
+			this
+		else
+			copy(links = filteredLinks)
+	}
 }

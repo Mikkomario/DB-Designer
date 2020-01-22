@@ -182,19 +182,23 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 			database.Links.insert(link)
 		} match
 		{
-			case Success(newLink) =>
-				val cachedContent = content
-				cachedContent.indexWhereOption { _.classId == newLink.originClassId }.foreach { originIndex =>
-					cachedContent.indexWhereOption { _.classId == newLink.targetClassId }.foreach { targetIndex =>
-						val originClass = cachedContent(originIndex)
-						val targetClass = cachedContent(targetIndex)
-						// Updates both origin and target class displays
-						content = cachedContent.updated(originIndex,
-							originClass.withLinkAdded(DisplayedLink(newLink, targetClass.classData))).updated(
-							targetIndex, targetClass.withLinkAdded(DisplayedLink(newLink, originClass.classData)))
-					}
-				}
+			case Success(newLink) => displaysWithLinkAdded(content, newLink).foreach { content = _ }
 			case Failure(error) => Log(error, s"Failed to insert link: $link")
+		}
+	}
+	
+	def editLink(link: Link, newConfiguration: NewLinkConfiguration) =
+	{
+		ConnectionPool.tryWith { implicit connection =>
+			database.Link(link.id).configuration.update(newConfiguration)
+		} match
+		{
+			case Success(updatedConfiguration) =>
+				// Removes the old link, then adds the new one
+				val withoutLink = currentDisplaysWithoutLink(link)
+				content = displaysWithLinkAdded(withoutLink, link.withConfiguration(updatedConfiguration)).getOrElse(withoutLink)
+			
+			case Failure(error) => Log(error, s"Failed to edit link $link with $newConfiguration")
 		}
 	}
 	
@@ -232,5 +236,22 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 			
 			DisplayedClass(c, fromLinks ++ toLinks)
 		}.sortBy { _.name }
+	}
+	
+	private def currentDisplaysWithoutLink(link: Link) = content.map { _.withoutLink(link) }
+	
+	// Returns none if no change could be made
+	private def displaysWithLinkAdded(displays: Vector[DisplayedClass], newLink: Link) =
+	{
+		displays.indexWhereOption { _.classId == newLink.originClassId }.flatMap { originIndex =>
+			displays.indexWhereOption { _.classId == newLink.targetClassId }.map { targetIndex =>
+				val originClass = displays(originIndex)
+				val targetClass = displays(targetIndex)
+				// Updates both origin and target class displays
+				displays.updated(originIndex,
+					originClass.withLinkAdded(DisplayedLink(newLink, targetClass.classData))).updated(
+					targetIndex, targetClass.withLinkAdded(DisplayedLink(newLink, originClass.classData)))
+			}
+		}
 	}
 }

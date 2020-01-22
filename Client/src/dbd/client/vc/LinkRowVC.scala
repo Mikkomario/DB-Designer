@@ -2,32 +2,54 @@ package dbd.client.vc
 
 import utopia.reflection.localization.LocalString._
 import dbd.client.controller.{ClassDisplayManager, Icons}
+import dbd.client.dialog.EditLinkDialog
 import dbd.client.model.DisplayedLink
 import dbd.core.model.enumeration.LinkTypeCategory.{ManyToMany, ManyToOne, OneToOne}
+import dbd.core.model.existing.Class
 import utopia.genesis.image.Image
 import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Refreshable
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
-import utopia.reflection.component.swing.button.{ButtonImageSet, ImageAndTextButton}
-import utopia.reflection.util.ComponentContextBuilder
+import utopia.reflection.component.swing.button.{ButtonImageSet, ImageAndTextButton, ImageButton}
+import utopia.reflection.container.swing.Stack
+import utopia.reflection.localization.Localizer
+import utopia.reflection.shape.Margins
+import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
+
+import scala.concurrent.ExecutionContext
 
 /**
  * Displays a link as a data row
  * @author Mikko Hilpinen
  * @since 20.1.2020, v0.1
  */
-class LinkRowVC(initialClassId: Int, initialLink: DisplayedLink, classManager: ClassDisplayManager)
-			   (implicit baseCB: ComponentContextBuilder, colorScheme: ColorScheme)
-	extends StackableAwtComponentWrapperWrapper with Refreshable[(Int, DisplayedLink)]
+// TODO: Get rid of passing default language code as a parameter to dialog
+class LinkRowVC(initialClass: Class, initialLink: DisplayedLink, classManager: ClassDisplayManager)
+			   (implicit baseCB: ComponentContextBuilder, colorScheme: ColorScheme, margins: Margins,
+				defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
+	extends StackableAwtComponentWrapperWrapper with Refreshable[(Class, DisplayedLink)]
 {
 	// ATTRIBUTES	------------------------
 	
-	private var _content = initialClassId -> initialLink
+	private implicit val baseContext: ComponentContext = baseCB.result
+	
+	private var _content = initialClass -> initialLink
 	
 	private val buttonColor = colorScheme.primary
 	private val linkButton = ImageAndTextButton.contextual(iconForLinkType,
 		initialLink.displayName.noLanguageLocalizationSkipped){ () => classManager.openLink(classId,
 		displayedLink.otherClass.id) }(baseCB.withColors(buttonColor).result)
+	private val view = Stack.buildRowWithContext(isRelated = true) { row =>
+		row += linkButton
+		// Adds link edit button
+		row += ImageButton.contextual(Icons.edit.forButtonWithoutText(colorScheme.secondary)) { () =>
+			parentWindow.foreach { window =>
+				val linkToEdit = displayedLink
+				new EditLinkDialog(Some(linkToEdit.configuration), displayedClass, classManager.linkableClasses(classId))
+					.display(window).foreach { _.foreach { newLinkVersion => classManager.editLink(linkToEdit.link, newLinkVersion)
+				} } }
+		}
+	}
 	
 	
 	// COMPUTED	----------------------------
@@ -37,14 +59,16 @@ class LinkRowVC(initialClassId: Int, initialLink: DisplayedLink, classManager: C
 	 */
 	def displayedLink = _content._2
 	
-	private def classId = _content._1
+	private def displayedClass = _content._1
+	
+	private def classId = displayedClass.id
 	
 	
 	// IMPLEMENTED	------------------------
 	
-	override protected def wrapped = linkButton
+	override protected def wrapped = view
 	
-	override def content_=(newContent: (Int, DisplayedLink)) =
+	override def content_=(newContent: (Class, DisplayedLink)) =
 	{
 		_content = newContent
 		linkButton.images = iconForLinkType

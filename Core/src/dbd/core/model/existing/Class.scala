@@ -17,6 +17,8 @@ import dbd.core.model.template.ClassLike
 case class Class(id: Int, info: ClassInfo, attributes: Vector[Attribute], deletedAfter: Option[Instant] = None)
 	extends ClassLike[ClassInfo, Attribute, Class]
 {
+	override def toString = s"Class $info: [${attributes.mkString(", ")}]"
+	
 	override protected def makeCopy(info: ClassInfo, attributes: Vector[Attribute]) = Class(id, info, attributes)
 	
 	/**

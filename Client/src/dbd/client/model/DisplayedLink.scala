@@ -33,4 +33,6 @@ case class DisplayedLink(link: Link, otherClass: Class) extends LinkLike
 	// IMPLEMENTED	--------------------
 	
 	override def configuration = link.configuration
+	
+	override def toString = displayName
 }
