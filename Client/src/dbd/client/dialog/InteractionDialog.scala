@@ -9,6 +9,7 @@ import utopia.reflection.component.swing.button.ImageAndTextButton
 import utopia.reflection.container.swing.Stack.AwtStackable
 import utopia.reflection.container.swing.window.Dialog
 import utopia.reflection.container.swing.Stack
+import utopia.reflection.container.swing.window.WindowResizePolicy.Program
 import utopia.reflection.localization.{LocalizedString, Localizer}
 import utopia.reflection.shape.Margins
 import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
@@ -78,7 +79,7 @@ trait InteractionDialog[A]
 		}.framed(margins.medium.any.square, colorScheme.gray.light)
 		
 		// Creates and sets up the dialog
-		val dialog = new Dialog(parentWindow, content, title)
+		val dialog = new Dialog(parentWindow, content, title, Program)
 		if (actualizedButtons.nonEmpty)
 			dialog.registerButtons(actualizedButtons.head._2, actualizedButtons.drop(1).map { _._2 }: _*)
 		dialog.setToCloseOnEsc()

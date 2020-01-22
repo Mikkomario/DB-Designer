@@ -13,7 +13,7 @@ import utopia.reflection.component.swing.button.ImageButton
 import utopia.reflection.component.swing.label.TextLabel
 import utopia.reflection.component.{ComponentLike, Focusable}
 import utopia.reflection.container.stack.StackLayout.Center
-import utopia.reflection.container.stack.segmented.SegmentedGroup
+import utopia.reflection.container.stack.segmented.{SegmentChangedListener, SegmentedGroup}
 import utopia.reflection.container.swing.window.Popup
 import utopia.reflection.container.swing.{SegmentedRow, Stack}
 import utopia.reflection.localization.LocalizedString
