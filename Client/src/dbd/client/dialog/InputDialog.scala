@@ -13,7 +13,7 @@ import utopia.reflection.component.swing.button.ImageButton
 import utopia.reflection.component.swing.label.TextLabel
 import utopia.reflection.component.{ComponentLike, Focusable}
 import utopia.reflection.container.stack.StackLayout.Center
-import utopia.reflection.container.stack.segmented.{SegmentChangedListener, SegmentedGroup}
+import utopia.reflection.container.stack.segmented.SegmentedGroup
 import utopia.reflection.container.swing.window.Popup
 import utopia.reflection.container.swing.{SegmentedRow, Stack}
 import utopia.reflection.localization.LocalizedString
@@ -66,7 +66,7 @@ abstract class InputDialog[A](implicit colorScheme: ColorScheme, baseCB: Compone
 						row += TextLabel.contextual(redirect._2)
 					}.framed(margins.medium.any.square, colors.background)
 					val popup = Popup(redirect._1, popupContent, context.actorHandler,
-						(cSize, pSize) => Point(cSize.width + margins.large, -(pSize.height - cSize.height) / 2),
+						(cSize, pSize) => Point(cSize.width + margins.medium, -(pSize.height - cSize.height) / 2),
 						hideWhenFocusLost = false)
 					dismissButton.registerAction(() => popup.close())
 					// Closes the pop-up if any key is pressed or after a delay

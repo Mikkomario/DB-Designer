@@ -4,6 +4,7 @@ import dbd.client.controller.{ClassDisplayManager, Icons}
 import dbd.client.dialog.EditLinkDialog
 import utopia.reflection.shape.LengthExtensions._
 import dbd.client.model.{DisplayedClass, DisplayedLink}
+import utopia.genesis.shape.shape2D.Direction2D
 import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Refreshable
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
@@ -38,6 +39,7 @@ class LinksVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)
 		case (id, link) => new LinkRowVC(id, link, classManager) })
 	
 	private val view = Stack.buildColumnWithContext(isRelated = true) { mainStack =>
+		mainStack += GroupHeader("Links")
 		mainStack += buttonsStack
 		val addButtonColor = colorScheme.secondary
 		// When add link button is pressed, displays a dialog and inserts newly created link to DB and displayed data
@@ -47,7 +49,7 @@ class LinksVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)
 				new EditLinkDialog(None, classToEdit.classData, classManager.linkableClasses(classToEdit.classId))
 					.display(window).foreach { _.foreach { newLink => classManager.addNewLink(newLink)
 			} } }
-		}
+		}.alignedToSide(Direction2D.Right, useLowPriorityLength = true)
 	}
 	
 	

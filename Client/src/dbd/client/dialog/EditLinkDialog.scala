@@ -34,7 +34,8 @@ class EditLinkDialog(linkToEdit: Option[LinkConfiguration], linkingClass: Class,
 		DisplayFunction.noLocalization[Class] { _.name }, linkableClasses)
 	private val linkOriginSelection = DropDown.contextual("Select link origin",
 		DisplayFunction.functionToDisplayFunction[Boolean] { isThisClass =>
-			if (isThisClass) linkingClass.name.noLanguageLocalizationSkipped else "Selected class" }, Vector(true, false))
+			if (isThisClass) linkingClass.name.noLanguageLocalizationSkipped else classSelection.value.map {
+				_.name.noLanguageLocalizationSkipped }.getOrElse("The other class") }, Vector(true, false))
 	private val linkTypeSelection = DropDown.contextual("Select link type",
 		DisplayFunction[LinkType] { _.nameWithClassSlots } { local =>
 			// Link type display depends from which class was selected as the link origin
@@ -63,6 +64,7 @@ class EditLinkDialog(linkToEdit: Option[LinkConfiguration], linkingClass: Class,
 	
 	// Whenever linked class is changed, link type selection look is updated as well
 	classSelection.addValueListener { _ =>
+		linkOriginSelection.updateDisplays()
 		linkTypeSelection.updateDisplays()
 		updateMapKeySelection()
 	}
@@ -127,7 +129,7 @@ class EditLinkDialog(linkToEdit: Option[LinkConfiguration], linkingClass: Class,
 							Right(None)
 						else
 							Right(Some(newLink))
-					case None => Left(linkTypeSelection, "Please specify the type of link")
+					case None => Left(linkTypeSelection, "Please specify the link type")
 				}
 			case None => Left(classSelection, "Please select the linked class")
 		}

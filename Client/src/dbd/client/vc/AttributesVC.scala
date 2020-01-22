@@ -40,6 +40,7 @@ class AttributesVC(initialClassId: Int, initialAttributes: Vector[Attribute] = V
 	private val attributesStack = Stack.column[AttributeRowVC](margin = margins.small.downscaling)
 	
 	private val view = Stack.buildColumnWithContext(isRelated = true) { mainStack =>
+		mainStack += GroupHeader("Attributes")
 		mainStack += attributesStack
 		mainStack += ImageAndTextButton.contextual(Icons.addBox.forLightButtons, "Add Attribute")(() =>
 		{

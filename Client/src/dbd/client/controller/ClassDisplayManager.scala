@@ -48,8 +48,22 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 			cachedClasses.indexWhereOption { _.classId == openedClassId }.foreach { openedIndex =>
 				val firstCutIndex = triggerIndex min openedIndex
 				val secondCutIndex = triggerIndex max openedIndex
-				val beginning = cachedClasses.take(firstCutIndex)
-				val end = cachedClasses.slice(firstCutIndex + 1, secondCutIndex) ++ cachedClasses.drop(secondCutIndex + 1)
+				val beginning =
+				{
+					val alwaysTake = cachedClasses.take(firstCutIndex)
+					if (triggerIndex > openedIndex)
+						alwaysTake ++ cachedClasses.slice(openedIndex + 1, triggerIndex)
+					else
+						alwaysTake
+				}
+				val end =
+				{
+					val alwaysTake = cachedClasses.drop(secondCutIndex + 1)
+					if (openedIndex > triggerIndex)
+						cachedClasses.slice(triggerIndex + 1, openedIndex) ++ alwaysTake
+					else
+						alwaysTake
+				}
 				
 				val triggerClass = cachedClasses(triggerIndex)
 				val openedClass = cachedClasses(openedIndex).withExpandState(true)
