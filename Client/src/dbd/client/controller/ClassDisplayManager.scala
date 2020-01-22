@@ -1,8 +1,10 @@
 package dbd.client.controller
 
-import dbd.client.model.{DisplayedClass, DisplayedLink}
+import dbd.client.model.{ChildLink, DisplayedClass, DisplayedLink}
 import utopia.flow.util.CollectionExtensions._
 import dbd.core.database
+import dbd.core.model.enumeration.LinkEndRole
+import dbd.core.model.enumeration.LinkEndRole.{Origin, Target}
 import dbd.core.model.existing.{Attribute, Class, Link}
 import dbd.core.model.partial.{NewAttribute, NewAttributeConfiguration, NewClass, NewClassInfo, NewLinkConfiguration}
 import dbd.core.util.Log
@@ -248,14 +250,44 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 	
 	private def pairData(classData: Vector[Class], linkData: Vector[Link]) =
 	{
-		classData.map { c =>
+		val paired = classData.map { c =>
 			val fromLinks = linkData.filter { _.originClassId == c.id }.flatMap { l => classData.find {
 				_.id == l.targetClassId }.map { otherClass => DisplayedLink(l, otherClass) } }
 			val toLinks = linkData.filter { _.targetClassId == c.id }.flatMap { l => classData.find {
 				_.id == l.originClassId }.map { otherClass => DisplayedLink(l, otherClass) } }
 			
 			DisplayedClass(c, fromLinks ++ toLinks)
-		}.sortBy { _.name }
+		}
+		groupIntoHierarchies(paired).sortBy { _.name }
+	}
+	
+	// Returns grouped classes + child classes that couldn't be attached to any parent
+	private def groupIntoHierarchies(classes: Vector[DisplayedClass]): Vector[DisplayedClass] =
+	{
+		// Finds all unconnected child class ids (maps to parent)
+		val unassignedChildClassIds = classes.flatMap { parent => parent.links.flatMap {
+			_.childClassId.map { _ -> parent.classId } } }
+		
+		// First assigns children within children
+		val (topParents, children) = classes.divideBy { c => unassignedChildClassIds.exists { _._1 == c.classId } }
+		val groupedChildren = groupIntoHierarchies(children)
+		
+		// Then assigns the grouped children to their parents
+		topParents.map { parent =>
+			val links = unassignedChildClassIds.filter { _._2 == parent.classId }
+			if (links.isEmpty)
+				parent
+			else
+			{
+				val newChildren = links.flatMap { case (childId, _) => groupedChildren.find { _.classId == childId } }
+				val mappedLinks = parent.links.map { link => link -> link.childClassId.flatMap {
+					id => newChildren.find { _.classId == id } } }
+				val regularLinks = mappedLinks.filter { _._2.isEmpty }.map { _._1 }
+				val newChildLinks = mappedLinks.filter { _._2.isDefined }.map { case (l, c) => ChildLink(c.get, l.link) }
+				
+				parent.copy(links = regularLinks, childLinks = parent.childLinks ++ newChildLinks)
+			}
+		}
 	}
 	
 	private def currentDisplaysWithoutLink(link: Link) = content.map { _.withoutLink(link) }
@@ -263,14 +295,28 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 	// Returns none if no change could be made
 	private def displaysWithLinkAdded(displays: Vector[DisplayedClass], newLink: Link) =
 	{
-		displays.indexWhereOption { _.classId == newLink.originClassId }.flatMap { originIndex =>
-			displays.indexWhereOption { _.classId == newLink.targetClassId }.map { targetIndex =>
+		displays.indexWhereOption { _.classIds.contains(newLink.originClassId) }.flatMap { originIndex =>
+			displays.indexWhereOption { _.classIds.contains(newLink.targetClassId) }.map { targetIndex =>
 				val originClass = displays(originIndex)
 				val targetClass = displays(targetIndex)
-				// Updates both origin and target class displays
-				displays.updated(originIndex,
-					originClass.withLinkAdded(DisplayedLink(newLink, targetClass.classData))).updated(
-					targetIndex, targetClass.withLinkAdded(DisplayedLink(newLink, originClass.classData)))
+				// In case of owned links, one of the classes must be moved under another
+				if (newLink.isOwned)
+				{
+					val affectedClasses = Map[LinkEndRole, (DisplayedClass, Int)](
+						Origin -> (originClass -> originIndex), Target -> (targetClass -> targetIndex))
+					val (newParentClass, updatedIndex) = affectedClasses(newLink.linkType.fixedOwner)
+					val (newChildClass, removedIndex) = affectedClasses(newLink.linkType.fixedOwner.opposite)
+					
+					displays.updated(updatedIndex, newParentClass.withChildAdded(ChildLink(newChildClass, newLink)))
+						.withoutIndex(removedIndex)
+				}
+				else
+				{
+					// Updates both origin and target class displays
+					displays.updated(originIndex,
+						originClass.withLinkAdded(DisplayedLink(newLink, targetClass.classData))).updated(
+						targetIndex, targetClass.withLinkAdded(DisplayedLink(newLink, originClass.classData)))
+				}
 			}
 		}
 	}

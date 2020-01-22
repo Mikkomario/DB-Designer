@@ -1,5 +1,6 @@
 package dbd.core.model.enumeration
 
+import dbd.core.model.enumeration.LinkEndRole.{Origin, Target}
 import dbd.core.model.enumeration.LinkTypeCategory.{ManyToMany, ManyToOne, OneToOne}
 
 /**
@@ -40,6 +41,11 @@ sealed trait LinkType
 	 *         passed class is origin and second one is target.
 	 */
 	def nameWithClassSlots: String
+	/**
+	 * @return The role which is considered the owner or parent class when using this link with ownership. Arbitrary if
+	 *         this link type doesn't support ownership
+	 */
+	def fixedOwner: LinkEndRole
 	
 	
 	// COMPUTED	--------------------
@@ -52,6 +58,11 @@ sealed trait LinkType
 	 * @return Whether this link type allows one to place multiple links for a single origin
 	 */
 	def allowsMultipleTargets = category.allowsMultipleTargets
+	/**
+	 * @return The role which is considered the child or sub-class when using this link with ownership. Arbitrary if
+	 *         this link type doesn't support ownership
+	 */
+	def fixedChild = fixedOwner.opposite
 }
 
 object LinkType
@@ -64,6 +75,7 @@ object LinkType
 		override def category = ManyToOne
 		override def isOwnable = true
 		override def isFixedLinkOrigin = true
+		override def fixedOwner = Target
 	}
 	
 	/**
@@ -129,8 +141,19 @@ object LinkType
 		override def id = 5
 		override def isFixedLinkOrigin = false
 		override def usesDeprecation = false
-		
+		override def fixedOwner = Origin
 		override def nameWithClassSlots = "One %s to one %s"
+	}
+	/**
+	 * This link type allows one to link 0-1 target items to a single origin item
+	 */
+	case object OneToZeroOrOne extends OneToOneType
+	{
+		override def id = 8
+		override def isFixedLinkOrigin = true
+		override def usesDeprecation = false
+		override def nameWithClassSlots = "One %s to 0-1 %s"
+		override def fixedOwner = Origin
 	}
 	/**
 	 * This link type allows one to link a changing target item to a single origin item. Whenever a new target item
@@ -141,8 +164,8 @@ object LinkType
 		override def id = 6
 		override def isFixedLinkOrigin = true
 		override def usesDeprecation = true
-		
 		override def nameWithClassSlots = "One %s version to one %s"
+		override def fixedOwner = Target
 	}
 	
 	/**
@@ -156,7 +179,7 @@ object LinkType
 		override def isFixedLinkOrigin = true
 		override def usesDeprecation = false
 		override def usesMapping = false
-		
+		override def fixedOwner = Origin
 		override def nameWithClassSlots = "Many %s to many %s"
 	}
 	

@@ -70,9 +70,11 @@ class ClassVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)
 	
 	private val attributeSection = new AttributesVC(initialClass.classId, orderedAttributes(initialClass.classData), classManager)
 	private val linksSection = new LinksVC(initialClass, classManager)
+	private val subClassSection = new SubClassesVC(initialClass, classManager)
 	private val classContentView = Stack.buildColumnWithContext() { stack =>
 		stack += attributeSection
 		stack += linksSection
+		stack += subClassSection
 	}.framed(margins.medium.downscaling.square, colorScheme.gray.dark)
 	
 	private val view = Stack.columnWithItems(Vector(header, classContentView), margin = 0.fixed)
@@ -106,6 +108,7 @@ class ClassVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)
 		classNameLabel.content = newContent.classData
 		attributeSection.content = newContent.classId -> orderedAttributes(newContent.classData)
 		linksSection.content = newContent
+		subClassSection.content = newContent
 	}
 	
 	override def content = _content
