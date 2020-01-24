@@ -9,15 +9,17 @@ import dbd.core.model.existing.Class
 import utopia.genesis.color.Color
 import utopia.genesis.event.{ConsumeEvent, MouseButton}
 import utopia.genesis.handling.MouseButtonStateListener
+import utopia.genesis.shape.shape2D.Direction2D.Up
 import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Refreshable
+import utopia.reflection.component.drawing.BorderDrawer
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
 import utopia.reflection.component.swing.button.{ImageButton, ImageCheckBox}
 import utopia.reflection.component.swing.label.ItemLabel
 import utopia.reflection.container.stack.StackLayout.Center
 import utopia.reflection.container.swing.Stack
 import utopia.reflection.localization.{DisplayFunction, Localizer}
-import utopia.reflection.shape.Margins
+import utopia.reflection.shape.{Border, Insets, Margins}
 import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
 
 import scala.concurrent.ExecutionContext
@@ -83,6 +85,7 @@ class ClassVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)
 	// INITIAL CODE	------------------------
 	
 	classContentView.isVisible = initialClass.isExpanded
+	classContentView.addCustomDrawer(new BorderDrawer(Border(Insets.symmetric(2).withoutSide(Up), colorScheme.primary)))
 	expandButton.addValueListener { e => classManager.changeClassExpand(displayedClass.classId, e.newValue) }
 	classNameLabel.addMouseButtonListener(MouseButtonStateListener.onButtonPressedInside(MouseButton.Left,
 		classNameLabel.bounds, _ => { expandButton.value = true; Some(ConsumeEvent("Class expanded")) }))
