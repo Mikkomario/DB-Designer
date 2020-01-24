@@ -35,7 +35,7 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 	 * @param linkingClassId Id of the linking class
 	 * @return A list of classes that can be linked with specified class
 	 */
-	def linkableClasses(linkingClassId: Int) = content.filter { _.classId != linkingClassId }.map { _.classData }
+	def linkableClasses(linkingClassId: Int) = content.flatMap { _.classesLinkableFrom(linkingClassId) }
 	
 	/**
 	 * Moves the opened class next to the triggering class and expands it
@@ -46,8 +46,8 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 	{
 		// Moves the opened class next to the triggering class and expands it
 		val cachedClasses = content
-		cachedClasses.indexWhereOption { _.classId == triggerClassId }.foreach { triggerIndex =>
-			cachedClasses.indexWhereOption { _.classId == openedClassId }.foreach { openedIndex =>
+		cachedClasses.indexWhereOption { _.containsClassWithId(triggerClassId) }.foreach { triggerIndex =>
+			cachedClasses.indexWhereOption { _.containsClassWithId(openedClassId) }.foreach { openedIndex =>
 				val firstCutIndex = triggerIndex min openedIndex
 				val secondCutIndex = triggerIndex max openedIndex
 				val beginning =
@@ -68,7 +68,7 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 				}
 				
 				val triggerClass = cachedClasses(triggerIndex)
-				val openedClass = cachedClasses(openedIndex).withExpandState(true)
+				val openedClass = cachedClasses(openedIndex).withClassExpanded(openedClassId)
 				
 				content = (beginning :+ triggerClass :+ openedClass) ++ end
 			}
@@ -79,7 +79,15 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 	 * Adds a completely new class
 	 * @param newClass New class to add
 	 */
-	def addNewClass(newClass: NewClass) = editClass { implicit connection => database.Classes.insert(newClass) }
+	def addNewClass(newClass: NewClass) =
+	{
+		// Inserts a new class to DB and then to the end of displayed classes list
+		ConnectionPool.tryWith { implicit connection => database.Classes.insert(newClass) } match
+		{
+			case Success(newClass) => content = content :+ DisplayedClass(newClass, isExpanded = true)
+			case Failure(error) => Log(error, s"Failed to insert class $newClass to DB")
+		}
+	}
 	
 	/**
 	 * Adds a completely new class
@@ -90,16 +98,18 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 	/**
 	 * Deletes a class
 	 */
-	def deleteClass(classToDelete: Class): Unit =
+	def deleteClass(classToDelete: DisplayedClass): Unit =
 	{
+		// Deletes the class and all its children from DB
+		val classIdsToDelete = classToDelete.classIds
 		ConnectionPool.tryWith { implicit connection =>
-			database.Class(classToDelete.id).markDeleted()
+			classIdsToDelete.foreach { cId => database.Class(cId).markDeleted() }
 		} match
 		{
-			case Success(wasDeleted) =>
-				if (wasDeleted)
-					content = content.filterNot { _.classData.id == classToDelete.id }.map {
-						_.withoutLinksToClassWithId(classToDelete.id) }
+			case Success(_) =>
+				// Deletes the class from displayed classes and removes any links pointing to it
+				content = content.flatMap { _.withoutClass(classToDelete.classId) }.map {
+					_.withoutLinksToClassesWithIds(classIdsToDelete) }
 			case Failure(error) => Log(error, s"Failed to delete class $classToDelete")
 		}
 	}
@@ -111,25 +121,25 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 	 */
 	def changeClassExpand(targetClassId: Int, newExpandState: Boolean): Unit =
 	{
-		val cachedContent = content
-		cachedContent.indexWhereOption { _.classData.id == targetClassId }.foreach { index =>
-			val existingVersion = cachedContent(index)
-			if (existingVersion.isExpanded != newExpandState)
-				content = cachedContent.updated(index, existingVersion.withExpandState(newExpandState))
-		}
+		if (newExpandState)
+			expandClass(targetClassId)
+		else
+			shrinkClass(targetClassId)
 	}
 	
 	/**
 	 * Expands specified class in view
 	 * @param targetClassId Id of Targeted class
 	 */
-	def expandClass(targetClassId: Int) = changeClassExpand(targetClassId, newExpandState = true)
+	def expandClass(targetClassId: Int) = content = content.mapFirstWhere {
+		_.containsClassWithId(targetClassId) } { _.withClassExpanded(targetClassId) }
 	
 	/**
 	 * Shrinks specified class in view
 	 * @param targetClassId Id of Targeted class
 	 */
-	def shrinkClass(targetClassId: Int) = changeClassExpand(targetClassId, newExpandState = false)
+	def shrinkClass(targetClassId: Int) = content = content.mapFirstWhere {
+		_.containsClassWithId(targetClassId) } { _.withClassShrinked(targetClassId) }
 	
 	/**
 	 * Edits specified class' info
@@ -227,7 +237,7 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 	private def editAttributes[R](classId: Int)(databaseAction: Connection => R)(modifyClass: (Class, R) => Class) =
 	{
 		// Finds targeted class, performs database modification + class modification and finally updates class in displays
-		content.find { _.classId == classId }.foreach { classToEdit => editClass { connection =>
+		content.findMap { _.classForId(classId) }.foreach { classToEdit => editClass { connection =>
 			modifyClass(classToEdit.classData, databaseAction(connection)) } }
 	}
 	
@@ -238,10 +248,10 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 			case Success(editedClass) =>
 				// Either replaces an existing class or adds a new one
 				val cachedContent = content
-				cachedContent.indexWhereOption { _.classId == editedClass.id } match
+				cachedContent.indexWhereOption { _.containsClassWithId(editedClass.id) } match
 				{
 					case Some(editedIndex) =>
-						content = cachedContent.updated(editedIndex, cachedContent(editedIndex).withClass(editedClass))
+						content = cachedContent.updated(editedIndex, cachedContent(editedIndex).edited(editedClass))
 					case None => content :+= DisplayedClass(editedClass, isExpanded = true)
 				}
 			case Failure(error) => Log(error, "Failed to modify a class")
@@ -250,47 +260,65 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 	
 	private def pairData(classData: Vector[Class], linkData: Vector[Link]) =
 	{
+		val (regularLinks, childLinks) = linkData.divideBy { _.isOwned }
+		
 		val paired = classData.map { c =>
-			val fromLinks = linkData.filter { _.originClassId == c.id }.flatMap { l => classData.find {
+			val fromLinks = regularLinks.filter { _.originClassId == c.id }.flatMap { l => classData.find {
 				_.id == l.targetClassId }.map { otherClass => DisplayedLink(l, otherClass) } }
-			val toLinks = linkData.filter { _.targetClassId == c.id }.flatMap { l => classData.find {
+			val toLinks = regularLinks.filter { _.targetClassId == c.id }.flatMap { l => classData.find {
 				_.id == l.originClassId }.map { otherClass => DisplayedLink(l, otherClass) } }
 			
 			DisplayedClass(c, fromLinks ++ toLinks)
 		}
-		groupIntoHierarchies(paired).sortBy { _.name }
+		formHierarchies(paired, childLinks).sortBy { _.name }
 	}
 	
-	// Returns grouped classes + child classes that couldn't be attached to any parent
-	private def groupIntoHierarchies(classes: Vector[DisplayedClass]): Vector[DisplayedClass] =
+	private def formHierarchies(classes: Vector[DisplayedClass], childLinks: Vector[Link]): Vector[DisplayedClass] =
 	{
-		// Finds all unconnected child class ids (maps to parent)
-		val unassignedChildClassIds = classes.flatMap { parent => parent.links.flatMap {
-			_.childClassId.map { _ -> parent.classId } } }
+		// Finds which of the classes should be placed lower in the hierarchy
+		var childrenWithLinks = childLinks.flatMap { link => link.childClassId.flatMap { cId => classes.find {
+			_.classId == cId } }.map { c => ChildLink(c, link) } }
+		var parents = classes.filterNot { c => childrenWithLinks.exists { _.child.classId == c.classId } }
 		
-		// First assigns children within children
-		val (topParents, children) = classes.divideBy { c => unassignedChildClassIds.exists { _._1 == c.classId } }
-		val groupedChildren = groupIntoHierarchies(children)
-		
-		// Then assigns the grouped children to their parents
-		topParents.map { parent =>
-			val links = unassignedChildClassIds.filter { _._2 == parent.classId }
-			if (links.isEmpty)
-				parent
-			else
+		// Assigns classes to the hierarchy
+		while (childrenWithLinks.nonEmpty)
+		{
+			// The children that couldn't be assigned are still kept
+			val childrenLeftBeforeUpdate = childrenWithLinks.size
+			childrenWithLinks = childrenWithLinks.filter { childLink =>
+				parents.indexWhereOption { _.containsClassWithId(childLink.ownerClassId.get) } match
+				{
+					case Some(parentIndex) =>
+						parents = parents.mapIndex(parentIndex) { _.withChildAdded(childLink) }
+						false
+					case None => true
+				}
+			}
+			// If none of the remaining children could be assigned (some parents not included in classes),
+			// adds those children as base classes
+			if (childrenWithLinks.size == childrenLeftBeforeUpdate)
 			{
-				val newChildren = links.flatMap { case (childId, _) => groupedChildren.find { _.classId == childId } }
-				val mappedLinks = parent.links.map { link => link -> link.childClassId.flatMap {
-					id => newChildren.find { _.classId == id } } }
-				val regularLinks = mappedLinks.filter { _._2.isEmpty }.map { _._1 }
-				val newChildLinks = mappedLinks.filter { _._2.isDefined }.map { case (l, c) => ChildLink(c.get, l.link) }
-				
-				parent.copy(links = regularLinks, childLinks = parent.childLinks ++ newChildLinks)
+				parents ++= childrenWithLinks.map { _.child }
+				childrenWithLinks = Vector()
 			}
 		}
+		
+		parents
 	}
 	
-	private def currentDisplaysWithoutLink(link: Link) = content.map { _.withoutLink(link) }
+	private def currentDisplaysWithoutLink(link: Link) =
+	{
+		// If the link was a parent-child link, has to detach the child and add it back to base classes
+		if (link.isOwned)
+		{
+			val childId = link.childClassId.get
+			content.findMapAndIndex { _.tryDetach(childId) }.map { case (detachResult, affectedIndex) =>
+				(content.take(affectedIndex) :+ detachResult._1 :+ detachResult._2) ++ content.drop(affectedIndex + 1)
+			}.getOrElse(content)
+		}
+		else
+			content.map { _.withoutLink(link) }
+	}
 	
 	// Returns none if no change could be made
 	private def displaysWithLinkAdded(displays: Vector[DisplayedClass], newLink: Link) =
@@ -305,7 +333,7 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 					val affectedClasses = Map[LinkEndRole, (DisplayedClass, Int)](
 						Origin -> (originClass -> originIndex), Target -> (targetClass -> targetIndex))
 					val (newParentClass, updatedIndex) = affectedClasses(newLink.linkType.fixedOwner)
-					val (newChildClass, removedIndex) = affectedClasses(newLink.linkType.fixedOwner.opposite)
+					val (newChildClass, removedIndex) = affectedClasses(newLink.linkType.fixedChild)
 					
 					displays.updated(updatedIndex, newParentClass.withChildAdded(ChildLink(newChildClass, newLink)))
 						.withoutIndex(removedIndex)

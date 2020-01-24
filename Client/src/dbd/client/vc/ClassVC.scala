@@ -53,7 +53,7 @@ class ClassVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)
 			parentWindow.foreach { window =>
 				val classToEdit = displayedClass
 				new EditClassDialog(Some(classToEdit.info)).display(window).foreach { _.foreach { editedInfo =>
-					classManager.editClass(classToEdit, editedInfo)
+					classManager.editClass(classToEdit.classData, editedInfo)
 				} }
 			}
 		}
@@ -83,14 +83,14 @@ class ClassVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)
 	// INITIAL CODE	------------------------
 	
 	classContentView.isVisible = initialClass.isExpanded
-	expandButton.addValueListener { e => classManager.changeClassExpand(displayedClass.id, e.newValue) }
+	expandButton.addValueListener { e => classManager.changeClassExpand(displayedClass.classId, e.newValue) }
 	classNameLabel.addMouseButtonListener(MouseButtonStateListener.onButtonPressedInside(MouseButton.Left,
 		classNameLabel.bounds, _ => { expandButton.value = true; Some(ConsumeEvent("Class expanded")) }))
 	
 	
 	// COMPUTED	----------------------------
 	
-	def displayedClass = _content.classData
+	def displayedClass = _content
 	
 	def isExpanded = expandButton.value
 	

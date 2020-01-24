@@ -2,6 +2,7 @@ package dbd.client.model
 
 import dbd.core.model.existing.{Attribute, Class, ClassInfo, Link}
 import dbd.core.model.template.ClassLike
+import utopia.flow.util.CollectionExtensions._
 
 /**
  * Contains necessary data when displaying a class in the UI
@@ -27,6 +28,22 @@ case class DisplayedClass(classData: Class, links: Vector[DisplayedLink] = Vecto
 	 */
 	def classIds: Set[Int] = Set(classId) ++ childLinks.flatMap { _.child.classIds }
 	
+	/**
+	 * @return The child classes directly below this one
+	 */
+	def children = childLinks.map { _.child }
+	
+	/**
+	 * @return All classes that belong to this class hierarchy
+	 */
+	def classes: Vector[Class] = classData +: children.flatMap { _.classes }
+	
+	/**
+	 * @return A shrinked copy of this class hierarchy
+	 */
+	def shrinked: DisplayedClass = if (isExpanded) copy(isExpanded = false, childLinks = childLinks.map {
+		_.mapClass { _.shrinked } }) else mapChildren { _.shrinked }
+	
 	
 	// IMPLEMENTED	----------------------
 	
@@ -43,10 +60,87 @@ case class DisplayedClass(classData: Class, links: Vector[DisplayedLink] = Vecto
 	// OTHER	--------------------------
 	
 	/**
+	 * @param searchedClassId The searched class' id
+	 * @return Whether this class hierarchy contains the specified id
+	 */
+	def containsClassWithId(searchedClassId: Int): Boolean = classId == searchedClassId ||
+		children.exists { _.containsClassWithId(searchedClassId) }
+	
+	/**
+	 * Tries to detach a child class from this class hierarchy
+	 * @param detachedClassId Id of the class to detach
+	 * @return A copy of this class without the specified child + the detached child. None if the class doesn't belong
+	 *         to this class hierarchy
+	 */
+	def tryDetach(detachedClassId: Int): Option[(DisplayedClass, DisplayedClass)] =
+	{
+		children.indexWhereOption { _.classId == detachedClassId } match
+		{
+			case Some(indexToDetach) => Some(copy(childLinks = childLinks.withoutIndex(indexToDetach)) -> children(indexToDetach))
+			case None =>
+				// Tries to find the detached child from grandchildren
+				children.findMapAndIndex { _.tryDetach(detachedClassId) }.map { case (detachResult, index) =>
+					copy(childLinks = childLinks.mapIndex(index) { _.copy(child = detachResult._1) }) -> detachResult._2 }
+		}
+	}
+	
+	/**
+	 * @param classId A class id
+	 * @return A class in this hierarchy with specified id (may be this class). None if no such id exists in this hierarchy.
+	 */
+	def classForId(classId: Int): Option[DisplayedClass] =
+	{
+		if (classId == this.classId)
+			Some(this)
+		else
+			childLinks.findMap { _.child.classForId(classId) }
+	}
+	
+	/**
+	 * @param classId A linking class id
+	 * @return All classes in this hierarchy that can be linked from specified class. Returns an empty vector if
+	 *         the specified class belongs to this hierarchy and all hierarchy classes otherwise.
+	 */
+	def classesLinkableFrom(classId: Int): Vector[Class] =
+	{
+		// The class hierarchy containing specified class cannot be linked, other classes can be linked freely
+		if (containsClassWithId(classId))
+			Vector()
+		else
+			classes
+	}
+	
+	/**
 	 * @param expanded Whether the class display should be expanded
 	 * @return A copy of this model with specified expand state
 	 */
 	def withExpandState(expanded: Boolean) = copy(isExpanded = expanded)
+	
+	/**
+	 * Expands a specific class in this hierarchy
+	 * @param expandedClassId Id of the expanded class
+	 * @return A copy of this hierarchy with targeted class and its parents expanded
+	 */
+	def withClassExpanded(expandedClassId: Int): DisplayedClass =
+	{
+		if (containsClassWithId(expandedClassId))
+			copy(childLinks = childLinks.map { _.mapClass { _.withClassExpanded(expandedClassId) } }, isExpanded = true)
+		else
+			this
+	}
+	
+	/**
+	 * Shrinks a specific class in this hierarchy (also affects all classes under that class)
+	 * @param shrinkedClassId The id of the class to shrink
+	 * @return A modified copy of this class hierarchy
+	 */
+	def withClassShrinked(shrinkedClassId: Int): DisplayedClass =
+	{
+		if (classId == shrinkedClassId)
+			shrinked
+		else
+			mapChildren { _.withClassShrinked(shrinkedClassId) }
+	}
 	
 	/**
 	 * @param newClass New class state to display
@@ -55,16 +149,54 @@ case class DisplayedClass(classData: Class, links: Vector[DisplayedLink] = Vecto
 	def withClass(newClass: Class) = copy(classData = newClass)
 	
 	/**
-	 * @param classId Id of another class
-	 * @return A copy of this class display without any links to specified class
+	 * Edits a class specification in this hierarchy
+	 * @param newClassVersion A new class specification
+	 * @return A modified version of this hierarchy
 	 */
-	def withoutLinksToClassWithId(classId: Int) = copy(links = links.filterNot { _.otherClass.id == classId })
+	def edited(newClassVersion: Class): DisplayedClass =
+	{
+		// Either updates this class or one of the children
+		if (classId == newClassVersion.id)
+			copy(classData = newClassVersion)
+		else
+			copy(childLinks = childLinks.mapFirstWhere { _.child.containsClassWithId(newClassVersion.id) } {
+				_.mapClass { _.edited(newClassVersion) } })
+	}
 	
 	/**
+	 * @param classIds Ids of classes that should no longer be linked to this hierarchy
+	 * @return A copy of this class display without any links to specified class
+	 */
+	def withoutLinksToClassesWithIds(classIds: Set[Int]): DisplayedClass = copy(links = links.filterNot { l =>
+		classIds.contains(l.otherClass.id) }, childLinks = childLinks.map { _.mapClass { _.withoutLinksToClassesWithIds(classIds) } })
+	
+	/**
+	 * @param classId Id of targeted class
+	 * @return A copy of this hierarchy with specified class, along with all its child classes, removed
+	 */
+	def withoutClass(classId: Int): Option[DisplayedClass] =
+	{
+		if (this.classId == classId)
+			None
+		else
+			Some(copy(childLinks = childLinks.flatMap { l => l.child.withoutClass(classId).map { c => l.copy(child = c) } }))
+	}
+	
+	/**
+	 * Adds a new child to this class hierarchy. The child doesn't need to be added directly to this class.
 	 * @param link A new child link
 	 * @return A copy of this class with specified link added
 	 */
-	def withChildAdded(link: ChildLink) = copy(childLinks = childLinks :+ link)
+	def withChildAdded(link: ChildLink): DisplayedClass =
+	{
+		// Searches the new owner class from this class and then from children (recursive)
+		val ownerId = link.ownerClassId
+		if (ownerId.forall { _ == this.classId })
+			copy(childLinks = childLinks :+ link)
+		else
+			copy(childLinks = childLinks.mapFirstWhere { _.child.containsClassWithId(ownerId.get) } { l =>
+				l.copy(child = l.child.withChildAdded(link)) })
+	}
 	
 	/**
 	 * @param link A link to attach to this class
@@ -102,11 +234,18 @@ case class DisplayedClass(classData: Class, links: Vector[DisplayedLink] = Vecto
 	 */
 	def withoutLink(link: Link) =
 	{
-		// TODO: Take into account child links as well
 		val filteredLinks = links.filterNot { _.link.id == link.id }
 		if (filteredLinks.size == links.size)
 			this
 		else
 			copy(links = filteredLinks)
+	}
+	
+	private def mapChildren(f: DisplayedClass => DisplayedClass) =
+	{
+		if (children.isEmpty)
+			this
+		else
+			copy(childLinks = childLinks.map { _.mapClass(f) })
 	}
 }
