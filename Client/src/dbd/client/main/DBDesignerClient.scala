@@ -60,7 +60,7 @@ object DBDesignerClient extends App
 		val classes = database.Classes.get
 		val links = database.Links.get
 		println(s"Found ${classes.size} classes and ${links.size} links from DB")
-		val content = new ClassesVC(Screen.height / 3, classes, links)
+		val content = new ClassesVC(Screen.height * 0.7, classes, links)
 		new SingleFrameSetup(actorHandler, Frame.windowed(content.framed(margins.medium.any.square, primaryColors.light),
 			"DB Designer", Program)).start()
 	}.failure.foreach { Log(_, "Failed to run DB Designer client") }

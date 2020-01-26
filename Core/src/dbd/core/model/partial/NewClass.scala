@@ -7,8 +7,8 @@ import dbd.core.model.template.ClassLike
  * @author Mikko Hilpinen
  * @since 12.1.2020, v0.1
  */
-case class NewClass(info: NewClassInfo, attributes: Vector[NewAttribute])
+case class NewClass(info: NewClassInfo, attributes: Vector[NewAttribute] = Vector())
 	extends ClassLike[NewClassInfo, NewAttribute, NewClass]
 {
-	override protected def makeCopy(info: NewClassInfo, attributes: Vector[NewAttribute]) = NewClass(info, attributes)
+	override def makeCopy(info: NewClassInfo, attributes: Vector[NewAttribute]) = NewClass(info, attributes)
 }

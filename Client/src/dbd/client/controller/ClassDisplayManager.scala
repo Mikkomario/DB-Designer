@@ -1,12 +1,12 @@
 package dbd.client.controller
 
-import dbd.client.model.{ChildLink, DisplayedClass, DisplayedLink}
+import dbd.client.model.{ChildLink, DisplayedClass, DisplayedLink, EditSubClassResult}
 import utopia.flow.util.CollectionExtensions._
 import dbd.core.database
 import dbd.core.model.enumeration.LinkEndRole
 import dbd.core.model.enumeration.LinkEndRole.{Origin, Target}
 import dbd.core.model.existing.{Attribute, Class, Link}
-import dbd.core.model.partial.{NewAttribute, NewAttributeConfiguration, NewClass, NewClassInfo, NewLinkConfiguration}
+import dbd.core.model.partial.{NewAttribute, NewAttributeConfiguration, NewClass, NewClassInfo, NewLinkConfiguration, NewSubClass}
 import dbd.core.util.Log
 import utopia.flow.datastructure.mutable.PointerWithEvents
 import utopia.reflection.component.RefreshableWithPointer
@@ -36,6 +36,17 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 	 * @return A list of classes that can be linked with specified class
 	 */
 	def linkableClasses(linkingClassId: Int) = content.flatMap { _.classesLinkableFrom(linkingClassId) }
+	
+	/**
+	 * Finds the classes that may become sub-classes of the specified class
+	 * @param linkingClassId Id of potential new parent class
+	 * @return A list of classes that can be adopted as children for specified class
+	 */
+	def potentialChildrenFor(linkingClassId: Int) =
+	{
+		// Potential children are all top level classes, except the one the linking class belongs to
+		content.filterNot { _.containsClassWithId(linkingClassId) }
+	}
 	
 	/**
 	 * Moves the opened class next to the triggering class and expands it
@@ -93,7 +104,26 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 	 * Adds a completely new class
 	 * @param newClassInfo Info for the new class
 	 */
-	def addNewClass(newClassInfo: NewClassInfo): Unit = addNewClass(NewClass(newClassInfo, Vector()))
+	def addNewClass(newClassInfo: NewClassInfo): Unit = addNewClass(NewClass(newClassInfo))
+	
+	/**
+	 * Adds a new sub-class under a specific parent
+	 * @param newSubClass Sub class creation info
+	 */
+	def addNewSubClass(newSubClass: NewSubClass) =
+	{
+		// Inserts the new class to DB, then adds a link between the two classes
+		ConnectionPool.tryWith { implicit connection =>
+			val newClass = database.Classes.insert(NewClass(newSubClass.classInfo))
+			newClass -> database.Links.insert(newSubClass.toNewLinkConfiguration(newClass.id))
+		} match
+		{
+			case Success(newData) =>
+				val contentWithChild = content :+ DisplayedClass(newData._1)
+				content = displaysWithLinkAdded(contentWithChild, newData._2).getOrElse(contentWithChild)
+			case Failure(error) => Log(error, s"Failed to insert sub class: $newSubClass")
+		}
+	}
 	
 	/**
 	 * Deletes a class
@@ -150,6 +180,17 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 		classToEdit.update(database.Class(classToEdit.id).info.update(editedInfo)) }
 	
 	/**
+	 * Edits a sub-class and its link based on an edit result
+	 * @param original Original sub-class link
+	 * @param edit Edit made to link and/or class
+	 */
+	def editSubClass(original: ChildLink, edit: EditSubClassResult) =
+	{
+		edit.classModification.foreach { classEdit => editClass(original.child.classData, classEdit) }
+		edit.linkModification.foreach { linkEdit => editLink(original.link, linkEdit) }
+	}
+	
+	/**
 	 * Adds a new attribute to a class
 	 * @param classId Id of targeted class
 	 * @param attribute Attribute to add to the class
@@ -178,6 +219,7 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 	 */
 	def deleteAttribute(attribute: Attribute): Unit =
 	{
+		// TODO: Also delete links that use this attribute as mapping key
 		// Deletes attribute from DB, then from this class
 		editAttributes(attribute.classId) { implicit connection =>
 			database.Class(attribute.classId).attribute(attribute.id).markDeleted() } { (c, _) => c - attribute }

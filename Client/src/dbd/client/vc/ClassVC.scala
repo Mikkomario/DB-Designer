@@ -2,10 +2,12 @@ package dbd.client.vc
 
 import utopia.flow.util.CollectionExtensions._
 import dbd.client.controller.{ClassDisplayManager, Icons}
-import dbd.client.dialog.{DeleteQuestionDialog, EditClassDialog}
+import dbd.client.dialog.{DeleteQuestionDialog, EditClassDialog, EditSubClassDialog}
 import utopia.reflection.shape.LengthExtensions._
-import dbd.client.model.{DisplayedClass, Fonts}
-import dbd.core.model.existing.Class
+import dbd.client.model.{Fonts, ParentOrSubClass}
+import dbd.core.model.existing.{Attribute, Class}
+import dbd.core.model.template.ClassLike
+import dbd.core.util.Log
 import utopia.genesis.color.Color
 import utopia.genesis.event.{ConsumeEvent, MouseButton}
 import utopia.genesis.handling.MouseButtonStateListener
@@ -29,10 +31,10 @@ import scala.concurrent.ExecutionContext
  * @author Mikko Hilpinen
  * @since 11.1.2020, v0.1
  */
-class ClassVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)
+class ClassVC(initialClass: ParentOrSubClass, classManager: ClassDisplayManager)
 			 (implicit baseCB: ComponentContextBuilder, fonts: Fonts, margins: Margins, colorScheme: ColorScheme,
 			  defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
-	extends StackableAwtComponentWrapperWrapper with Refreshable[DisplayedClass]
+	extends StackableAwtComponentWrapperWrapper with Refreshable[ParentOrSubClass]
 {
 	// ATTRIBUTES	------------------------
 	
@@ -44,7 +46,7 @@ class ClassVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)
 	private val expandButton = new ImageCheckBox(Icons.expandMore.forButtonWithoutText(headerButtonColor),
 		Icons.expandLess.forButtonWithoutText(headerButtonColor), initialClass.isExpanded)
 	
-	private val classNameLabel = ItemLabel.contextual(initialClass.classData,
+	private val classNameLabel = ItemLabel.contextual(initialClass.displayedClass.classData,
 		DisplayFunction.noLocalization[Class] { _.info.name })(baseCB.copy(textColor = Color.white).result)
 	
 	private val header = Stack.buildRowWithContext(layout = Center) { headerRow =>
@@ -53,14 +55,24 @@ class ClassVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)
 		// Adds edit class button
 		headerRow += ImageButton.contextual(Icons.edit.forButtonWithoutText(headerButtonColor)) { () =>
 			parentWindow.foreach { window =>
-				val classToEdit = displayedClass
-				new EditClassDialog(Some(classToEdit.info)).display(window).foreach { _.foreach { editedInfo =>
-					classManager.editClass(classToEdit.classData, editedInfo)
-				} }
+				// Presents different dialog for top-level and sub-level classes
+				_content.data match
+				{
+					case Right(subLevel) =>
+						val (parent, link) = subLevel
+						new EditSubClassDialog(parent, Some(link), classManager).display(window).foreach { _.foreach {
+							case Right(_) => Log.warning("Somehow received add class response from edit sub-class dialog")
+							case Left(editResult) => classManager.editSubClass(link, editResult)
+						} }
+					case Left(topLevel) =>
+						val classToEdit = topLevel
+						new EditClassDialog(Some(classToEdit.info)).display(window).foreach { _.foreach { editedInfo =>
+							classManager.editClass(classToEdit.classData, editedInfo)
+						} }
+				}
 			}
 		}
 		// Adds delete class button
-		// TODO: WET WET
 		headerRow += ImageButton.contextual(Icons.close.forButtonWithoutText(headerButtonColor)) { () =>
 			parentWindow.foreach { window =>
 				val classToDelete = displayedClass
@@ -70,8 +82,9 @@ class ClassVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)
 		}
 	}.framed(margins.small.downscaling x margins.small.any, colorScheme.primary)
 	
-	private val attributeSection = new AttributesVC(initialClass.classId, orderedAttributes(initialClass.classData), classManager)
-	private val linksSection = new LinksVC(initialClass, classManager)
+	private val attributeSection = new AttributesVC(initialClass.displayedClass.classId,
+		orderedAttributes(initialClass), classManager)
+	private val linksSection = new LinksVC(initialClass.displayedClass, classManager)
 	private val subClassSection = new SubClassesVC(initialClass, classManager)
 	private val classContentView = Stack.buildColumnWithContext() { stack =>
 		stack += attributeSection
@@ -93,7 +106,7 @@ class ClassVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)
 	
 	// COMPUTED	----------------------------
 	
-	def displayedClass = _content
+	def displayedClass = _content.displayedClass
 	
 	def isExpanded = expandButton.value
 	
@@ -102,15 +115,15 @@ class ClassVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)
 	
 	override protected def wrapped = view
 	
-	override def content_=(newContent: DisplayedClass) =
+	override def content_=(newContent: ParentOrSubClass) =
 	{
 		// Content may be shrinked or expanded
 		_content = newContent
 		expandButton.value = newContent.isExpanded
 		classContentView.isVisible = newContent.isExpanded
-		classNameLabel.content = newContent.classData
-		attributeSection.content = newContent.classId -> orderedAttributes(newContent.classData)
-		linksSection.content = newContent
+		classNameLabel.content = newContent.displayedClass.classData
+		attributeSection.content = newContent.displayedClass.classId -> orderedAttributes(newContent)
+		linksSection.content = newContent.displayedClass
 		subClassSection.content = newContent
 	}
 	
@@ -119,6 +132,6 @@ class ClassVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)
 	
 	// OTHER	---------------------------
 	
-	private def orderedAttributes(c: Class) = c.attributes.sortedWith(Ordering.by { !_.isSearchKey },
+	private def orderedAttributes(c: ClassLike[_, Attribute, _]) = c.attributes.sortedWith(Ordering.by { !_.isSearchKey },
 		Ordering.by { _.isOptional }, Ordering.by { _.name })
 }

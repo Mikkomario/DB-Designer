@@ -51,7 +51,7 @@ case class DisplayedClass(classData: Class, links: Vector[DisplayedLink] = Vecto
 	
 	override def attributes = classData.attributes
 	
-	override protected def makeCopy(info: ClassInfo, attributes: Vector[Attribute]) =
+	override def makeCopy(info: ClassInfo, attributes: Vector[Attribute]) =
 		copy(classData = classData.copy(info = info, attributes = attributes))
 	
 	override def toString = s"$classData, links: [${links.mkString(", ")}]"

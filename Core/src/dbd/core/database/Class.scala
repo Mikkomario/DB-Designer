@@ -66,9 +66,19 @@ object Class extends NonDeprecatedSingleAccess[existing.Class]
 		 * @param connection DB Connection (implicit)
 		 * @return Whether a row in the database was affected
 		 */
-		def markDeleted()(implicit connection: Connection) = connection(
-				Class.factory.nowDeleted.toUpdateStatement() +
-					Where(condition && Class.factory.notDeletedCondition)).updatedRows
+		def markDeleted()(implicit connection: Connection) =
+		{
+			// Marks the class as deleted and also deprecates all links currently attached to that class
+			val classWasDeleted = connection(Class.factory.nowDeleted.toUpdateStatement() +
+				Where(condition && Class.factory.notDeletedCondition)).updatedRows
+			if (classWasDeleted)
+			{
+				Links.attachedToClassWithId(classId).markDeleted()
+				true
+			}
+			else
+				false
+		}
 		
 		
 		// NESTED	-------------------

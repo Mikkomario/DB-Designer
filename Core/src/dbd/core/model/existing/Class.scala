@@ -19,7 +19,7 @@ case class Class(id: Int, info: ClassInfo, attributes: Vector[Attribute], delete
 {
 	override def toString = s"Class $info: [${attributes.mkString(", ")}]"
 	
-	override protected def makeCopy(info: ClassInfo, attributes: Vector[Attribute]) = Class(id, info, attributes)
+	override def makeCopy(info: ClassInfo, attributes: Vector[Attribute]) = Class(id, info, attributes)
 	
 	/**
 	 * Updates a singular attribute configuration in this class

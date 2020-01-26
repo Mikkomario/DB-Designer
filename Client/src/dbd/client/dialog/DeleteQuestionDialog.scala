@@ -11,6 +11,9 @@ object DeleteQuestionDialog
 {
 	private implicit val language: String = "en"
 	
+	// TODO: Inform which classes are affected by this change (on attribute mapped links and on class, linked classes
+	//  and sub-classes and classes linked to those)
+	
 	/**
 	 * Creates a personalized delete question dialog
 	 * @param deletedItemType Localized name of the deleted item's type

@@ -18,4 +18,13 @@ trait ClassInfoLike
 	 * @return Whether described class should be considered mutable
 	 */
 	def isMutable: Boolean
+	
+	
+	// OTHER	-------------------
+	
+	/**
+	 * @param other Another class info
+	 * @return Whether these two info are alike
+	 */
+	def ~==(other: ClassInfoLike) = name == other.name && isMutable == other.isMutable
 }

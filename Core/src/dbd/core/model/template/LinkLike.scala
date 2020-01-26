@@ -55,6 +55,21 @@ trait LinkLike
 	 */
 	def childClassId = if (isOwned) Some(classIdForRole(linkType.fixedOwner.opposite)) else None
 	
+	/**
+	 * @return Name of this link in owner class
+	 */
+	def nameInOwner = nameInRole(linkType.fixedOwner)
+	
+	/**
+	 * @return Name of this link in child class
+	 */
+	def nameInChild = nameInRole(linkType.fixedChild)
+	
+	/**
+	 * @return Id of the attribute that is used as a map key (None if no mapping is used)
+	 */
+	def mappingKeyAttributeId = configuration.mappingKeyAttributeId
+	
 	
 	// OTHER	------------------------
 	
@@ -66,5 +81,15 @@ trait LinkLike
 	{
 		case Origin => originClassId
 		case Target => targetClassId
+	}
+	
+	/**
+	 * @param role A link end role
+	 * @return Specified link name for that role (None if no link name is specified for that role)
+	 */
+	def nameInRole(role: LinkEndRole) = role match
+	{
+		case Origin => configuration.nameInOrigin
+		case Target => configuration.nameInTarget
 	}
 }

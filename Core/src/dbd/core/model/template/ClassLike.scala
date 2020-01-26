@@ -25,7 +25,7 @@ trait ClassLike[Info <: ClassInfoLike, Attribute <: AttributeLike[_], Repr <: Cl
 	 * @param attributes New attributes for this class
 	 * @return A copy of this class with specified data
 	 */
-	protected def makeCopy(info: Info, attributes: Vector[Attribute]): Repr
+	def makeCopy(info: Info, attributes: Vector[Attribute]): Repr
 	
 	
 	// COMPUTED	----------------------

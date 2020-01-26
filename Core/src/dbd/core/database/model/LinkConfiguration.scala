@@ -4,6 +4,7 @@ import java.time.Instant
 
 import utopia.flow.util.CollectionExtensions._
 import dbd.core.database.Tables
+import dbd.core.model.enumeration.LinkEndRole.{Origin, Target}
 import dbd.core.model.enumeration.LinkType
 import dbd.core.model.error.NoSuchTypeException
 import utopia.flow.generic.ValueConversions._
@@ -39,6 +40,11 @@ object LinkConfiguration extends StorableFactory[existing.LinkConfiguration] wit
 	 * @return a model that has just been marked as deprecated
 	 */
 	def nowDeprecated = apply(deprecatedAfter = Some(Instant.now()))
+	
+	/**
+	 * @return The columns one can connect a class to, matched with a connection role
+	 */
+	def classConnectColumns = Map(Origin -> table("originClassId"), Target -> table("targetClassId"))
 	
 	
 	// OTHER	-------------------------------

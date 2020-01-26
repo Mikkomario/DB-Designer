@@ -30,13 +30,13 @@ class EditLinkDialog(linkToEdit: Option[LinkConfiguration], linkingClass: Class,
 	
 	private val mapKeyVisibilityPointer = new PointerWithEvents[Boolean](false)
 	
-	private val classSelection = DropDown.contextual("Select linked class",
+	private val classSelection = DropDown.contextual[Class]("Select linked class",
 		DisplayFunction.noLocalization[Class] { _.name }, linkableClasses)
 	private val linkOriginSelection = DropDown.contextual("Select link origin",
 		DisplayFunction.functionToDisplayFunction[Boolean] { isThisClass =>
 			if (isThisClass) linkingClass.name.noLanguageLocalizationSkipped else classSelection.value.map {
 				_.name.noLanguageLocalizationSkipped }.getOrElse("The other class") }, Vector(true, false))
-	private val linkTypeSelection = DropDown.contextual("Select link type",
+	private val linkTypeSelection = DropDown.contextual[LinkType]("Select link type",
 		DisplayFunction[LinkType] { _.nameWithClassSlots } { local =>
 			// Link type display depends from which class was selected as the link origin
 			val myClassName = linkingClass.name
@@ -59,14 +59,17 @@ class EditLinkDialog(linkToEdit: Option[LinkConfiguration], linkingClass: Class,
 	
 	linkOriginSelection.selectOne(true)
 	
-	// When link origin changes, so does link type selection display
-	linkOriginSelection.addValueListener { _ => linkTypeSelection.updateDisplays() }
+	// When link origin changes, so does link type selection and mapped key options
+	linkOriginSelection.addValueListener { _ =>
+		updateMapKeySelection()
+		updateLinkTypeSelection()
+	}
 	
 	// Whenever linked class is changed, link type selection look is updated as well
 	classSelection.addValueListener { _ =>
 		linkOriginSelection.updateDisplays()
-		linkTypeSelection.updateDisplays()
 		updateMapKeySelection()
+		updateLinkTypeSelection()
 	}
 	
 	// Whenever a map-using link type is selected, displays a selection for map key attribute
@@ -89,6 +92,19 @@ class EditLinkDialog(linkToEdit: Option[LinkConfiguration], linkingClass: Class,
 	}
 	
 	
+	// COMPUTED	---------------------------
+	
+	private def originatesCurrentlyFromThisClass = linkOriginSelection.value.getOrElse(true)
+	
+	private def currentTargetClass =
+	{
+		if (originatesCurrentlyFromThisClass)
+			Some(linkingClass)
+		else
+			classSelection.value
+	}
+	
+	
 	// IMPLEMENTED	-----------------------
 	
 	override protected def fields = Vector(
@@ -108,27 +124,36 @@ class EditLinkDialog(linkToEdit: Option[LinkConfiguration], linkingClass: Class,
 				linkTypeSelection.value match
 				{
 					case Some(linkType) =>
-						val originatesFromThisClass = linkOriginSelection.value.getOrElse(true)
-						val (originId, targetId) =
-						{
-							if (originatesFromThisClass)
-								linkingClass.id -> otherClass.id
-							else
-								otherClass.id -> linkingClass.id
-						}
-						val (originNick, targetNick) =
-						{
-							if (originatesFromThisClass)
-								localNickField.value -> otherNickField.value
-							else
-								otherNickField.value -> localNickField.value
-						}
-						val newLink = NewLinkConfiguration(linkType, originId, targetId, originNick, targetNick,
-							mappingKeyAttributeId = mapKeySelection.value.map { _.id })
-						if (linkToEdit.exists { _ ~== newLink })
-							Right(None)
+						// Map key is required when link type uses mapping
+						val selectedMapKey = mapKeySelection.value
+						if (linkType.usesMapping && selectedMapKey.isEmpty)
+							Left(mapKeySelection, "Please specify which attribute should be used as the mapping key")
 						else
-							Right(Some(newLink))
+						{
+							val actualMappingKey = if (linkType.usesMapping) selectedMapKey.map { _.id } else None
+							val originatesFromThisClass = originatesCurrentlyFromThisClass
+							val (originId, targetId) =
+							{
+								if (originatesFromThisClass)
+									linkingClass.id -> otherClass.id
+								else
+									otherClass.id -> linkingClass.id
+							}
+							val (originNick, targetNick) =
+							{
+								if (originatesFromThisClass)
+									localNickField.value -> otherNickField.value
+								else
+									otherNickField.value -> localNickField.value
+							}
+							
+							val newLink = NewLinkConfiguration(linkType, originId, targetId, originNick, targetNick,
+								mappingKeyAttributeId = actualMappingKey)
+							if (linkToEdit.exists { _ ~== newLink })
+								Right(None)
+							else
+								Right(Some(newLink))
+						}
 					case None => Left(linkTypeSelection, "Please specify the link type")
 				}
 			case None => Left(classSelection, "Please select the linked class")
@@ -142,14 +167,25 @@ class EditLinkDialog(linkToEdit: Option[LinkConfiguration], linkingClass: Class,
 	
 	// OTHER	---------------------------
 	
+	private def updateLinkTypeSelection() =
+	{
+		// Mapping link style is allowed when target class contains attributes
+		val newLinkTypes = if (currentTargetClass.exists { _.attributes.nonEmpty })
+			LinkType.values else LinkType.values.filterNot { _.usesMapping }
+		if (linkTypeSelection.content == newLinkTypes)
+			linkTypeSelection.updateDisplays()
+		else
+			linkTypeSelection.content = newLinkTypes
+	}
+	
 	private def updateMapKeySelection() =
 	{
 		if (linkTypeSelection.value.exists { _.usesMapping })
 		{
-			classSelection.value match
+			currentTargetClass match
 			{
-				case Some(linkedClass) =>
-					mapKeySelection.content = linkedClass.attributes
+				case Some(targetClass) =>
+					mapKeySelection.content = targetClass.attributes
 					mapKeyVisibilityPointer.value = true
 				case None => mapKeyVisibilityPointer.value = false
 			}

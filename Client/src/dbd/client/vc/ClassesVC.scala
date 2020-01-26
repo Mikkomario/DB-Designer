@@ -2,7 +2,7 @@ package dbd.client.vc
 
 import dbd.client.controller.{ClassDisplayManager, Icons}
 import dbd.client.dialog.EditClassDialog
-import dbd.client.model.{DisplayedClass, Fonts}
+import dbd.client.model.{DisplayedClass, Fonts, ParentOrSubClass}
 import utopia.reflection.shape.LengthExtensions._
 import dbd.core.model.existing.{Class, Link}
 import utopia.genesis.shape.shape2D.Direction2D
@@ -34,7 +34,7 @@ class ClassesVC(targetHeight: Double, classesToDisplay: Vector[Class] = Vector()
 	private val addClassButton = ImageAndTextButton.contextual(Icons.addBox.forButtonWithBackground(colorScheme.secondary.dark),
 		"Add Class") { () => addButtonPressed() }(baseCB.withColors(colorScheme.secondary.dark).result)
 	private val classView = new CollectionView[ClassVC](Direction2D.Down, targetHeight, margins.medium.downscaling)
-	private val displayManager = new ContainerContentManager[DisplayedClass, CollectionView[ClassVC], ClassVC](classView)(
+	private val displayManager = new ContainerContentManager[ParentOrSubClass, CollectionView[ClassVC], ClassVC](classView)(
 		c => new ClassVC(c, dataManager))
 	private val view = Stack.buildColumnWithContext() { stack =>
 		stack += classView
@@ -44,9 +44,9 @@ class ClassesVC(targetHeight: Double, classesToDisplay: Vector[Class] = Vector()
 	
 	// INITIAL CODE	---------------------
 	
-	displayManager.content = dataManager.content
+	displayManager.content = dataManager.content.map { ParentOrSubClass.topLevel }
 	// Displays get updated whenever data source updates
-	dataManager.addContentListener { e => displayManager.content = e.newValue }
+	dataManager.addContentListener { e => displayManager.content = e.newValue.map { ParentOrSubClass.topLevel } }
 	
 	
 	// IMPLEMENTED	---------------------
