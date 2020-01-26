@@ -56,6 +56,12 @@ object LinkConfiguration extends StorableFactory[existing.LinkConfiguration] wit
 	def withLinkId(linkId: Int) = apply(linkId = Some(linkId))
 	
 	/**
+	 * @param attId Attribute id
+	 * @return A model with specified attribute id set as mapping key id
+	 */
+	def withMappingKeyAttributeId(attId: Int) = apply(mappingAttributeId = Some(attId))
+	
+	/**
 	 * Creates a model to be inserted to DB
 	 * @param linkId Id of modified link
 	 * @param newData New configuration data for the link

@@ -76,7 +76,8 @@ class ClassVC(initialClass: ParentOrSubClass, classManager: ClassDisplayManager)
 		headerRow += ImageButton.contextual(Icons.close.forButtonWithoutText(headerButtonColor)) { () =>
 			parentWindow.foreach { window =>
 				val classToDelete = displayedClass
-				DeleteQuestionDialog.forClass(classToDelete.name).display(window).foreach {
+				DeleteQuestionDialog.forClass(classToDelete.name,
+					classManager.classesAffectedByClassDeletion(classToDelete.classId).toVector).display(window).foreach {
 					if (_) classManager.deleteClass(classToDelete) }
 			}
 		}

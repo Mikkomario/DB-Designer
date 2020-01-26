@@ -27,7 +27,13 @@ object Links extends NonDeprecatedManyAccess[existing.Link]
 	 * @param classId Id of target class
 	 * @return An access point to all links attached to that class
 	 */
-	def attachedToClassWithId(classId: Int) = new AttachedLinks(classId)
+	def attachedToClassWithId(classId: Int) = new ClassAttachedLinks(classId)
+	
+	/**
+	 * @param attributeId Id of target attribute
+	 * @return An access point to all links that use the specified attribute as a mapping key
+	 */
+	def usingAttributeWithId(attributeId: Int) = new AttributeUsingLinks(attributeId)
 	
 	/**
 	 * Inserts a new link to the database
@@ -52,7 +58,7 @@ object Links extends NonDeprecatedManyAccess[existing.Link]
 	 * Access point to links attached to a class (as origin or target)
 	 * @param classId Id of target class
 	 */
-	class AttachedLinks(classId: Int) extends ConditionalManyAccess[existing.Link]
+	class ClassAttachedLinks(classId: Int) extends ConditionalManyAccess[existing.Link]
 	{
 		// IMPLEMENTED	------------------
 		
@@ -68,6 +74,34 @@ object Links extends NonDeprecatedManyAccess[existing.Link]
 		 * Marks all of these links as deleted
 		 * @param connection DB Connection (implicit)
 		 * @return How many links were marked as deleted
+		 */
+		def markDeleted()(implicit connection: Connection) =
+		{
+			connection(Update.apply(factory.target, factory.table, factory.deletedAfterVarName, Instant.now()) +
+				Where(condition && factory.notDeletedCondition)).updatedRowCount
+		}
+	}
+	
+	/**
+	 * Access points to links using a specified attribute
+	 * @param attributeId Id of used attribute
+	 */
+	class AttributeUsingLinks(attributeId: Int) extends ConditionalManyAccess[existing.Link]
+	{
+		// IMPLEMENTED	-----------------
+		
+		override def condition = Links.this.condition &&
+			model.LinkConfiguration.withMappingKeyAttributeId(attributeId).toCondition
+		
+		override def factory = Links.this.factory
+		
+		
+		// OTHER	---------------------
+		
+		/**
+		 * Marks all of these links as deleted
+		 * @param connection DB Connection (implicit)
+		 * @return The number of links that were marked as deleted
 		 */
 		def markDeleted()(implicit connection: Connection) =
 		{

@@ -3,7 +3,7 @@ package dbd.client.vc
 import utopia.reflection.shape.LengthExtensions._
 import utopia.reflection.localization.LocalString._
 import dbd.client.controller.{ClassDisplayManager, Icons}
-import dbd.client.dialog.{DeleteQuestionDialog, EditAttributeDialog}
+import dbd.client.dialog.{DeleteQuestionDialog, EditAttributeDialog, InfoDialog}
 import dbd.core.model.enumeration.AttributeType.{BooleanType, DoubleType, IntType, ShortStringType}
 import dbd.core.model.enumeration.AttributeType
 import dbd.core.model.existing.Attribute
@@ -57,8 +57,16 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 	private val deleteAttributeButton = ImageButton.contextual(Icons.close.forButtonWithoutText(colorScheme.secondary)) { () =>
 		parentWindow.foreach { window =>
 			val attributeToDelete = content
-			DeleteQuestionDialog.forAttribute(attributeToDelete.name).display(window).foreach {
-				if (_) classManager.deleteAttribute(attributeToDelete) }
+			// Will not delete the attribute if it's used in an owned link
+			if (classManager.attributeIsUsedInOwnedLinks(attributeToDelete.id))
+				new InfoDialog("Warning",
+					"Cannot delete %s because it's used in parent-child links.\nRemove or edit the links first and then try again."
+						.autoLocalized.interpolate(attributeToDelete.name),
+					Some(Icons.warning.fullSize.asImageWithColor(colorScheme.error))).display(window)
+			else
+				DeleteQuestionDialog.forAttribute(attributeToDelete.name,
+					classManager.classesAffectedByAttributeDeletion(attributeToDelete)).display(window).foreach {
+					if (_) classManager.deleteAttribute(attributeToDelete) }
 		}
 	}
 	

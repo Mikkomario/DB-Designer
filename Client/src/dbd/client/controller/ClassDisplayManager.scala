@@ -38,6 +38,37 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 	def linkableClasses(linkingClassId: Int) = content.flatMap { _.classesLinkableFrom(linkingClassId) }
 	
 	/**
+	 * @param attributeId Id of target attribute
+	 * @return Whether the specified attribute is used in any parent-child links
+	 */
+	def attributeIsUsedInOwnedLinks(attributeId: Int) = content.exists { _.allChildLinks.exists {
+		_.link.mappingKeyAttributeId.contains(attributeId) } }
+	
+	/**
+	 * @param attribute An attribute
+	 * @return A list of classes that would be affected by attribute deletion. Will not include class that owns the
+	 *         attribute, nor any class using attribute in a parent-child -link (attributes shouldn't be deleted
+	 *         while such a link exists)
+	 */
+	def classesAffectedByAttributeDeletion(attribute: Attribute) = content.flatMap {
+			_.classesUsingAttributeInLink(attribute) }
+	
+	/**
+	 * @param classId Id of a class
+	 * @return All classes that are affected by a possible deletion of the specified class
+	 */
+	def classesAffectedByClassDeletion(classId: Int) =
+	{
+		// First finds sub-classes that would also be deleted
+		val subclasses = content.flatMap { _.subClassesOfClassWithId(classId) }
+		val allDeletedClassIds = subclasses.map { _.id }.toSet + classId
+		// Finally finds classes that link to any deleted classes
+		val linkingClasses = content.flatMap { _.classesLinkingAnyOf(allDeletedClassIds) }
+		
+		subclasses.toSet ++ linkingClasses.toSet
+	}
+	
+	/**
 	 * Finds the classes that may become sub-classes of the specified class
 	 * @param linkingClassId Id of potential new parent class
 	 * @return A list of classes that can be adopted as children for specified class
@@ -219,10 +250,12 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 	 */
 	def deleteAttribute(attribute: Attribute): Unit =
 	{
-		// TODO: Also delete links that use this attribute as mapping key
 		// Deletes attribute from DB, then from this class
 		editAttributes(attribute.classId) { implicit connection =>
-			database.Class(attribute.classId).attribute(attribute.id).markDeleted() } { (c, _) => c - attribute }
+			database.Class(attribute.classId).attribute(attribute.id).markDeleted()
+			// Also deletes all links using specified attribute as a mapping key
+			database.Links.usingAttributeWithId(attribute.id).markDeleted()
+		} { (c, _) => c - attribute }
 	}
 	
 	/**

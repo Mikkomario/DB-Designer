@@ -29,6 +29,16 @@ case class DisplayedClass(classData: Class, links: Vector[DisplayedLink] = Vecto
 	def classIds: Set[Int] = Set(classId) ++ childLinks.flatMap { _.child.classIds }
 	
 	/**
+	 * @return All child links in this class hierarchy
+	 */
+	def allChildLinks: Vector[ChildLink] = childLinks ++ children.flatMap { _.allChildLinks }
+	
+	/**
+	 * @return All regular links in this class hierarchy
+	 */
+	def allRegularLinks: Vector[DisplayedLink] = links ++ children.flatMap { _.allRegularLinks }
+	
+	/**
 	 * @return The child classes directly below this one
 	 */
 	def children = childLinks.map { _.child }
@@ -239,6 +249,66 @@ case class DisplayedClass(classData: Class, links: Vector[DisplayedLink] = Vecto
 			this
 		else
 			copy(links = filteredLinks)
+	}
+	
+	/**
+	 * @param attribute An attribute
+	 * @return All classes in this hierarchy that use the specified attribute in a mapping link
+	 *         (class owning specified attribute is not included)
+	 */
+	def classesUsingAttributeInLink(attribute: Attribute): Vector[Class] =
+	{
+		// Only returns classes in this hierarchy, and doesn't include attribute class itself
+		if (attribute.classId != classId && links.exists { _.mappingKeyAttributeId.contains(attribute.id) })
+			children.flatMap { classData +: _.classesUsingAttributeInLink(attribute) }
+		else
+			children.flatMap { _.classesUsingAttributeInLink(attribute) }
+	}
+	
+	/**
+	 * @param classId Id of a class
+	 * @return All classes in this hierarchy that are affected by the specified class. This includes all classes that
+	 *         link to specified class, as well as all sub-classes of the specified class.
+	 */
+	def classesAffectedByClassWithId(classId: Int): Vector[Class] =
+	{
+		// If this hierarchy contains the specified class, lists all classes under that class
+		if (this.classId == classId)
+			children.flatMap { _.classes }
+		// Also lists all classes that link to specified class
+		else
+		{
+			val childResults = children.flatMap { _.classesAffectedByClassWithId(classId) }
+			if (links.exists { _.otherClass.id == classId })
+				classData +: childResults
+			else
+				childResults
+		}
+	}
+	
+	/**
+	 * @param classId A class id
+	 * @return A list of that classes sub-classes within this hierarchy
+	 */
+	def subClassesOfClassWithId(classId: Int): Vector[Class] =
+	{
+		if (this.classId == classId)
+			children.flatMap { _.classes }
+		else
+			children.flatMap { _.subClassesOfClassWithId(classId) }
+	}
+	
+	/**
+	 * @param classIds A set of class ids
+	 * @return All classes in this hierarchy that reference any of the specified classes
+	 */
+	def classesLinkingAnyOf(classIds: Set[Int]): Vector[Class] =
+	{
+		val childResult = children.flatMap { _.classesLinkingAnyOf(classIds) }
+		if (links.exists { link => classIds.contains(link.otherClass.id) })
+			classData +: childResult
+		else
+			childResult
 	}
 	
 	private def mapChildren(f: DisplayedClass => DisplayedClass) =

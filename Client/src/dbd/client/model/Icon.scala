@@ -33,6 +33,21 @@ case class Icon(private val original: Image)
 	lazy val forDarkButtons = ButtonImageSet.lowAlphaOnDisabled(white)
 	
 	
+	// COMPUTED	---------------------------
+	
+	/**
+	 * @return A full size version of this icon where icon size matches the source resolution
+	 */
+	def fullSize =
+	{
+		val newIcon = original.withOriginalSize
+		if (original == newIcon)
+			this
+		else
+			copy(original = newIcon)
+	}
+	
+	
 	// OTHER	---------------------------
 	
 	/**
@@ -56,4 +71,10 @@ case class Icon(private val original: Image)
 		case Dark => forLightButtons
 		case Light => forDarkButtons
 	}
+	
+	/**
+	 * @param iconColor New color of the icon
+	 * @return An icon image with specified color overlay
+	 */
+	def asImageWithColor(iconColor: Color) = original.withColorOverlay(iconColor)
 }

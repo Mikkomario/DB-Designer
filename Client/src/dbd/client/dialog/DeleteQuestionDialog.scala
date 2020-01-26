@@ -2,6 +2,7 @@ package dbd.client.dialog
 
 import utopia.reflection.localization.LocalString._
 import dbd.client.controller.Icons
+import dbd.core.model.template.ClassLike
 import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.swing.MultiLineTextView
 import utopia.reflection.localization.{LocalizedString, Localizer}
@@ -10,9 +11,6 @@ import utopia.reflection.util.{ComponentContext, Screen}
 object DeleteQuestionDialog
 {
 	private implicit val language: String = "en"
-	
-	// TODO: Inform which classes are affected by this change (on attribute mapped links and on class, linked classes
-	//  and sub-classes and classes linked to those)
 	
 	/**
 	 * Creates a personalized delete question dialog
@@ -23,10 +21,25 @@ object DeleteQuestionDialog
 	 * @param localizer Localizer used (implicit)
 	 * @return A new dialog
 	 */
-	def personalized(deletedItemType: LocalizedString, deletedItemName: LocalizedString)
+	def personalized(deletedItemType: LocalizedString, deletedItemName: LocalizedString,
+					 affectedTypeName: Option[LocalizedString] = None, affectedItems: Vector[String] = Vector())
 					(implicit baseContext: ComponentContext, colorScheme: ColorScheme, localizer: Localizer) =
-		new DeleteQuestionDialog("Delete %s '%s'".autoLocalized.interpolate(deletedItemType, deletedItemName),
-			"Are you sure you wish to permanently delete %s '%s'?".autoLocalized.interpolate(deletedItemType, deletedItemName))
+	{
+		val messageBuilder = new StringBuilder
+		messageBuilder ++= "Are you sure you wish to permanently delete %s '%s'?"
+		if (affectedItems.nonEmpty)
+		{
+			if (affectedTypeName.isDefined)
+				messageBuilder ++= "\nThis also affects the following %s:"
+			else
+				messageBuilder ++= "\nThis also affects:"
+			
+			messageBuilder ++= "\n\t- %s" * affectedItems.size
+		}
+		val question = messageBuilder.result().autoLocalized.interpolate(Vector(deletedItemType, deletedItemName) ++
+			affectedTypeName ++ affectedItems)
+		new DeleteQuestionDialog("Delete %s '%s'".autoLocalized.interpolate(deletedItemType, deletedItemName), question)
+	}
 	
 	/**
 	 * Creates a new dialog that checks whether the user wishes to delete an attribute
@@ -36,9 +49,10 @@ object DeleteQuestionDialog
 	 * @param colorScheme Color scheme (implicit)
 	 * @return A new dialog
 	 */
-	def forAttribute(attributeName: String)
+	def forAttribute(attributeName: String, affectedClasses: Vector[ClassLike[_, _, _]] = Vector())
 			 (implicit baseContext: ComponentContext, localizer: Localizer, colorScheme: ColorScheme) =
-		DeleteQuestionDialog.personalized("attribute", attributeName.noLanguageLocalizationSkipped)
+		DeleteQuestionDialog.personalized("attribute", attributeName.noLanguageLocalizationSkipped,
+			Some("classes"), affectedClasses.map { _.name })
 	
 	/**
 	 * Creates a new dialog that checks whether the user wishes to delete a class
@@ -48,9 +62,10 @@ object DeleteQuestionDialog
 	 * @param colorScheme Color scheme (implicit)
 	 * @return A new dialog
 	 */
-	def forClass(className: String)
+	def forClass(className: String, affectedClasses: Vector[ClassLike[_, _, _]] = Vector())
 				(implicit baseContext: ComponentContext, localizer: Localizer, colorScheme: ColorScheme) =
-		DeleteQuestionDialog.personalized("class", className.noLanguageLocalizationSkipped)
+		DeleteQuestionDialog.personalized("class", className.noLanguageLocalizationSkipped,
+			Some("classes"), affectedClasses.map { _.name })
 	
 	/**
 	 * Creates a new dialog that checks whether the user wishes to delete a link
@@ -60,9 +75,10 @@ object DeleteQuestionDialog
 	 * @param colorScheme Color scheme (implicit)
 	 * @return A new dialog
 	 */
-	def forLink(linkName: String)
+	def forLink(linkName: String, otherLinkClass: Option[ClassLike[_, _, _]] = None)
 				(implicit baseContext: ComponentContext, localizer: Localizer, colorScheme: ColorScheme) =
-		DeleteQuestionDialog.personalized("link", linkName.noLanguageLocalizationSkipped)
+		DeleteQuestionDialog.personalized("link", linkName.noLanguageLocalizationSkipped,
+			Some("class"), otherLinkClass.map { _.name }.toVector)
 }
 
 /**

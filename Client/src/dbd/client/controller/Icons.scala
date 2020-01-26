@@ -38,6 +38,11 @@ object Icons
 	def close = apply("close.png")
 	
 	/**
+	 * @return A warning icon
+	 */
+	def warning = apply("warning.png")
+	
+	/**
 	 * @return Decimal number icon
 	 */
 	def decimalNumber = apply("decimal.png")
