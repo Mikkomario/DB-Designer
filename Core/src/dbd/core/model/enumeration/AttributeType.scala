@@ -68,6 +68,13 @@ object AttributeType
 		override def toString = "True/False"
 	}
 	
+	object InstantType extends AttributeType
+	{
+		override val dataType = generic.InstantType
+		override val id = 5
+		override def toString = "Date+Time"
+	}
+	
 	
 	// OTHER	-----------------------
 	

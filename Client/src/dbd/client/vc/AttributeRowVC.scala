@@ -4,7 +4,7 @@ import utopia.reflection.shape.LengthExtensions._
 import utopia.reflection.localization.LocalString._
 import dbd.client.controller.{ClassDisplayManager, Icons}
 import dbd.client.dialog.{DeleteQuestionDialog, EditAttributeDialog, InfoDialog}
-import dbd.core.model.enumeration.AttributeType.{BooleanType, DoubleType, IntType, ShortStringType}
+import dbd.core.model.enumeration.AttributeType.{BooleanType, DoubleType, InstantType, IntType, ShortStringType}
 import dbd.core.model.enumeration.AttributeType
 import dbd.core.model.existing.Attribute
 import utopia.genesis.color.Color
@@ -132,6 +132,7 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 			case IntType => Icons.numbers.black
 			case DoubleType => Icons.decimalNumber.black
 			case BooleanType => Icons.checkBox.black
+			case InstantType => Icons.time.black
 			case _ => Image.empty // TODO: Add support for other types
 		}
 		icon.withAlpha(0.55)
