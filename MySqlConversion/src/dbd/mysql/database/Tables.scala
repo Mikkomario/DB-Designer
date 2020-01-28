@@ -22,7 +22,7 @@ object Tables
 	/**
 	 * @return Table that contains database releases
 	 */
-	def databaseRelease = apply("database_release")
+	def release = apply("database_release")
 	
 	/**
 	 * @return Table that contains released tables
