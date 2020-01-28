@@ -50,5 +50,9 @@ object Tables extends utopia.vault.database.Tables(ConnectionPool)(ThreadPool.ex
 	
 	// OTHER	--------------------------
 	
-	private def apply(tableName: String): Table = apply(dbName, tableName)
+	/**
+	 * @param tableName Name of targeted table
+	 * @return a cached table
+	 */
+	def apply(tableName: String): Table = apply(dbName, tableName)
 }

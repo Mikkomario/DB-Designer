@@ -4,10 +4,8 @@ import java.time.Instant
 
 import dbd.core.database.Tables
 import dbd.core.model.enumeration.AttributeType
-import utopia.flow.util.CollectionExtensions._
 import utopia.flow.generic.ValueConversions._
 import dbd.core.model.existing
-import dbd.core.model.error.NoSuchTypeException
 import dbd.core.model.partial.NewAttributeConfiguration
 import utopia.flow.datastructure.template.{Model, Property}
 import utopia.vault.model.immutable.StorableWithFactory
@@ -25,9 +23,9 @@ object AttributeConfiguration extends StorableFactory[existing.AttributeConfigur
 	override def apply(model: Model[Property]) = table.requirementDeclaration.validate(model).toTry.flatMap { valid =>
 		// Data type must be parseable
 		val typeId = valid("dataType").getInt
-		AttributeType.forId(typeId).toTry(new NoSuchTypeException(s"No attribute type for id $typeId")).map { attType =>
-			existing.AttributeConfiguration(valid("id").getInt, valid("attributeId").getInt, valid("name").getString,
-				attType, valid("isOptional").getBoolean, valid("isSearchKey").getBoolean)
+		AttributeType.withId(typeId).map { attType => existing.AttributeConfiguration(valid("id").getInt,
+			valid("attributeId").getInt, valid("name").getString, attType, valid("isOptional").getBoolean,
+			valid("isSearchKey").getBoolean)
 		}
 	}
 	

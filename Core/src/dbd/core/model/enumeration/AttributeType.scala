@@ -1,5 +1,7 @@
 package dbd.core.model.enumeration
 
+import utopia.flow.util.CollectionExtensions._
+import dbd.core.model.error.NoSuchTypeException
 import utopia.flow.generic
 import utopia.flow.generic.{DataType, StringType}
 
@@ -88,4 +90,10 @@ object AttributeType
 	 * @return An attribute type for the id. None if not found
 	 */
 	def forId(id: Int) = values.find { _.id == id }
+	
+	/**
+	 * @param id Target id
+	 * @return An attribute type for the id. Failure if id didn't match any attribute type
+	 */
+	def withId(id: Int) = forId(id).toTry(new NoSuchTypeException(s"No attribute type for id $id"))
 }

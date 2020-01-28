@@ -1,6 +1,6 @@
 package dbd.mysql.model.template
 
-import utopia.flow.generic.DataType
+import dbd.core.model.enumeration.AttributeType
 
 /**
  * A common trait for columns
@@ -20,7 +20,7 @@ trait ColumnLike[+Index <: IndexLike]
 	/**
 	 * @return Data type of this column
 	 */
-	def dataType: DataType
+	def dataType: AttributeType
 	/**
 	 * @return Whether this column allows null values
 	 */
