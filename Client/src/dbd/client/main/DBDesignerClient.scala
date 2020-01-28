@@ -1,10 +1,10 @@
 package dbd.client.main
 
-import dbd.client.controller.ConnectionPool
 import utopia.flow.util.CollectionExtensions._
 import dbd.core.database
 import dbd.client.model.Fonts
 import dbd.client.vc.ClassesVC
+import dbd.core.database.ConnectionPool
 import dbd.core.util.Log
 import utopia.flow.async.ThreadPool
 import utopia.reflection.shape.LengthExtensions._

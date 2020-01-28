@@ -3,6 +3,7 @@ package dbd.client.controller
 import dbd.client.model.{ChildLink, DisplayedClass, DisplayedLink, EditSubClassResult}
 import utopia.flow.util.CollectionExtensions._
 import dbd.core.database
+import dbd.core.database.ConnectionPool
 import dbd.core.model.enumeration.LinkEndRole
 import dbd.core.model.enumeration.LinkEndRole.{Origin, Target}
 import dbd.core.model.existing.{Attribute, Class, Link}

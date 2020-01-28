@@ -1,11 +1,14 @@
 package dbd.core.database
 
+import dbd.core.util.ThreadPool
+import utopia.vault.model.immutable.Table
+
 /**
  * Used for accessing tables used in DB Designer project
  * @author Mikko Hilpinen
  * @since 10.1.2020, v0.1
  */
-object Tables
+object Tables extends utopia.vault.database.Tables(ConnectionPool)(ThreadPool.executionContext)
 {
 	// ATTRIBUTES	----------------------
 	
@@ -47,5 +50,5 @@ object Tables
 	
 	// OTHER	--------------------------
 	
-	private def apply(tableName: String) = utopia.vault.database.Tables(dbName, tableName)
+	private def apply(tableName: String): Table = apply(dbName, tableName)
 }

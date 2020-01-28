@@ -1,4 +1,4 @@
-package dbd.client.controller
+package dbd.core.database
 
 /**
  * The connection pool used by DB Designer client
