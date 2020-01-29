@@ -19,7 +19,7 @@ object Table extends MultiLinkedStorableFactory[existing.Table, existing.Column]
 	{
 		table.requirementDeclaration.validate(model).toTry.map { valid =>
 			existing.Table(id.getInt, valid("releaseId").getInt, valid("classId").getInt, valid("name").getString,
-				valid("usesDeprecation").getBoolean, children.toVector)
+				valid("usesDeprecation").getBoolean, valid("allowsUpdates").getBoolean, children.toVector)
 		}
 	}
 	
@@ -38,10 +38,11 @@ object Table extends MultiLinkedStorableFactory[existing.Table, existing.Column]
 	def insert(releaseId: Int, data: NewTable)(implicit connection: Connection) =
 	{
 		// Inserts table
-		val newId = apply(None, Some(releaseId), Some(data.classId), Some(data.name), Some(data.usesDeprecation)).insert().getInt
+		val newId = apply(None, Some(releaseId), Some(data.classId), Some(data.name), Some(data.usesDeprecation),
+			Some(data.allowsUpdates)).insert().getInt
 		// Inserts all columns
 		val newColumns = data.columns.map { c => Column.insert(newId, c) }
-		existing.Table(newId, releaseId, data.classId, data.name, data.usesDeprecation, newColumns)
+		existing.Table(newId, releaseId, data.classId, data.name, data.usesDeprecation, data.allowsUpdates, newColumns)
 	}
 }
 
@@ -51,11 +52,11 @@ object Table extends MultiLinkedStorableFactory[existing.Table, existing.Column]
  * @since 28.1.2020, v0.1
  */
 case class Table(id: Option[Int] = None, releaseId: Option[Int], classId: Option[Int], name: Option[String] = None,
-				 usesDeprecation: Option[Boolean] = None)
+				 usesDeprecation: Option[Boolean] = None, allowsUpdates: Option[Boolean] = None)
 	extends Storable
 {
 	override def table = Table.table
 	
 	override def valueProperties = Vector("id" -> id, "releaseId" -> releaseId, "classId" -> classId, "name" -> name,
-		"usesDeprecation" -> usesDeprecation)
+		"usesDeprecation" -> usesDeprecation, "allowsUpdates" -> allowsUpdates)
 }

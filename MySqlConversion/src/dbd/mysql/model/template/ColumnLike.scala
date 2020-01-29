@@ -1,5 +1,6 @@
 package dbd.mysql.model.template
 
+import utopia.flow.util.CollectionExtensions._
 import dbd.core.model.enumeration.AttributeType
 
 /**
@@ -9,6 +10,8 @@ import dbd.core.model.enumeration.AttributeType
  */
 trait ColumnLike[+Index <: IndexLike, FK <: ForeignKeyLike, AL <: ColumnAttributeLinkLike[Index], LL <: ColumnLinkLinkLike[FK]]
 {
+	// ABSTRACT	----------------------
+	
 	/**
 	 * @return Either linked attribute data or link data
 	 */
@@ -25,4 +28,27 @@ trait ColumnLike[+Index <: IndexLike, FK <: ForeignKeyLike, AL <: ColumnAttribut
 	 * @return Whether this column allows null values
 	 */
 	def allowsNull: Boolean
+	
+	
+	// COMPUTED	-----------------------
+	
+	/**
+	 * @return Whether this column is used as an index
+	 */
+	def hasIndex = linkedData.rightOption.exists { _.index.isDefined }
+	
+	/**
+	 * @return Whether this column has an associated foreign key
+	 */
+	def hasForeignKey = linkedData.isLeft
+	
+	/**
+	 * @return An index associated with this column, if there is one
+	 */
+	def index = linkedData.rightOption.flatMap { _.index }
+	
+	/**
+	 * @return A foreign key associated with this column, if there is one
+	 */
+	def foreignKey = linkedData.leftOption.map { _.foreignKey }
 }

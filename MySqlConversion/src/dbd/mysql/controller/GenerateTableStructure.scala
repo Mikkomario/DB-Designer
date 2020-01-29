@@ -116,8 +116,8 @@ object GenerateTableStructure
 	private def classToTable(classToConvert: Class, tableName: String, namePrefix: String, useDeprecation: Boolean) =
 	{
 		val attNames = attributeNames(classToConvert.attributes)
-		NewTable(classToConvert.id, tableName, useDeprecation, classToConvert.attributes.map { a =>
-			attributeToColumn(a, attNames(a.id), namePrefix) })
+		NewTable(classToConvert.id, tableName, useDeprecation, classToConvert.isMutable,
+			classToConvert.attributes.map { a => attributeToColumn(a, attNames(a.id), namePrefix) })
 	}
 	
 	private def attributeNames(attributes: Vector[Attribute]) =
