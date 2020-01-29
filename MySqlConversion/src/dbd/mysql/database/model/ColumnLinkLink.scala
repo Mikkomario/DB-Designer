@@ -17,7 +17,7 @@ object ColumnLinkLink extends LinkedStorableFactory[existing.ColumnLinkLink, exi
 	
 	override def apply(model: Model[Constant], child: existing.ForeignKey) = table.requirementDeclaration
 		.validate(model).toTry.map { valid =>
-		existing.ColumnLinkLink(valid("id").getInt, valid("columnId").getInt, valid("linkId").getInt, child)
+		existing.ColumnLinkLink(valid("id").getInt, valid("columnId").getInt, valid("linkConfigurationId").getInt, child)
 	}
 	
 	override def table = Tables.columnLinkLink
@@ -36,8 +36,8 @@ object ColumnLinkLink extends LinkedStorableFactory[existing.ColumnLinkLink, exi
 	{
 		// Inserts the foreign key first
 		val newFK = ForeignKey.insert(data.foreignKey)
-		val newId = apply(None, Some(columnId), Some(data.linkId), Some(newFK.id)).insert().getInt
-		existing.ColumnLinkLink(newId, columnId, data.linkId, newFK)
+		val newId = apply(None, Some(columnId), Some(data.linkConfigurationId), Some(newFK.id)).insert().getInt
+		existing.ColumnLinkLink(newId, columnId, data.linkConfigurationId, newFK)
 	}
 }
 
@@ -46,11 +46,11 @@ object ColumnLinkLink extends LinkedStorableFactory[existing.ColumnLinkLink, exi
  * @author Mikko Hilpinen
  * @since 29.1.2020, v0.1
  */
-case class ColumnLinkLink(id: Option[Int] = None, columnId: Option[Int] = None, linkId: Option[Int] = None,
+case class ColumnLinkLink(id: Option[Int] = None, columnId: Option[Int] = None, linkConfigurationId: Option[Int] = None,
 						  foreignKeyId: Option[Int] = None) extends StorableWithFactory[existing.ColumnLinkLink]
 {
 	override def factory = ColumnLinkLink
 	
-	override def valueProperties = Vector("id" -> id, "columnId" -> columnId, "linkId" -> linkId,
+	override def valueProperties = Vector("id" -> id, "columnId" -> columnId, "linkConfigurationId" -> linkConfigurationId,
 		"foreignKeyId" -> foreignKeyId)
 }

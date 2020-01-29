@@ -10,7 +10,7 @@ trait ColumnLinkLinkLike[FK <: ForeignKeyLike]
 	/**
 	 * @return Id of associated link
 	 */
-	def linkId: Int
+	def linkConfigurationId: Int
 	/**
 	 * @return Associated foreign key data
 	 */

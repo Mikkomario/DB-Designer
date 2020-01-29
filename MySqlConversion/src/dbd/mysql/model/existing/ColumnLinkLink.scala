@@ -7,5 +7,5 @@ import dbd.mysql.model.template.ColumnLinkLinkLike
  * @author Mikko Hilpinen
  * @since 29.1.2020, v0.1
  */
-case class ColumnLinkLink(id: Int, columnId: Int, linkId: Int, foreignKey: ForeignKey)
+case class ColumnLinkLink(id: Int, columnId: Int, linkConfigurationId: Int, foreignKey: ForeignKey)
 	extends ColumnLinkLinkLike[ForeignKey]

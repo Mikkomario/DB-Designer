@@ -109,7 +109,7 @@ object GenerateTableStructure
 	private def nameParts(name: String, maxLettersPerPart: Int) =
 	{
 		val parts = name.split("_")
-		parts.map { _.take(maxLettersPerPart) }.mkString("_")
+		parts.map { _.take(maxLettersPerPart) }.reduce { _ + _ }
 	}
 	
 	private def classToTable(classToConvert: Class, tableName: String, namePrefix: String) =
@@ -139,7 +139,7 @@ object GenerateTableStructure
 		val linkNames = makeUnique(links.toMultiMap(l => linkTargets(l.id).name, _.id))
 		
 		// Generates columns and inserts the to table
-		links.map { link => linkToColumn(link, linkNames(link.id), prefix, table) }.map {
+		links.map { link => linkToColumn(link, linkNames(link.id), prefix, linkTargets(link.targetClassId)) }.map {
 			database.model.Column.insert(table.id, _) }
 	}
 	

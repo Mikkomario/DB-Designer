@@ -16,7 +16,8 @@ object ColumnAttributeLink extends FromRowFactory[existing.ColumnAttributeLink]
 	{
 		table.requirementDeclaration.validate(row(table)).toTry.map { model =>
 			val index = Index.parseIfPresent(row)
-			existing.ColumnAttributeLink(model("id").getInt, model("columnId").getInt, model("attributeId").getInt, index)
+			existing.ColumnAttributeLink(model("id").getInt, model("columnId").getInt,
+				model("attributeConfigurationId").getInt, index)
 		}
 	}
 	
@@ -37,8 +38,8 @@ object ColumnAttributeLink extends FromRowFactory[existing.ColumnAttributeLink]
 	def insert(columnId: Int, data: NewColumnAttributeLink)(implicit connection: Connection) =
 	{
 		val newIndex = data.index.map { Index.insert(_) }
-		val newId = apply(None, Some(columnId), Some(data.attributeId), newIndex.map { _.id }).insert().getInt
-		existing.ColumnAttributeLink(newId, columnId, data.attributeId, newIndex)
+		val newId = apply(None, Some(columnId), Some(data.attributeConfigurationId), newIndex.map { _.id }).insert().getInt
+		existing.ColumnAttributeLink(newId, columnId, data.attributeConfigurationId, newIndex)
 	}
 }
 
@@ -47,12 +48,12 @@ object ColumnAttributeLink extends FromRowFactory[existing.ColumnAttributeLink]
  * @author Mikko Hilpinen
  * @since 29.1.2020, v0.1
  */
-case class ColumnAttributeLink(id: Option[Int] = None, columnId: Option[Int] = None, attributeId: Option[Int] = None,
+case class ColumnAttributeLink(id: Option[Int] = None, columnId: Option[Int] = None, attributeConfigurationId: Option[Int] = None,
 							   indexId: Option[Int] = None)
 	extends StorableWithFactory[existing.ColumnAttributeLink]
 {
 	override def factory = ColumnAttributeLink
 	
-	override def valueProperties = Vector("id" -> id, "columnId" -> columnId, "attributeId" -> attributeId,
-		"indexId" -> indexId)
+	override def valueProperties = Vector("id" -> id, "columnId" -> columnId,
+		"attributeConfigurationId" -> attributeConfigurationId, "indexId" -> indexId)
 }

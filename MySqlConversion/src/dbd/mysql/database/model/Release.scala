@@ -15,7 +15,7 @@ object Release extends StorableFactoryWithValidation[existing.Release]
 	// IMPLEMENTED	-------------------------
 	
 	override protected def fromValidatedModel(model: Model[Constant]) = existing.Release(model("id").getInt,
-		model("databaseId").getInt, VersionNumber.parse(model("versionNumer").getString), model("created").getInstant)
+		model("databaseId").getInt, VersionNumber.parse(model("versionNumber").getString), model("created").getInstant)
 	
 	override def table = Tables.release
 	

@@ -10,7 +10,7 @@ trait ColumnAttributeLinkLike[+Index]
 	/**
 	 * @return Id of the associated attribute
 	 */
-	def attributeId: Int
+	def attributeConfigurationId: Int
 	/**
 	 * @return A possible index linked to this column
 	 */
