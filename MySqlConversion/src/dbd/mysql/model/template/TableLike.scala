@@ -17,6 +17,10 @@ trait TableLike[+Index <: IndexLike, FK <: ForeignKeyLike, AL <: ColumnAttribute
 	 */
 	def name: String
 	/**
+	 * @return Whether this table uses deprecation style
+	 */
+	def usesDeprecation: Boolean
+	/**
 	 * @return Columns in this table
 	 */
 	def columns: Vector[Column]

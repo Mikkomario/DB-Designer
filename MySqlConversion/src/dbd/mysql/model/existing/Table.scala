@@ -7,5 +7,5 @@ import dbd.mysql.model.template.TableLike
  * @author Mikko Hilpinen
  * @since 28.1.2020, v0.1
  */
-case class Table(id: Int, releaseId: Int, classId: Int, name: String, columns: Vector[Column])
+case class Table(id: Int, releaseId: Int, classId: Int, name: String, usesDeprecation: Boolean, columns: Vector[Column])
 	extends TableLike[Index, ForeignKey, ColumnAttributeLink, ColumnLinkLink, Column]

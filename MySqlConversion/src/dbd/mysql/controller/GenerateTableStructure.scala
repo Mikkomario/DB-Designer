@@ -5,7 +5,7 @@ import java.time.Instant
 import dbd.mysql.database
 import dbd.core.model.enumeration.NamingConvention._
 import utopia.flow.util.CollectionExtensions._
-import dbd.core.database.{Classes, Links}
+import dbd.core.database.Database
 import dbd.core.model.enumeration.AttributeType.IntType
 import dbd.core.model.enumeration.LinkTypeCategory.ManyToMany
 import dbd.core.model.existing.{Attribute, Class, Link}
@@ -32,15 +32,19 @@ object GenerateTableStructure
 	 */
 	def apply(databaseId: Int, newVersionNumber: VersionNumber)(implicit connection: Connection) =
 	{
-		// Reads class data from the DB first
-		val classes = Classes.get
+		// Reads class and link data from the DB first
+		val classes = Database(databaseId).classes.get
+		// TODO: Handle many-to-many -links separately
+		val links = Database(databaseId).links.get.filterNot { _.linkType.category == ManyToMany }
+		val linksPerClassId = links.groupBy { _.originClassId }
 		
 		// Creates class names and unique index name prefixes
 		val names = classNames(classes)
 		val prefixes = uniquePrefixes(names, 0) // 1 prefix per class id
 		
 		// Converts class data into tables & columns
-		val newData = classes.map { c => classToTable(c, names(c.id), prefixes(c.id)) }
+		val newData = classes.map { c => classToTable(c, names(c.id), prefixes(c.id),
+			linksPerClassId.get(c.id).exists { _.exists { link => link.linkType.usesDeprecation } }) }
 		
 		// Creates a new release
 		val newRelease = NewRelease(databaseId, newVersionNumber, newData)
@@ -50,9 +54,6 @@ object GenerateTableStructure
 		val storedTables = newData.map { table => database.model.Table.insert(newReleaseId, table) }
 		
 		// Generates link columns and foreign key data and inserts those to DB as well
-		// TODO: Handle many-to-many -links separately
-		val links = Links.get.filterNot { _.linkType.category == ManyToMany }
-		val linksPerClassId = links.groupBy { _.originClassId }
 		val tablesForClassIds = storedTables.map { table => table.classId -> table }.toMap
 		
 		val insertedColumnsPerTableId = linksPerClassId.map { case (classId, links) =>
@@ -112,10 +113,10 @@ object GenerateTableStructure
 		parts.map { _.take(maxLettersPerPart) }.reduce { _ + _ }
 	}
 	
-	private def classToTable(classToConvert: Class, tableName: String, namePrefix: String) =
+	private def classToTable(classToConvert: Class, tableName: String, namePrefix: String, useDeprecation: Boolean) =
 	{
 		val attNames = attributeNames(classToConvert.attributes)
-		NewTable(classToConvert.id, tableName, classToConvert.attributes.map { a =>
+		NewTable(classToConvert.id, tableName, useDeprecation, classToConvert.attributes.map { a =>
 			attributeToColumn(a, attNames(a.id), namePrefix) })
 	}
 	
