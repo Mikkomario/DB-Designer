@@ -1,7 +1,6 @@
 package dbd.client.main
 
 import utopia.flow.util.CollectionExtensions._
-import dbd.core.database
 import dbd.client.model.Fonts
 import dbd.client.vc.ClassesVC
 import dbd.core.database.ConnectionPool
@@ -57,10 +56,8 @@ object DBDesignerClient extends App
 	
 	// Reads displayed data from DB
 	ConnectionPool.tryWith { implicit connection =>
-		val classes = database.Classes.get
-		val links = database.Links.get
-		println(s"Found ${classes.size} classes and ${links.size} links from DB")
-		val content = new ClassesVC(Screen.height * 0.7, classes, links)
+		// TODO: Temporarily uses hard-coded db 1. Will fail if there is no data in DB
+		val content = new ClassesVC(Screen.height * 0.7, 1)
 		new SingleFrameSetup(actorHandler, Frame.windowed(content.framed(margins.medium.any.square, primaryColors.light),
 			"DB Designer", Program)).start()
 	}.failure.foreach { Log(_, "Failed to run DB Designer client") }

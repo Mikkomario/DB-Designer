@@ -66,6 +66,16 @@ trait LinkLike
 	def nameInChild = nameInRole(linkType.fixedChild)
 	
 	/**
+	 * @return Name of this link in link origin
+	 */
+	def nameInOrigin = configuration.nameInOrigin
+	
+	/**
+	 * @return Name of this link in link target
+	 */
+	def nameInTarget = configuration.nameInTarget
+	
+	/**
 	 * @return Id of the attribute that is used as a map key (None if no mapping is used)
 	 */
 	def mappingKeyAttributeId = configuration.mappingKeyAttributeId
@@ -89,7 +99,7 @@ trait LinkLike
 	 */
 	def nameInRole(role: LinkEndRole) = role match
 	{
-		case Origin => configuration.nameInOrigin
-		case Target => configuration.nameInTarget
+		case Origin => nameInOrigin
+		case Target => nameInTarget
 	}
 }

@@ -29,6 +29,12 @@ object Table extends MultiLinkedStorableFactory[existing.Table, existing.Column]
 	// OTHER	-------------------------
 	
 	/**
+	 * @param releaseId Id of target release
+	 * @return A model with only release id set
+	 */
+	def withReleaseId(releaseId: Int) = apply(releaseId = Some(releaseId))
+	
+	/**
 	 * Inserts a new table to database. Will not include foreign key data
 	 * @param releaseId Id of associated release
 	 * @param data Table data to insert
@@ -51,7 +57,7 @@ object Table extends MultiLinkedStorableFactory[existing.Table, existing.Column]
  * @author Mikko Hilpinen
  * @since 28.1.2020, v0.1
  */
-case class Table(id: Option[Int] = None, releaseId: Option[Int], classId: Option[Int], name: Option[String] = None,
+case class Table(id: Option[Int] = None, releaseId: Option[Int], classId: Option[Int] = None, name: Option[String] = None,
 				 usesDeprecation: Option[Boolean] = None, allowsUpdates: Option[Boolean] = None)
 	extends Storable
 {

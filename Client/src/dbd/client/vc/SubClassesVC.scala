@@ -33,7 +33,7 @@ class SubClassesVC(initialParent: ParentOrSubClass, classManager: ClassDisplayMa
 	private implicit val baseContext: ComponentContext = baseCB.result
 	
 	private var _parent = initialParent
-	private val childStack = Stack.row[ClassVC](margin = margins.small.downscaling)
+	private val childStack = Stack.column[ClassVC](margin = margins.small.downscaling)
 	private val childManager = new ContainerContentManager[ParentOrSubClass, Stack[ClassVC], ClassVC](childStack)(
 		c => new ClassVC(c, classManager))
 	

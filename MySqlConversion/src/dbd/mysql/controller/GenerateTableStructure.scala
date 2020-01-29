@@ -101,9 +101,14 @@ object GenerateTableStructure
 		val uniqueIds = classesPerName.filter { _._2.size == 1 }.map { _._2.head }.toSet
 		
 		// Expects class names to be unique
-		val handledDuplicates = uniquePrefixes(classNames.filterKeys { !uniqueIds.contains(_) }, commonLetters + 1)
-		
-		shortNames.filterKeys(uniqueIds.contains) ++ handledDuplicates
+		val duplicates = classNames.filterKeys { !uniqueIds.contains(_) }
+		if (duplicates.nonEmpty)
+		{
+			val handledDuplicates = uniquePrefixes(duplicates, commonLetters + 1)
+			shortNames.filterKeys(uniqueIds.contains) ++ handledDuplicates
+		}
+		else
+			shortNames
 	}
 	
 	// Expects name to be in underscore style
@@ -135,12 +140,14 @@ object GenerateTableStructure
 	{
 		// Link id -> target table
 		val linkTargets = links.map { link => link.id -> tablesForClassIds(link.targetClassId) }.toMap
-		// If there are multiple links to a single table, the link names are made unique
+		// Tries to use given link nickname but if that is not specified, uses name of targeted table
+		// the link names are made unique
 		// Link id -> link name
-		val linkNames = makeUnique(links.toMultiMap(l => linkTargets(l.id).name, _.id))
+		val linkNames = makeUnique(links.toMultiMap(l => l.nameInOrigin.map { _.toUnderscore }
+			.getOrElse(linkTargets(l.id).name), _.id))
 		
 		// Generates columns and inserts the to table
-		links.map { link => linkToColumn(link, linkNames(link.id), prefix, linkTargets(link.targetClassId)) }.map {
+		links.map { link => linkToColumn(link, linkNames(link.id), prefix, linkTargets(link.id)) }.map {
 			database.model.Column.insert(table.id, _) }
 	}
 	

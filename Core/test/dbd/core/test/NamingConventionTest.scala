@@ -44,6 +44,7 @@ object NamingConventionTest extends App
 	assert(Underscore.convert("1_test") == "_1_test")
 	assert(Underscore.convert("Test Name") == "test_name")
 	assert(Underscore.convert("redRGB") == "red_rgb")
+	assert(Underscore.convert("Mapping Attribute") == "mapping_attribute")
 	
 	assert(CamelCase.convert("test_name") == "testName")
 	assert(CamelCase.convert("3Apples") == "_3Apples")

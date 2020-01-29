@@ -39,7 +39,7 @@ object Column extends FromRowFactory[existing.Column]
 	
 	override def table = Tables.column
 	
-	override def joinedTables = Index.tables ++ ForeignKey.tables
+	override def joinedTables = ColumnAttributeLink.tables ++ ColumnLinkLink.tables
 	
 	
 	// OTHER	------------------------

@@ -83,7 +83,7 @@ object AttributeType
 	/**
 	 * All introduced attribute types
 	 */
-	val values = Vector(ShortStringType, IntType, DoubleType, BooleanType)
+	val values = Vector(ShortStringType, IntType, DoubleType, BooleanType, InstantType)
 	
 	/**
 	 * @param id Target id

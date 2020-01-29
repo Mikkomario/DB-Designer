@@ -2,6 +2,7 @@ package dbd.mysql.controller
 
 import utopia.flow.util.CollectionExtensions._
 import dbd.core.model.enumeration.AttributeType._
+import dbd.core.util.Log
 import dbd.mysql.model.existing.{Column, ForeignKey, Index, Table}
 
 import scala.collection.immutable.VectorBuilder
@@ -47,7 +48,7 @@ object SqlWriter
 		// Inserts table declaration
 		sql ++= "CREATE TABLE `"
 		sql ++= table.name
-		sql ++= "`(\n\tid INT NOT NULL PRIMARY KEY AUTO_INCREMENT, "
+		sql ++= "`(\n\t`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT, "
 		
 		// Inserts column lines
 		columnLines(table).foreach { line =>
@@ -62,6 +63,10 @@ object SqlWriter
 		else
 			sql ++= "\n\t`created` TIMESTAMP NOT NULL DEFAULT CURRENT TIMESTAMP"
 		
+		// Inserts deprecated column if needed
+		if (table.usesDeprecation)
+			sql ++= ", \n\t`deprecated_after` DATETIME"
+		
 		// Inserts possible indices
 		val idxLines = indexLines(table)
 		if (idxLines.nonEmpty)
@@ -69,6 +74,10 @@ object SqlWriter
 			sql ++= ", \n\n\t"
 			sql ++= idxLines.mkString(", \n\t")
 		}
+		
+		// Inserts deprecation index, if needed
+		if (table.usesDeprecation)
+			sql ++= s", \n\n\tINDEX ${table.name}_deprecation_idx (`deprecated_after`)"
 		
 		// Inserts possible foreign keys
 		val fkLines = foreignKeyLines(table, tablesById)
@@ -110,9 +119,9 @@ object SqlWriter
 	
 	private def fkToSql(fk: ForeignKey, column: Column, targetTableName: String) =
 		s"CONSTRAINT ${fk.baseName}_fk FOREIGN KEY ${fk.baseName}_idx (`${
-			column.name}`) REFERENCES $targetTableName(id) ON ${if (column.allowsNull) "SET NULL" else "CASCADE"}"
+			column.name}`) REFERENCES `$targetTableName`(`id`) ON DELETE ${if (column.allowsNull) "SET NULL" else "CASCADE"}"
 	
-	private def indexToSql(index: Index, columnName: String) = s"INDEX ${index.name} (``$columnName`)"
+	private def indexToSql(index: Index, columnName: String) = s"INDEX ${index.name} (`$columnName`)"
 	
 	private def columnToSql(column: Column) =
 		s"`${column.name}` ${dataTypeToSql(column)}${if (column.allowsNull) "" else " NOT NULL"}"
@@ -128,8 +137,8 @@ object SqlWriter
 	
 	private def orderTables(tables: Vector[Table]) =
 	{
-		var ordered = Vector(tables.head)
-		var next = tables.drop(1)
+		var ordered = Vector[Table]()
+		var next = tables
 		
 		while (next.nonEmpty)
 		{
@@ -144,26 +153,18 @@ object SqlWriter
 			}
 			
 			// Repeats until all tables have been placed
-			// TODO: Handle cases where trying to add tables with circular references
-			next = rejectedBuilder.result()
+			// TODO: Handle cases where trying to add tables with circular references (add foreign keys separately?)
+			val nextIteration = rejectedBuilder.result()
+			if (nextIteration.size < next.size)
+				next = nextIteration
+			else
+			{
+				Log.warning(s"Couldn't order following tables in a way where foreign keys can be respected: [${nextIteration.map { _.name }.mkString(", ")}]")
+				ordered :+= nextIteration.head
+				next = nextIteration.tail
+			}
 		}
 		
 		ordered
-	}
-	
-	
-	// NESTED	-------------------------
-	
-	private object TableCreationOrdering extends Ordering[Table]
-	{
-		override def compare(x: Table, y: Table) =
-		{
-			if (x.containsReferencesToTableWithId(y.id))
-				1
-			else if (y.containsReferencesToTableWithId(x.id))
-				-1
-			else
-				x.name.compareTo(y.name)
-		}
 	}
 }

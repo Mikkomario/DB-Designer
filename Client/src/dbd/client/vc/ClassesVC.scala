@@ -23,15 +23,14 @@ import scala.concurrent.ExecutionContext
  * @author Mikko Hilpinen
  * @since 17.1.2020, v0.1
  */
-class ClassesVC(targetHeight: Double, classesToDisplay: Vector[Class] = Vector(), linksToDisplay: Vector[Link] = Vector())
+class ClassesVC(targetHeight: Double, initialDatabaseId: Int)
 			   (implicit margins: Margins, baseCB: ComponentContextBuilder, fonts: Fonts, colorScheme: ColorScheme,
 				defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
 	extends StackableAwtComponentWrapperWrapper with RefreshableWithPointer[Vector[DisplayedClass]]
 {
 	// ATTRIBUTES	---------------------
 	
-	// TODO: Will fail if DB doesn't contain database data
-	private val dataManager = new ClassDisplayManager(1)
+	private val dataManager = new ClassDisplayManager(initialDatabaseId)
 	private val addClassButton = ImageAndTextButton.contextual(Icons.addBox.forButtonWithBackground(colorScheme.secondary.dark),
 		"Add Class") { () => addButtonPressed() }(baseCB.withColors(colorScheme.secondary.dark).result)
 	private val classView = new CollectionView[ClassVC](Direction2D.Down, targetHeight, margins.medium.downscaling)
