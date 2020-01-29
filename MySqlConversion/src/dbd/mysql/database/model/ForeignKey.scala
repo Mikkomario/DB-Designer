@@ -14,7 +14,7 @@ object ForeignKey extends StorableFactoryWithValidation[existing.ForeignKey]
 	// IMPLEMENTED	---------------------------
 	
 	override protected def fromValidatedModel(model: Model[Constant]) = existing.ForeignKey(model("id").getInt,
-		model("originColumnId").getInt, model("targetTableId").getInt, model("baseName").getString)
+		model("targetTableId").getInt, model("baseName").getString)
 	
 	override def table = Tables.foreignKey
 	
@@ -29,7 +29,7 @@ object ForeignKey extends StorableFactoryWithValidation[existing.ForeignKey]
 	 */
 	def insert(data: NewForeignKey)(implicit connection: Connection) =
 	{
-		val newId = apply(None, Some(data.originColumnId), Some(data.targetTableId), Some(data.baseName)).insert().getInt
+		val newId = apply(None, Some(data.targetTableId), Some(data.baseName)).insert().getInt
 		data.withId(newId)
 	}
 }
@@ -39,11 +39,10 @@ object ForeignKey extends StorableFactoryWithValidation[existing.ForeignKey]
  * @author Mikko Hilpinen
  * @since 28.1.2020, v0.1
  */
-case class ForeignKey(id: Option[Int] = None, originColumnId: Option[Int] = None, targetTableId: Option[Int] = None,
+case class ForeignKey(id: Option[Int] = None, targetTableId: Option[Int] = None,
 					  baseName: Option[String] = None) extends StorableWithFactory[existing.ForeignKey]
 {
 	override def factory = ForeignKey
 	
-	override def valueProperties = Vector("id" -> id, "originColumnId" -> originColumnId,
-		"targetTableId" -> targetTableId, "baseName" -> baseName)
+	override def valueProperties = Vector("id" -> id, "targetTableId" -> targetTableId, "baseName" -> baseName)
 }

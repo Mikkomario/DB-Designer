@@ -15,8 +15,4 @@ trait ForeignKeyLike
 	 * @return Id of the table this foreign key points to
 	 */
 	def targetTableId: Int
-	/**
-	 * @return Id of the column this foreign key originates from
-	 */
-	def originColumnId: Int
 }

@@ -8,11 +8,11 @@ import dbd.mysql.model.template.ForeignKeyLike
  * @author Mikko Hilpinen
  * @since 28.1.2020, v0.1
  */
-case class NewForeignKey(originColumnId: Int, targetTableId: Int, baseName: String) extends ForeignKeyLike
+case class NewForeignKey(targetTableId: Int, baseName: String) extends ForeignKeyLike
 {
 	/**
 	 * @param id New id for this model
 	 * @return A copy of this model with id attached
 	 */
-	def withId(id: Int) = ForeignKey(id, originColumnId, targetTableId, baseName)
+	def withId(id: Int) = ForeignKey(id, targetTableId, baseName)
 }

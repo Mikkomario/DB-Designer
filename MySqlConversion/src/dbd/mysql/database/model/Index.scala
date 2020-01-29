@@ -14,7 +14,7 @@ object Index extends StorableFactoryWithValidation[existing.Index]
 	// IMPLEMENTED	-----------------------
 	
 	override protected def fromValidatedModel(model: Model[Constant]) = existing.Index(model("id").getInt,
-		model("columnId").getInt, model("name").getString)
+		model("name").getString)
 	
 	override def table = Tables.index
 	
@@ -23,15 +23,14 @@ object Index extends StorableFactoryWithValidation[existing.Index]
 	
 	/**
 	 * Inserts a new index to database
-	 * @param columnId Id of the origin column
 	 * @param data Index data
 	 * @param connection DB Connection (implicit)
 	 * @return Newly inserted index
 	 */
-	def insert(columnId: Int, data: NewIndex)(implicit connection: Connection) =
+	def insert(data: NewIndex)(implicit connection: Connection) =
 	{
-		val newId = apply(None, Some(columnId), Some(data.name)).insert().getInt
-		existing.Index(newId, columnId, data.name)
+		val newId = apply(None, Some(data.name)).insert().getInt
+		existing.Index(newId, data.name)
 	}
 }
 
@@ -40,10 +39,10 @@ object Index extends StorableFactoryWithValidation[existing.Index]
  * @author Mikko Hilpinen
  * @since 28.1.2020, v0.1
  */
-case class Index(id: Option[Int] = None, columnId: Option[Int] = None, name: Option[String] = None)
+case class Index(id: Option[Int] = None, name: Option[String] = None)
 	extends StorableWithFactory[existing.Index]
 {
 	override def factory = Index
 	
-	override def valueProperties = Vector("id" -> id, "columnId" -> columnId, "name" -> name)
+	override def valueProperties = Vector("id" -> id, "name" -> name)
 }

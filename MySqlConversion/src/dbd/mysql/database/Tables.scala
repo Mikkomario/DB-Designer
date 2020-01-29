@@ -35,6 +35,16 @@ object Tables
 	def column = apply("column_release")
 	
 	/**
+	 * @return Table that contains links between columns, attributes and indices
+	 */
+	def columnAttributeLink = apply("column_attribute_link")
+	
+	/**
+	 * @return Table that contains links between columns, links and foreign keys
+	 */
+	def columnLinkLink = apply("column_link_link")
+	
+	/**
 	 * @return Table that contains released index data
 	 */
 	def index = apply("index_release")

@@ -7,12 +7,12 @@ import dbd.core.model.enumeration.AttributeType
  * @author Mikko Hilpinen
  * @since 28.1.2020, v0.1
  */
-trait ColumnLike[+Index <: IndexLike]
+trait ColumnLike[+Index <: IndexLike, FK <: ForeignKeyLike, AL <: ColumnAttributeLinkLike[Index], LL <: ColumnLinkLinkLike[FK]]
 {
 	/**
-	 * @return If of linked attribute
+	 * @return Either linked attribute data or link data
 	 */
-	def attributeId: Int
+	def linkedData: Either[LL, AL]
 	/**
 	 * @return Name of this column
 	 */
@@ -25,8 +25,4 @@ trait ColumnLike[+Index <: IndexLike]
 	 * @return Whether this column allows null values
 	 */
 	def allowsNull: Boolean
-	/**
-	 * @return An index associated with this column. None if no index is attached.
-	 */
-	def index: Option[Index]
 }

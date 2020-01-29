@@ -46,6 +46,10 @@ sealed trait LinkType
 	 *         this link type doesn't support ownership
 	 */
 	def fixedOwner: LinkEndRole
+	/**
+	 * @return Whether the existence of this link is optional in link origin
+	 */
+	def isOptional: Boolean
 	
 	
 	// COMPUTED	--------------------
@@ -76,6 +80,7 @@ object LinkType
 		override def isOwnable = true
 		override def isFixedLinkOrigin = true
 		override def fixedOwner = Target
+		override def isOptional = false
 	}
 	
 	/**
@@ -143,6 +148,7 @@ object LinkType
 		override def usesDeprecation = false
 		override def fixedOwner = Origin
 		override def nameWithClassSlots = "One %s to one %s"
+		override def isOptional = false
 	}
 	/**
 	 * This link type allows one to link 0-1 target items to a single origin item
@@ -154,6 +160,7 @@ object LinkType
 		override def usesDeprecation = false
 		override def nameWithClassSlots = "One %s to 0-1 %s"
 		override def fixedOwner = Origin
+		override def isOptional = true
 	}
 	/**
 	 * This link type allows one to link a changing target item to a single origin item. Whenever a new target item
@@ -166,6 +173,7 @@ object LinkType
 		override def usesDeprecation = true
 		override def nameWithClassSlots = "One %s version to one %s"
 		override def fixedOwner = Target
+		override def isOptional = false
 	}
 	
 	/**
@@ -181,6 +189,7 @@ object LinkType
 		override def usesMapping = false
 		override def fixedOwner = Origin
 		override def nameWithClassSlots = "Many %s to many %s"
+		override def isOptional = false
 	}
 	
 	
@@ -190,7 +199,7 @@ object LinkType
 	 * All currently known link types
 	 */
 	val values: Vector[LinkType] = Vector(BasicManyToOne, DeprecatingManyToOne, DeprecatingMap, EnforcedMap,
-		EnforcedOneToOne, DeprecatingOneToOne, BasicManyToMany)
+		EnforcedOneToOne, OneToZeroOrOne, DeprecatingOneToOne, BasicManyToMany)
 	
 	/**
 	 * @param id Link type id

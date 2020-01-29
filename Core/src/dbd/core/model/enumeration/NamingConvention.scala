@@ -35,6 +35,8 @@ sealed trait NamingConvention
 
 object NamingConvention
 {
+	// NESTED	----------------
+	
 	/**
 	 * A naming convention often used in database context
 	 */
@@ -210,5 +212,30 @@ object NamingConvention
 				}
 			}
 		}
+	}
+	
+	
+	// EXTENSIONS	-------------------
+	
+	/**
+	 * Provides name conventions directly to string
+	 * @param s String to convert
+	 */
+	implicit class NameString(val s: String) extends AnyVal
+	{
+		/**
+		 * @return This name converted to camel case style
+		 */
+		def toCamelCase = CamelCase.convert(s)
+		
+		/**
+		 * @return This name converted to underscore style
+		 */
+		def toUnderscore = Underscore.convert(s)
+		
+		/**
+		 * @return This name converted to capitalized (display) style
+		 */
+		def toCapitalized = Capitalized.convert(s)
 	}
 }

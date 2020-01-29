@@ -8,5 +8,6 @@ import dbd.mysql.model.template.ColumnLike
  * @author Mikko Hilpinen
  * @since 28.1.2020, v0.1
  */
-case class NewColumn(attributeId: Int, name: String, dataType: AttributeType, allowsNull: Boolean = false,
-					 index: Option[NewIndex] = None) extends ColumnLike[NewIndex]
+case class NewColumn(linkedData: Either[NewColumnLinkLink, NewColumnAttributeLink], name: String,
+					 dataType: AttributeType, allowsNull: Boolean = false)
+	extends ColumnLike[NewIndex, NewForeignKey, NewColumnAttributeLink, NewColumnLinkLink]

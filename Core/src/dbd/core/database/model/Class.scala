@@ -2,12 +2,13 @@ package dbd.core.database.model
 
 import java.time.Instant
 
+import utopia.flow.util.CollectionExtensions._
 import dbd.core.database.Tables
 import dbd.core.model.existing
-import dbd.core.util.Log
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.model.immutable.{Result, Storable}
 import utopia.vault.model.immutable.factory.{Deprecatable, FromResultFactory}
+import utopia.vault.util.ErrorHandling
 
 import scala.util.{Failure, Success}
 
@@ -25,23 +26,23 @@ object Class extends FromResultFactory[existing.Class] with Deprecatable
 	override def apply(result: Result) =
 	{
 		// Groups rows based on class
-		result.grouped(table, Attribute.table).flatMap { case (id, data) =>
+		result.grouped(table, Attribute.table).tryMap { case (id, data) =>
 			val (baseRow, attributeRows) = data
 			// Class must be parseable
-			table.requirementDeclaration.validate(baseRow(table)).toTry match
-			{
-				case Success(valid) =>
-					// Class info must be present in row
-					ClassInfo(baseRow).map { classInfo =>
-						// Parses attribute rows
-						val attributes = attributeRows.flatMap { Attribute(_) }.toVector
-						existing.Class(id.getInt, classInfo, attributes, valid("deletedAfter").instant)
+			table.requirementDeclaration.validate(baseRow(table)).toTry.flatMap { valid =>
+				// Class info must be present in row
+				ClassInfo(baseRow).flatMap { classInfo =>
+					// Parses attribute rows
+					attributeRows.tryMap { Attribute(_) }.map { attributes =>
+						existing.Class(id.getInt, classInfo, attributes.toVector, valid("deletedAfter").instant)
 					}
-				case Failure(error) =>
-					Log(error, s"Couldn't create class from row $baseRow")
-					None
+				}
 			}
-		}.toVector
+		} match
+		{
+			case Success(classes) => classes.toVector
+			case Failure(error) => ErrorHandling.modelParsePrinciple.handle(error); Vector()
+		}
 	}
 	
 	
