@@ -25,7 +25,7 @@ object Link extends LinkedStorableFactory[existing.Link, existing.LinkConfigurat
 	
 	override def apply(model: Model[Constant], child: existing.LinkConfiguration) =
 		table.requirementDeclaration.validate(model).toTry.map { valid =>
-			existing.Link(valid("id").getInt, child, valid(deletedAfterVarName).instant)
+			existing.Link(valid("id").getInt, valid("databaseId").getInt, child, valid(deletedAfterVarName).instant)
 		}
 	
 	override def nonDeprecatedCondition = childFactory.nonDeprecatedCondition && notDeletedCondition
@@ -49,9 +49,15 @@ object Link extends LinkedStorableFactory[existing.Link, existing.LinkConfigurat
 	// OTHER	--------------------------------
 	
 	/**
+	 * @param databaseId Id of target database
+	 * @return A model with only database id set
+	 */
+	def withDatabaseId(databaseId: Int) = apply(databaseId = Some(databaseId))
+	
+	/**
 	 * @return A model ready to be inserted to DB
 	 */
-	def forInsert() = apply()
+	def forInsert(databaseId: Int) = apply(None, Some(databaseId))
 }
 
 /**
@@ -59,9 +65,10 @@ object Link extends LinkedStorableFactory[existing.Link, existing.LinkConfigurat
  * @author Mikko Hilpinen
  * @since 19.1.2020, v0.1
  */
-case class Link(id: Option[Int] = None, deletedAfter: Option[Instant] = None) extends StorableWithFactory[existing.Link]
+case class Link(id: Option[Int] = None, databaseId: Option[Int] = None, deletedAfter: Option[Instant] = None)
+	extends StorableWithFactory[existing.Link]
 {
 	override def factory = Link
 	
-	override def valueProperties = Vector("id" -> id, Link.deletedAfterVarName -> deletedAfter)
+	override def valueProperties = Vector("id" -> id, "databaseId" -> databaseId, Link.deletedAfterVarName -> deletedAfter)
 }

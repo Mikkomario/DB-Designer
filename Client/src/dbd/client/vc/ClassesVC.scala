@@ -30,7 +30,8 @@ class ClassesVC(targetHeight: Double, classesToDisplay: Vector[Class] = Vector()
 {
 	// ATTRIBUTES	---------------------
 	
-	private val dataManager = new ClassDisplayManager(classesToDisplay, linksToDisplay)
+	// TODO: Will fail if DB doesn't contain database data
+	private val dataManager = new ClassDisplayManager(1)
 	private val addClassButton = ImageAndTextButton.contextual(Icons.addBox.forButtonWithBackground(colorScheme.secondary.dark),
 		"Add Class") { () => addButtonPressed() }(baseCB.withColors(colorScheme.secondary.dark).result)
 	private val classView = new CollectionView[ClassVC](Direction2D.Down, targetHeight, margins.medium.downscaling)

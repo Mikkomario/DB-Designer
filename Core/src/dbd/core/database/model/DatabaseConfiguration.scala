@@ -1,0 +1,55 @@
+package dbd.core.database.model
+
+import java.time.Instant
+
+import dbd.core.database.Tables
+import dbd.core.model.existing
+import dbd.core.model.partial.NewDatabaseConfiguration
+import utopia.flow.datastructure.immutable.{Constant, Model}
+import utopia.flow.generic.ValueConversions._
+import utopia.vault.database.Connection
+import utopia.vault.model.immutable.StorableWithFactory
+import utopia.vault.model.immutable.factory.{Deprecatable, StorableFactoryWithValidation}
+
+object DatabaseConfiguration extends StorableFactoryWithValidation[existing.DatabaseConfiguration] with Deprecatable
+{
+	// IMPLEMENTED	---------------------
+	
+	override def table = Tables.databaseConfiguration
+	
+	override protected def fromValidatedModel(model: Model[Constant]) = existing.DatabaseConfiguration(
+		model("id").getInt, model("databaseId").getInt, model("name").getString)
+	
+	override def nonDeprecatedCondition = table("deprecatedAfter").isNull
+	
+	
+	// OTHER	-------------------------
+	
+	/**
+	 * Inserts a new database configuration to the DB
+	 * @param databaseId Id of targeted database
+	 * @param data Data to insert
+	 * @param connection DB connection (implicit)
+	 * @return Newly inserted config
+	 */
+	def insert(databaseId: Int, data: NewDatabaseConfiguration)(implicit connection: Connection) =
+	{
+		val newId = apply(None, Some(databaseId), Some(data.name), Some(Instant.now())).insert().getInt
+		existing.DatabaseConfiguration(newId, databaseId, data.name)
+	}
+}
+
+/**
+ * Used for interacting with database configurations
+ * @author Mikko Hilpinen
+ * @since 28.1.2020, v0.1
+ */
+case class DatabaseConfiguration(id: Option[Int] = None, databaseId: Option[Int] = None, name: Option[String] = None,
+								 created: Option[Instant] = None, deprecatedAfter: Option[Instant] = None)
+	extends StorableWithFactory[existing.DatabaseConfiguration]
+{
+	override def factory = DatabaseConfiguration
+	
+	override def valueProperties = Vector("id" -> id, "databaseId" -> databaseId, "name" -> name, "created" -> created,
+		"deprecatedAfter" -> deprecatedAfter)
+}

@@ -10,16 +10,6 @@ object Tables
 	// COMPUTED	----------------------
 	
 	/**
-	 * @return Table that contains registered databases
-	 */
-	def database = apply("database")
-	
-	/**
-	 * @return Table that contains database configurations
-	 */
-	def databaseConfiguration = apply("database_configuration")
-	
-	/**
 	 * @return Table that contains database releases
 	 */
 	def release = apply("database_release")

@@ -9,7 +9,7 @@ import dbd.core.model.template.LinkLike
  * @author Mikko Hilpinen
  * @since 19.1.2020, v0.1
  */
-case class Link(id: Int, configuration: LinkConfiguration, deletedAfter: Option[Instant] = None) extends LinkLike
+case class Link(id: Int, databaseId: Int, configuration: LinkConfiguration, deletedAfter: Option[Instant] = None) extends LinkLike
 {
 	/**
 	 * @param newConfig New configuration for this link

@@ -1,6 +1,6 @@
-package dbd.mysql.model.existing
+package dbd.core.model.existing
 
-import dbd.mysql.model.template.DatabaseConfigurationLike
+import dbd.core.model.template.DatabaseConfigurationLike
 
 /**
  * Represents a database configuration stored in DB

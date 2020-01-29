@@ -18,6 +18,16 @@ object Tables extends utopia.vault.database.Tables(ConnectionPool)(ThreadPool.ex
 	// COMPUTED	--------------------------
 	
 	/**
+	 * @return Table that contains registered databases
+	 */
+	def database = apply("database")
+	
+	/**
+	 * @return Table that contains database configurations
+	 */
+	def databaseConfiguration = apply("database_configuration")
+	
+	/**
 	 * @return Table that contains classes
 	 */
 	def classTable = apply("class")

@@ -34,7 +34,8 @@ object Class extends FromResultFactory[existing.Class] with Deprecatable
 				ClassInfo(baseRow).flatMap { classInfo =>
 					// Parses attribute rows
 					attributeRows.tryMap { Attribute(_) }.map { attributes =>
-						existing.Class(id.getInt, classInfo, attributes.toVector, valid("deletedAfter").instant)
+						existing.Class(id.getInt, valid("databaseId").getInt, classInfo, attributes.toVector,
+							valid("deletedAfter").instant)
 					}
 				}
 			}
@@ -68,9 +69,15 @@ object Class extends FromResultFactory[existing.Class] with Deprecatable
 	def withId(id: Int) = apply(Some(id))
 	
 	/**
+	 * @param databaseId Id of target DB
+	 * @return A model with only database id set
+	 */
+	def withDatabaseId(databaseId: Int) = apply(databaseId = Some(databaseId))
+	
+	/**
 	 * @return A new model ready to be inserted to DB
 	 */
-	def forInsert() = apply()
+	def forInsert(databaseId: Int) = apply(None, Some(databaseId))
 }
 
 /**
@@ -78,13 +85,13 @@ object Class extends FromResultFactory[existing.Class] with Deprecatable
  * @author Mikko Hilpinen
  * @since 11.1.2020, v0.1
  */
-case class Class(id: Option[Int] = None, deletedAfter: Option[Instant] = None) extends Storable
+case class Class(id: Option[Int] = None, databaseId: Option[Int] = None, deletedAfter: Option[Instant] = None) extends Storable
 {
 	// IMPLEMENTED	---------------------------
 	
 	override def table = Class.table
 	
-	override def valueProperties = Vector("id" -> id, "deletedAfter" -> deletedAfter)
+	override def valueProperties = Vector("id" -> id, "databaseId" -> databaseId, "deletedAfter" -> deletedAfter)
 	
 	
 	// COMPUTED	-------------------------------

@@ -24,6 +24,12 @@ object Links extends NonDeprecatedManyAccess[existing.Link]
 	// OTHER	--------------------------
 	
 	/**
+	 * @param databaseId Id of targeted database
+	 * @return An access point to that database's links
+	 */
+	def inDatabaseWithId(databaseId: Int) = new LinksInDatabase(databaseId)
+	
+	/**
 	 * @param classId Id of target class
 	 * @return An access point to all links attached to that class
 	 */
@@ -35,24 +41,40 @@ object Links extends NonDeprecatedManyAccess[existing.Link]
 	 */
 	def usingAttributeWithId(attributeId: Int) = new AttributeUsingLinks(attributeId)
 	
-	/**
-	 * Inserts a new link to the database
-	 * @param newConfig Initial configuration for the new link
-	 * @param connection DB Connection (implicit)
-	 * @return The newly inserted link
-	 */
-	def insert(newConfig: NewLinkConfiguration)(implicit connection: Connection) =
-	{
-		// Inserts a new link
-		val newLinkId = factory.forInsert().insert().getInt
-		// Adds a configuration for that link
-		val insertedConfig = Link(newLinkId).configuration.update(newConfig)
-		
-		existing.Link(newLinkId, insertedConfig)
-	}
-	
 	
 	// NESTED	--------------------------
+	
+	/**
+	 * Used for accessing links under a specific database
+	 * @param databaseId Id of target database
+	 */
+	class LinksInDatabase(databaseId: Int) extends ConditionalManyAccess[existing.Link]
+	{
+		// IMPLEMENTED	------------------
+		
+		override def condition = Links.this.condition && factory.withDatabaseId(databaseId).toCondition
+		
+		override def factory = Links.this.factory
+		
+		
+		// OTHER	----------------------
+		
+		/**
+		 * Inserts a new link to the database
+		 * @param newConfig Initial configuration for the new link
+		 * @param connection DB Connection (implicit)
+		 * @return The newly inserted link
+		 */
+		def insert(newConfig: NewLinkConfiguration)(implicit connection: Connection) =
+		{
+			// Inserts a new link
+			val newLinkId = factory.forInsert(databaseId).insert().getInt
+			// Adds a configuration for that link
+			val insertedConfig = Link(newLinkId).configuration.update(newConfig)
+			
+			existing.Link(newLinkId, databaseId, insertedConfig)
+		}
+	}
 	
 	/**
 	 * Access point to links attached to a class (as origin or target)

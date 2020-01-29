@@ -3,7 +3,7 @@ package dbd.client.controller
 import dbd.client.model.{ChildLink, DisplayedClass, DisplayedLink, EditSubClassResult}
 import utopia.flow.util.CollectionExtensions._
 import dbd.core.database
-import dbd.core.database.ConnectionPool
+import dbd.core.database.{ConnectionPool, Database}
 import dbd.core.model.enumeration.LinkEndRole
 import dbd.core.model.enumeration.LinkEndRole.{Origin, Target}
 import dbd.core.model.existing.{Attribute, Class, Link}
@@ -21,13 +21,26 @@ import scala.util.{Failure, Success}
  * @author Mikko Hilpinen
  * @since 18.1.2020, v0.1
  */
-class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDisplay: Vector[Link] = Vector())
-						 (implicit exc: ExecutionContext)
+class ClassDisplayManager(databaseId: Int)(implicit exc: ExecutionContext)
 	extends RefreshableWithPointer[Vector[DisplayedClass]]
 {
 	// ATTRIBUTES	-----------------------
 	
-	override val contentPointer = new PointerWithEvents(pairData(classesToDisplay, linksToDisplay))
+	override val contentPointer =
+	{
+		// Reads class and link data from DB
+		val data = ConnectionPool.tryWith { implicit connection =>
+			val dbAccess = Database(databaseId)
+			val classes = dbAccess.classes.get
+			val links = dbAccess.links.get
+			pairData(classes, links)
+		} match
+		{
+			case Success(data) => data
+			case Failure(error) => Log(error, s"Couldn't read class data for database $databaseId"); Vector()
+		}
+		new PointerWithEvents(data)
+	}
 	
 	
 	// OTHER	---------------------------
@@ -125,7 +138,7 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 	def addNewClass(newClass: NewClass) =
 	{
 		// Inserts a new class to DB and then to the end of displayed classes list
-		ConnectionPool.tryWith { implicit connection => database.Classes.insert(newClass) } match
+		ConnectionPool.tryWith { implicit connection => Database(databaseId).classes.insert(newClass) } match
 		{
 			case Success(newClass) => content = content :+ DisplayedClass(newClass, isExpanded = true)
 			case Failure(error) => Log(error, s"Failed to insert class $newClass to DB")
@@ -146,8 +159,8 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 	{
 		// Inserts the new class to DB, then adds a link between the two classes
 		ConnectionPool.tryWith { implicit connection =>
-			val newClass = database.Classes.insert(NewClass(newSubClass.classInfo))
-			newClass -> database.Links.insert(newSubClass.toNewLinkConfiguration(newClass.id))
+			val newClass = Database(databaseId).classes.insert(NewClass(newSubClass.classInfo))
+			newClass -> Database(databaseId).links.insert(newSubClass.toNewLinkConfiguration(newClass.id))
 		} match
 		{
 			case Success(newData) =>
@@ -267,7 +280,7 @@ class ClassDisplayManager(classesToDisplay: Vector[Class] = Vector(), linksToDis
 	{
 		// Inserts the new link to database, then updates displayed classes
 		ConnectionPool.tryWith { implicit connection =>
-			database.Links.insert(link)
+			Database(databaseId).links.insert(link)
 		} match
 		{
 			case Success(newLink) => displaysWithLinkAdded(content, newLink).foreach { content = _ }

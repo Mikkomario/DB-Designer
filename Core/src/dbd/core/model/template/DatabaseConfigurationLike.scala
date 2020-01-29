@@ -1,4 +1,4 @@
-package dbd.mysql.model.template
+package dbd.core.model.template
 
 /**
  * A common trait for database models
@@ -7,10 +7,6 @@ package dbd.mysql.model.template
  */
 trait DatabaseConfigurationLike
 {
-	/**
-	 * @return Id of described database
-	 */
-	def databaseId: Int
 	/**
 	 * @return Name of this database
 	 */
