@@ -11,7 +11,7 @@ object VersionNumber
 	 * @param versionString A version number string
 	 * @return parsed number
 	 */
-	def parse(versionString: String) = apply(versionString.split(".").map {
+	def parse(versionString: String) = apply(versionString.split("\\.").map {
 		_.digits: Value }.flatMap { _.int }.toVector)
 }
 

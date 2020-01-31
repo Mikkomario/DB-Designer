@@ -24,7 +24,7 @@ object LinkConfiguration extends StorableFactory[existing.LinkConfiguration] wit
 	override def apply(model: template.Model[Property]) = table.requirementDeclaration.validate(model).toTry.flatMap { valid =>
 		// Link type must be parseable
 		LinkType.forId(valid("linkType").getInt).toTry(
-			new NoSuchTypeException(s"No link type for id ${valid("linkType")}")).map { linkType =>
+			new NoSuchTypeException(s"No link type for id '${valid("linkType")}'")).map { linkType =>
 			existing.LinkConfiguration(valid("id").getInt, valid("linkId").getInt, linkType,
 				valid("originClassId").getInt, valid("targetClassId").getInt, valid("nameInOrigin").string,
 				valid("nameInTarget").string, valid("isOwned").getBoolean, valid("mappingAttributeId").int,

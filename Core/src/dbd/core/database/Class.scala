@@ -70,7 +70,7 @@ object Class extends SingleModelAccess[existing.Class] with NonDeprecatedAccess[
 		{
 			// Marks the class as deleted and also deprecates all links currently attached to that class
 			val classWasDeleted = connection(Class.factory.nowDeleted.toUpdateStatement() +
-				Where(condition && Class.factory.notDeletedCondition)).updatedRows
+				Where(mergeCondition(Class.factory.notDeletedCondition))).updatedRows
 			if (classWasDeleted)
 			{
 				Links.attachedToClassWithId(classId).markDeleted()
@@ -103,7 +103,7 @@ object Class extends SingleModelAccess[existing.Class] with NonDeprecatedAccess[
 			def update(newInfo: NewClassInfo)(implicit connection: Connection) =
 			{
 				// Deprecates the existing information
-				connection(factory.deprecatedNow.toUpdateStatement() + Where(condition))
+				connection(factory.deprecatedNow.toUpdateStatement() + globalCondition.map { Where(_) })
 				// Inserts a new row
 				val infoId = factory.forInsert(classId, newInfo).insert().getInt
 				newInfo.withId(infoId, classId)
@@ -166,7 +166,7 @@ object Class extends SingleModelAccess[existing.Class] with NonDeprecatedAccess[
 				{
 					// IMPLEMENTED	-------
 					
-					override def globalCondition = Some(AttributeById.this.condition && factory.nonDeprecatedCondition)
+					override def globalCondition = Some(AttributeById.this.mergeCondition(factory.nonDeprecatedCondition))
 					
 					override def factory = model.AttributeConfiguration
 					

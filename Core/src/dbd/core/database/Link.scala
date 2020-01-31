@@ -47,7 +47,7 @@ object Link extends SingleModelAccess[existing.Link] with NonDeprecatedAccess[ex
 		def markDeleted()(implicit connection: Connection) =
 		{
 			connection(Link.factory.nowDeleted.toUpdateStatement() +
-				Where(condition && Link.factory.notDeletedCondition)).updatedRows
+				Where(mergeCondition(Link.factory.notDeletedCondition))).updatedRows
 		}
 		
 		
@@ -74,7 +74,7 @@ object Link extends SingleModelAccess[existing.Link] with NonDeprecatedAccess[ex
 			def update(newConfig: NewLinkConfiguration)(implicit connection: Connection) =
 			{
 				// Deletes the old version and inserts a new one
-				connection(factory.nowDeprecated.toUpdateStatement() + Where(condition))
+				connection(factory.nowDeprecated.toUpdateStatement() + globalCondition.map { Where(_) })
 				val newConfigId = factory.forInsert(linkId, newConfig).insert().getInt
 				newConfig.withId(newConfigId, linkId)
 			}

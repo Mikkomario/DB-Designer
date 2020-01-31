@@ -164,7 +164,7 @@ class ClassDisplayManager(databaseId: Int)(implicit exc: ExecutionContext)
 		} match
 		{
 			case Success(newData) =>
-				val contentWithChild = content :+ DisplayedClass(newData._1)
+				val contentWithChild = content :+ DisplayedClass(newData._1, isExpanded = true)
 				content = displaysWithLinkAdded(contentWithChild, newData._2).getOrElse(contentWithChild)
 			case Failure(error) => Log(error, s"Failed to insert sub class: $newSubClass")
 		}
@@ -412,15 +412,17 @@ class ClassDisplayManager(databaseId: Int)(implicit exc: ExecutionContext)
 	// Returns none if no change could be made
 	private def displaysWithLinkAdded(displays: Vector[DisplayedClass], newLink: Link) =
 	{
-		displays.indexWhereOption { _.classIds.contains(newLink.originClassId) }.flatMap { originIndex =>
-			displays.indexWhereOption { _.classIds.contains(newLink.targetClassId) }.map { targetIndex =>
-				val originClass = displays(originIndex)
-				val targetClass = displays(targetIndex)
+		displays.indexWhereOption { _.containsClassWithId(newLink.originClassId) }.flatMap { originIndex =>
+			displays.indexWhereOption { _.containsClassWithId(newLink.targetClassId) }.map { targetIndex =>
+				val originParentClass = displays(originIndex)
+				val targetParentClass = displays(targetIndex)
 				// In case of owned links, one of the classes must be moved under another
 				if (newLink.isOwned)
 				{
+					// TODO: Expects that owned links always target top level classes.
+					// When this expectation breaks, fix this part of the code
 					val affectedClasses = Map[LinkEndRole, (DisplayedClass, Int)](
-						Origin -> (originClass -> originIndex), Target -> (targetClass -> targetIndex))
+						Origin -> (originParentClass -> originIndex), Target -> (targetParentClass -> targetIndex))
 					val (newParentClass, updatedIndex) = affectedClasses(newLink.linkType.fixedOwner)
 					val (newChildClass, removedIndex) = affectedClasses(newLink.linkType.fixedChild)
 					
@@ -429,10 +431,13 @@ class ClassDisplayManager(databaseId: Int)(implicit exc: ExecutionContext)
 				}
 				else
 				{
+					val originClass = displays(originIndex).classForId(newLink.originClassId).get
+					val targetClass = displays(targetIndex).classForId(newLink.targetClassId).get
+					
 					// Updates both origin and target class displays
 					displays.updated(originIndex,
-						originClass.withLinkAdded(DisplayedLink(newLink, targetClass.classData))).updated(
-						targetIndex, targetClass.withLinkAdded(DisplayedLink(newLink, originClass.classData)))
+						originParentClass.withLinkAdded(DisplayedLink(newLink, targetClass.classData))).updated(
+						targetIndex, targetParentClass.withLinkAdded(DisplayedLink(newLink, originClass.classData)))
 				}
 			}
 		}

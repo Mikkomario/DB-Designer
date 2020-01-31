@@ -242,11 +242,12 @@ case class DisplayedClass(classData: Class, links: Vector[DisplayedLink] = Vecto
 	 * @param link Targeted link
 	 * @return a copy of this class without specified link
 	 */
-	def withoutLink(link: Link) =
+	def withoutLink(link: Link): DisplayedClass =
 	{
+		// Checks whether this class contains the specified link, targets children otherwise
 		val filteredLinks = links.filterNot { _.link.id == link.id }
 		if (filteredLinks.size == links.size)
-			this
+			mapChildren { _.withoutLink(link) }
 		else
 			copy(links = filteredLinks)
 	}
