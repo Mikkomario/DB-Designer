@@ -31,8 +31,8 @@ class ClassDisplayManager(databaseId: Int)(implicit exc: ExecutionContext)
 		// Reads class and link data from DB
 		val data = ConnectionPool.tryWith { implicit connection =>
 			val dbAccess = Database(databaseId)
-			val classes = dbAccess.classes.get
-			val links = dbAccess.links.get
+			val classes = dbAccess.classes.all
+			val links = dbAccess.links.all
 			pairData(classes, links)
 		} match
 		{

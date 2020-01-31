@@ -5,7 +5,7 @@ import dbd.core.model.existing
 import dbd.core.model.partial.NewDatabaseConfiguration
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.vault.database.Connection
-import utopia.vault.model.immutable.factory.{Deprecatable, LinkedStorableFactory}
+import utopia.vault.nosql.factory.{Deprecatable, LinkedStorableFactory}
 import utopia.vault.sql.Insert
 
 /**

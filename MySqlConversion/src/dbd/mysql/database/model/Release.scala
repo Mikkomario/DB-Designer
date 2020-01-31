@@ -8,7 +8,7 @@ import utopia.flow.generic.ValueConversions._
 import dbd.mysql.model.{VersionNumber, existing}
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.model.immutable.factory.StorableFactoryWithValidation
+import utopia.vault.nosql.factory.StorableFactoryWithValidation
 
 object Release extends StorableFactoryWithValidation[existing.Release]
 {

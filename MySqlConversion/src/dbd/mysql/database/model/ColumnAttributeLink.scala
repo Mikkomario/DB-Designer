@@ -6,7 +6,7 @@ import dbd.mysql.model.existing
 import dbd.mysql.model.partial.NewColumnAttributeLink
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.{Row, StorableWithFactory}
-import utopia.vault.model.immutable.factory.FromRowFactory
+import utopia.vault.nosql.factory.FromRowFactory
 
 object ColumnAttributeLink extends FromRowFactory[existing.ColumnAttributeLink]
 {

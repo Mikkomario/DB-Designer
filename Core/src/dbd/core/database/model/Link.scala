@@ -7,7 +7,7 @@ import utopia.flow.generic.ValueConversions._
 import dbd.core.model.existing
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.model.immutable.factory.{Deprecatable, LinkedStorableFactory}
+import utopia.vault.nosql.factory.{Deprecatable, LinkedStorableFactory}
 
 object Link extends LinkedStorableFactory[existing.Link, existing.LinkConfiguration] with Deprecatable
 {

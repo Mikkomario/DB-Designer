@@ -4,7 +4,7 @@ import utopia.flow.generic.ValueConversions._
 import dbd.core.model.existing
 import dbd.core.model.partial.NewLinkConfiguration
 import utopia.vault.database.Connection
-import utopia.vault.model.immutable.access.{ConditionalSingleAccess, ItemAccess, NonDeprecatedSingleAccess}
+import utopia.vault.nosql.access.{NonDeprecatedAccess, SingleIdModelAccess, SingleModelAccess}
 import utopia.vault.sql.Where
 
 /**
@@ -12,7 +12,7 @@ import utopia.vault.sql.Where
  * @author Mikko Hilpinen
  * @since 19.1.2020, v0.1
  */
-object Link extends NonDeprecatedSingleAccess[existing.Link]
+object Link extends SingleModelAccess[existing.Link] with NonDeprecatedAccess[existing.Link, Option[existing.Link]]
 {
 	// IMPLEMENTED	------------------------
 	
@@ -30,7 +30,7 @@ object Link extends NonDeprecatedSingleAccess[existing.Link]
 	
 	// NESTED	----------------------------
 	
-	class LinkById(linkId: Int) extends ItemAccess[existing.Link](linkId, Link.factory)
+	class LinkById(linkId: Int) extends SingleIdModelAccess[existing.Link](linkId, Link.factory)
 	{
 		// COMPUTED	------------------------
 		
@@ -53,11 +53,12 @@ object Link extends NonDeprecatedSingleAccess[existing.Link]
 		
 		// NESTED	------------------------
 		
-		object Configuration extends ConditionalSingleAccess[existing.LinkConfiguration]
+		object Configuration extends SingleModelAccess[existing.LinkConfiguration]
 		{
 			// IMPLEMENTED	----------------
 			
-			override def condition = factory.withLinkId(linkId).toCondition && factory.nonDeprecatedCondition
+			override def globalCondition = Some(factory.withLinkId(linkId).toCondition &&
+				factory.nonDeprecatedCondition)
 			
 			override def factory = model.LinkConfiguration
 			

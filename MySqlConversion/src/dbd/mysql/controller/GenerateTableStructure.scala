@@ -33,9 +33,9 @@ object GenerateTableStructure
 	def apply(databaseId: Int, newVersionNumber: VersionNumber)(implicit connection: Connection) =
 	{
 		// Reads class and link data from the DB first
-		val classes = Database(databaseId).classes.get
+		val classes = Database(databaseId).classes.all
 		// TODO: Handle many-to-many -links separately
-		val links = Database(databaseId).links.get.filterNot { _.linkType.category == ManyToMany }
+		val links = Database(databaseId).links.all.filterNot { _.linkType.category == ManyToMany }
 		val linksPerClassId = links.groupBy { _.originClassId }
 		
 		// Creates class names and unique index name prefixes

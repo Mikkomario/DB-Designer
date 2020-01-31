@@ -6,7 +6,7 @@ import utopia.flow.generic.ValueConversions._
 import dbd.core.model.existing
 import dbd.core.model.partial.NewLinkConfiguration
 import utopia.vault.database.Connection
-import utopia.vault.model.immutable.access.{ConditionalManyAccess, NonDeprecatedManyAccess}
+import utopia.vault.nosql.access.{ManyModelAccess, NonDeprecatedAccess}
 import utopia.vault.sql.{Update, Where}
 
 /**
@@ -14,7 +14,7 @@ import utopia.vault.sql.{Update, Where}
  * @author Mikko HIlpinen
  * @since 19.1.2020, v0.1
  */
-object Links extends NonDeprecatedManyAccess[existing.Link]
+object Links extends ManyModelAccess[existing.Link] with NonDeprecatedAccess[existing.Link, Vector[existing.Link]]
 {
 	// IMPLEMENTED	----------------------
 	
@@ -48,11 +48,11 @@ object Links extends NonDeprecatedManyAccess[existing.Link]
 	 * Used for accessing links under a specific database
 	 * @param databaseId Id of target database
 	 */
-	class LinksInDatabase(databaseId: Int) extends ConditionalManyAccess[existing.Link]
+	class LinksInDatabase(databaseId: Int) extends ManyModelAccess[existing.Link]
 	{
 		// IMPLEMENTED	------------------
 		
-		override def condition = Links.this.condition && factory.withDatabaseId(databaseId).toCondition
+		override def globalCondition = Some(Links.this.mergeCondition(factory.withDatabaseId(databaseId).toCondition))
 		
 		override def factory = Links.this.factory
 		
@@ -80,12 +80,12 @@ object Links extends NonDeprecatedManyAccess[existing.Link]
 	 * Access point to links attached to a class (as origin or target)
 	 * @param classId Id of target class
 	 */
-	class ClassAttachedLinks(classId: Int) extends ConditionalManyAccess[existing.Link]
+	class ClassAttachedLinks(classId: Int) extends ManyModelAccess[existing.Link]
 	{
 		// IMPLEMENTED	------------------
 		
-		override def condition = Links.this.condition &&
-			model.LinkConfiguration.classConnectColumns.values.map { _ <=> classId }.reduce { _ || _ }
+		override def globalCondition = Some(Links.this.mergeCondition(
+			model.LinkConfiguration.classConnectColumns.values.map { _ <=> classId }.reduce { _ || _ }))
 		
 		override def factory = Links.this.factory
 		
@@ -100,7 +100,7 @@ object Links extends NonDeprecatedManyAccess[existing.Link]
 		def markDeleted()(implicit connection: Connection) =
 		{
 			connection(Update.apply(factory.target, factory.table, factory.deletedAfterVarName, Instant.now()) +
-				Where(condition && factory.notDeletedCondition)).updatedRowCount
+				Where(mergeCondition(factory.notDeletedCondition))).updatedRowCount
 		}
 	}
 	
@@ -108,12 +108,12 @@ object Links extends NonDeprecatedManyAccess[existing.Link]
 	 * Access points to links using a specified attribute
 	 * @param attributeId Id of used attribute
 	 */
-	class AttributeUsingLinks(attributeId: Int) extends ConditionalManyAccess[existing.Link]
+	class AttributeUsingLinks(attributeId: Int) extends ManyModelAccess[existing.Link]
 	{
 		// IMPLEMENTED	-----------------
 		
-		override def condition = Links.this.condition &&
-			model.LinkConfiguration.withMappingKeyAttributeId(attributeId).toCondition
+		override def globalCondition = Some(Links.this.mergeCondition(
+			model.LinkConfiguration.withMappingKeyAttributeId(attributeId).toCondition))
 		
 		override def factory = Links.this.factory
 		
@@ -128,7 +128,7 @@ object Links extends NonDeprecatedManyAccess[existing.Link]
 		def markDeleted()(implicit connection: Connection) =
 		{
 			connection(Update.apply(factory.target, factory.table, factory.deletedAfterVarName, Instant.now()) +
-				Where(condition && factory.notDeletedCondition)).updatedRowCount
+				Where(mergeCondition(factory.notDeletedCondition))).updatedRowCount
 		}
 	}
 }

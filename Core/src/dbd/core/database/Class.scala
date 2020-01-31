@@ -5,7 +5,7 @@ import dbd.core.model.existing
 import dbd.core.model.existing.{Attribute, AttributeConfiguration, ClassInfo}
 import dbd.core.model.partial.{NewAttribute, NewAttributeConfiguration, NewClassInfo}
 import utopia.vault.database.Connection
-import utopia.vault.model.immutable.access.{ConditionalManyAccess, ConditionalSingleAccess, ItemAccess, NonDeprecatedSingleAccess}
+import utopia.vault.nosql.access.{ManyModelAccess, NonDeprecatedAccess, SingleIdModelAccess, SingleModelAccess}
 import utopia.vault.sql.Where
 
 /**
@@ -13,7 +13,7 @@ import utopia.vault.sql.Where
  * @author Mikko Hilpinen
  * @since 12.1.2020, v0.1
  */
-object Class extends NonDeprecatedSingleAccess[existing.Class]
+object Class extends SingleModelAccess[existing.Class] with NonDeprecatedAccess[existing.Class, Option[existing.Class]]
 {
 	// IMPLEMENTED	-------------------
 	
@@ -35,7 +35,7 @@ object Class extends NonDeprecatedSingleAccess[existing.Class]
 	 * Used for accessing individual class' data in DB
 	 * @param classId Id of targeted class
 	 */
-	class ClassById(classId: Int) extends ItemAccess[existing.Class](classId, Class.factory)
+	class ClassById(classId: Int) extends SingleIdModelAccess[existing.Class](classId, Class.factory)
 	{
 		// COMPUTED	-------------------
 		
@@ -83,11 +83,11 @@ object Class extends NonDeprecatedSingleAccess[existing.Class]
 		
 		// NESTED	-------------------
 		
-		object Info extends ConditionalSingleAccess[ClassInfo]
+		object Info extends SingleModelAccess[ClassInfo]
 		{
 			// IMPLEMENTED	-----------
 			
-			override def condition = factory.withClassId(classId).toCondition && factory.nonDeprecatedCondition
+			override def globalCondition = Some(factory.withClassId(classId).toCondition && factory.nonDeprecatedCondition)
 			
 			override def factory = model.ClassInfo
 			
@@ -113,11 +113,11 @@ object Class extends NonDeprecatedSingleAccess[existing.Class]
 		/**
 		 * Provides access to individual class attributes
 		 */
-		object Attribute extends ConditionalSingleAccess[Attribute]
+		object Attribute extends SingleModelAccess[Attribute]
 		{
 			// IMPLEMENTED	-----------
 			
-			override def condition = classAttributeCondition
+			override def globalCondition = Some(classAttributeCondition)
 			
 			override def factory = attributeFactory
 			
@@ -137,7 +137,7 @@ object Class extends NonDeprecatedSingleAccess[existing.Class]
 			 * Provides access to an individual attribute's data
 			 * @param attId Id of targeted attribute
 			 */
-			class AttributeById(attId: Int) extends ItemAccess[Attribute](attId, attributeFactory)
+			class AttributeById(attId: Int) extends SingleIdModelAccess[Attribute](attId, attributeFactory)
 			{
 				// COMPUTED	----------
 				
@@ -162,11 +162,11 @@ object Class extends NonDeprecatedSingleAccess[existing.Class]
 				/**
 				 * Used for accessing the current configuration of an attribute
 				 */
-				object Configuration extends ConditionalSingleAccess[AttributeConfiguration]
+				object Configuration extends SingleModelAccess[AttributeConfiguration]
 				{
 					// IMPLEMENTED	-------
 					
-					override def condition = AttributeById.this.condition && factory.nonDeprecatedCondition
+					override def globalCondition = Some(AttributeById.this.condition && factory.nonDeprecatedCondition)
 					
 					override def factory = model.AttributeConfiguration
 					
@@ -192,11 +192,11 @@ object Class extends NonDeprecatedSingleAccess[existing.Class]
 			}
 		}
 		
-		object Attributes extends ConditionalManyAccess[Attribute]
+		object Attributes extends ManyModelAccess[Attribute]
 		{
 			// IMPLEMENTED	-----------
 			
-			override def condition = classAttributeCondition
+			override def globalCondition = Some(classAttributeCondition)
 			
 			override def factory = attributeFactory
 			

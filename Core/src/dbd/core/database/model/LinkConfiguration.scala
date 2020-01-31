@@ -13,7 +13,7 @@ import dbd.core.model.partial.NewLinkConfiguration
 import utopia.flow.datastructure.template
 import utopia.flow.datastructure.template.Property
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.model.immutable.factory.{Deprecatable, StorableFactory}
+import utopia.vault.nosql.factory.{Deprecatable, StorableFactory}
 
 object LinkConfiguration extends StorableFactory[existing.LinkConfiguration] with Deprecatable
 {

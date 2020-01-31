@@ -7,7 +7,7 @@ import dbd.mysql.model.partial.NewColumnLinkLink
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.model.immutable.factory.LinkedStorableFactory
+import utopia.vault.nosql.factory.LinkedStorableFactory
 
 object ColumnLinkLink extends LinkedStorableFactory[existing.ColumnLinkLink, existing.ForeignKey]
 {

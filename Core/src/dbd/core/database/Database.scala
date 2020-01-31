@@ -2,14 +2,14 @@ package dbd.core.database
 
 import utopia.flow.generic.ValueConversions._
 import dbd.core.model.existing
-import utopia.vault.model.immutable.access.{ItemAccess, NonDeprecatedSingleAccess}
+import utopia.vault.nosql.access.{NonDeprecatedAccess, SingleIdModelAccess, SingleModelAccess}
 
 /**
  * An access point for individual databases
  * @author Mikko Hilpinen
  * @since 29.1.2020, v0.1
  */
-object Database extends NonDeprecatedSingleAccess[existing.Database]
+object Database extends SingleModelAccess[existing.Database] with NonDeprecatedAccess[existing.Database, Option[existing.Database]]
 {
 	// IMPLEMENTED	-------------------
 	
@@ -31,7 +31,7 @@ object Database extends NonDeprecatedSingleAccess[existing.Database]
 	 * Used for accessing a single database's data
 	 * @param databaseId Id of targeted database
 	 */
-	class SingleDatabase(databaseId: Int) extends ItemAccess[existing.Database](databaseId, Database.this.factory)
+	class SingleDatabase(databaseId: Int) extends SingleIdModelAccess[existing.Database](databaseId, Database.this.factory)
 	{
 		/**
 		 * @return An access point to this database's classes

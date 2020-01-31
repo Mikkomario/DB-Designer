@@ -9,7 +9,7 @@ import dbd.core.model.existing
 import dbd.core.model.partial.NewAttributeConfiguration
 import utopia.flow.datastructure.template.{Model, Property}
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.model.immutable.factory.{Deprecatable, StorableFactory}
+import utopia.vault.nosql.factory.{Deprecatable, StorableFactory}
 
 object AttributeConfiguration extends StorableFactory[existing.AttributeConfiguration] with Deprecatable
 {

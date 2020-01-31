@@ -7,7 +7,7 @@ import dbd.core.database.Tables
 import dbd.core.model.existing
 import dbd.core.model.partial.NewClassInfo
 import utopia.flow.datastructure.immutable.{Constant, Model}
-import utopia.vault.model.immutable.factory.{Deprecatable, StorableFactoryWithValidation}
+import utopia.vault.nosql.factory.{Deprecatable, StorableFactoryWithValidation}
 import utopia.vault.model.immutable.StorableWithFactory
 
 object ClassInfo extends StorableFactoryWithValidation[existing.ClassInfo] with Deprecatable

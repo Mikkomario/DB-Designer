@@ -9,7 +9,7 @@ import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.model.immutable.factory.{Deprecatable, StorableFactoryWithValidation}
+import utopia.vault.nosql.factory.{Deprecatable, StorableFactoryWithValidation}
 
 object DatabaseConfiguration extends StorableFactoryWithValidation[existing.DatabaseConfiguration] with Deprecatable
 {

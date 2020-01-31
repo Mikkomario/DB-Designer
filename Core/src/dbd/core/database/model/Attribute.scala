@@ -7,7 +7,7 @@ import dbd.core.database.Tables
 import dbd.core.model.existing
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.model.immutable.factory.{Deprecatable, LinkedStorableFactory}
+import utopia.vault.nosql.factory.{Deprecatable, LinkedStorableFactory}
 
 object Attribute extends LinkedStorableFactory[existing.Attribute, existing.AttributeConfiguration] with Deprecatable
 {

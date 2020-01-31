@@ -3,14 +3,14 @@ package dbd.core.database
 import dbd.core.model.existing
 import dbd.core.model.partial.NewClass
 import utopia.vault.database.Connection
-import utopia.vault.model.immutable.access.{ConditionalManyAccess, NonDeprecatedManyAccess}
+import utopia.vault.nosql.access.{ManyModelAccess, NonDeprecatedAccess}
 
 /**
  * Used for accessing multiple classes from DB at once
  * @author Mikko Hilpinen
  * @since 11.1.2020, v0.1
  */
-object Classes extends NonDeprecatedManyAccess[existing.Class]
+object Classes extends ManyModelAccess[existing.Class] with NonDeprecatedAccess[existing.Class, Vector[existing.Class]]
 {
 	// IMPLEMENTED	--------------------
 	
@@ -28,11 +28,11 @@ object Classes extends NonDeprecatedManyAccess[existing.Class]
 	
 	// NESTED	------------------------
 	
-	class ClassesInDatabase(databaseId: Int) extends ConditionalManyAccess[existing.Class]
+	class ClassesInDatabase(databaseId: Int) extends ManyModelAccess[existing.Class]
 	{
 		// IMPLEMENTED	----------------
 		
-		override def condition = Classes.this.condition && factory.withDatabaseId(databaseId).toCondition
+		override def globalCondition = Some(Classes.this.mergeCondition(factory.withDatabaseId(databaseId).toCondition))
 		
 		override def factory = Classes.this.factory
 		
