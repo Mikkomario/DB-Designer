@@ -1,5 +1,7 @@
 package dbd.client.controller
 
+import dbd.client.database.DatabaseSelection
+import dbd.core.database
 import dbd.core.database.{ConnectionPool, Databases}
 import dbd.core.model.existing.{Database, DatabaseConfiguration}
 import dbd.core.model.partial.NewDatabaseConfiguration
@@ -32,8 +34,11 @@ class DatabasesManager(implicit exc: ExecutionContext) extends SelectableWithPoi
 			}
 			else
 			{
-				// TODO: Read last selected db
-				databases -> databases.head
+				// Checks which database was last selected (or configured)
+				val latestDB = DatabaseSelection.latest.flatMap { s => databases.find {
+					_.id == s.selectedDatabaseId } }.orElse { database.Database.lastConfigured }.getOrElse(databases.head)
+				
+				databases -> latestDB
 			}
 		}
 		match

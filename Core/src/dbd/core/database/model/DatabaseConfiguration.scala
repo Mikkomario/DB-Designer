@@ -9,9 +9,10 @@ import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.{Deprecatable, StorableFactoryWithValidation}
+import utopia.vault.nosql.factory.{Deprecatable, RowFactoryWithTimestamps, StorableFactoryWithValidation}
 
 object DatabaseConfiguration extends StorableFactoryWithValidation[existing.DatabaseConfiguration] with Deprecatable
+	with RowFactoryWithTimestamps[existing.DatabaseConfiguration]
 {
 	// IMPLEMENTED	---------------------
 	
@@ -21,6 +22,8 @@ object DatabaseConfiguration extends StorableFactoryWithValidation[existing.Data
 		model("id").getInt, model("databaseId").getInt, model("name").getString)
 	
 	override def nonDeprecatedCondition = table("deprecatedAfter").isNull
+	
+	override def creationTimePropertyName = "created"
 	
 	
 	// OTHER	-------------------------

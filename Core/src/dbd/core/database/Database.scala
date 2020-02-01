@@ -2,6 +2,7 @@ package dbd.core.database
 
 import utopia.flow.generic.ValueConversions._
 import dbd.core.model.existing
+import utopia.vault.database.Connection
 import utopia.vault.nosql.access.{NonDeprecatedAccess, SingleIdModelAccess, SingleModelAccess}
 
 /**
@@ -14,6 +15,15 @@ object Database extends SingleModelAccess[existing.Database] with NonDeprecatedA
 	// IMPLEMENTED	-------------------
 	
 	override def factory = model.Database
+	
+	
+	// COMPUTED	-----------------------
+	
+	/**
+	  * @param connection Implicit DB connection
+	  * @return The last configured database from the DB
+	  */
+	def lastConfigured(implicit connection: Connection) = first(model.DatabaseConfiguration.defaultOrdering)
 	
 	
 	// OTHER	-----------------------

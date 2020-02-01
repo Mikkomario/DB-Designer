@@ -27,7 +27,7 @@ object Release extends SingleModelAccessById[existing.Release, Int]
 	 * @param connection DB Connection (implicit)
 	 * @return The latest release instance
 	 */
-	def latest(implicit connection: Connection) = factory.getMax("created")
+	def latest(implicit connection: Connection) = factory.latest
 	
 	
 	// NESTED	----------------------------

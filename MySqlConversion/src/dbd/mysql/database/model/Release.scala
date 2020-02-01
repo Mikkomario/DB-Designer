@@ -8,9 +8,9 @@ import utopia.flow.generic.ValueConversions._
 import dbd.mysql.model.{VersionNumber, existing}
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.StorableFactoryWithValidation
+import utopia.vault.nosql.factory.{RowFactoryWithTimestamps, StorableFactoryWithValidation}
 
-object Release extends StorableFactoryWithValidation[existing.Release]
+object Release extends StorableFactoryWithValidation[existing.Release] with RowFactoryWithTimestamps[existing.Release]
 {
 	// IMPLEMENTED	-------------------------
 	
@@ -18,6 +18,8 @@ object Release extends StorableFactoryWithValidation[existing.Release]
 		model("databaseId").getInt, VersionNumber.parse(model("versionNumber").getString), model("created").getInstant)
 	
 	override def table = Tables.release
+	
+	override def creationTimePropertyName = "created"
 	
 	
 	// OTHER	----------------------------
