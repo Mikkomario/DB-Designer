@@ -80,4 +80,18 @@ class DatabasesManager(implicit exc: ExecutionContext) extends SelectableWithPoi
 			case Failure(error) => Log(error, s"Failed to insert a new database with config: $newConfig")
 		}
 	}
+	
+	/**
+	  * Edits the configuration of an existing database
+	  * @param databaseId Id of target database
+	  * @param newConfig New configuration for the database
+	  */
+	def editDatabase(databaseId: Int, newConfig: NewDatabaseConfiguration) =
+	{
+		ConnectionPool.tryWith { implicit connection => database.Database(databaseId).configuration.update(newConfig) } match {
+			case Success(savedConfig) =>
+				content = content.mapFirstWhere { _.id == databaseId } { _.copy(configuration = savedConfig) }
+			case Failure(error) => Log(error, "Failed to edit database configuration")
+		}
+	}
 }

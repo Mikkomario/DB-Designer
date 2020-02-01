@@ -26,7 +26,21 @@ object DatabaseConfiguration extends StorableFactoryWithValidation[existing.Data
 	override def creationTimePropertyName = "created"
 	
 	
+	// COMPUTED	-------------------------
+	
+	/**
+	  * @return A model that has just been marked as deprecated
+	  */
+	def nowDeprecated = apply(deprecatedAfter = Some(Instant.now()))
+	
+	
 	// OTHER	-------------------------
+	
+	/**
+	  * @param dbId Id of target database
+	  * @return A model with database id set
+	  */
+	def withDatabaseId(dbId: Int) = apply(databaseId = Some(dbId))
 	
 	/**
 	 * Inserts a new database configuration to the DB

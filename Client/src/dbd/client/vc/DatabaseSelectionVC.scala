@@ -45,6 +45,14 @@ class DatabaseSelectionVC(buttonColor: Color)
 				} }
 			}
 		}
+		stack += ImageButton.contextual(Icons.edit.forButtonWithoutText(buttonColor)) { () =>
+			parentWindow.foreach { window =>
+				val dbToEdit = value
+				new EditDatabaseDialog(Some(dbToEdit.configuration)).display(window).foreach { _.foreach { newConfig =>
+					dataManager.editDatabase(dbToEdit.id, newConfig)
+				} }
+			}
+		}
 	}
 	
 	
@@ -55,7 +63,13 @@ class DatabaseSelectionVC(buttonColor: Color)
 	// When user selects a different DB from the DD, informs the data manager (also updates selection based on
 	// data manager changes)
 	selectionDD.addValueListener { _.newValue.foreach { dataManager.value = _ } }
-	dataManager.addContentListener { e => selectionDD.content = e.newValue }
+	dataManager.addContentListener { e =>
+		selectionDD.content = e.newValue
+		val selectedDbId = dataManager.value.id
+		// Preserves selection
+		// TODO: This can be removed when drop downs support better selection preservation
+		selectionDD.selectFirstWhere { _.id == selectedDbId }
+	}
 	dataManager.addValueListener { e => selectionDD.selectOne(e.newValue) }
 	
 	
