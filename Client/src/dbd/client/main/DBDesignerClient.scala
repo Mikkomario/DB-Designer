@@ -2,7 +2,7 @@ package dbd.client.main
 
 import utopia.flow.util.CollectionExtensions._
 import dbd.client.model.Fonts
-import dbd.client.vc.ClassesVC
+import dbd.client.vc.MainVC
 import dbd.core.database.ConnectionPool
 import dbd.core.util.Log
 import utopia.flow.async.ThreadPool
@@ -16,7 +16,7 @@ import utopia.reflection.container.swing.window.WindowResizePolicy.Program
 import utopia.reflection.localization.{Localizer, NoLocalization}
 import utopia.reflection.shape.Margins
 import utopia.reflection.text.Font
-import utopia.reflection.util.{ComponentContextBuilder, Screen, SingleFrameSetup}
+import utopia.reflection.util.{ComponentContextBuilder, SingleFrameSetup}
 import utopia.vault.util.ErrorHandling
 import utopia.vault.util.ErrorHandlingPrinciple.Throw
 
@@ -56,9 +56,7 @@ object DBDesignerClient extends App
 	
 	// Reads displayed data from DB
 	ConnectionPool.tryWith { implicit connection =>
-		// TODO: Temporarily uses hard-coded db 1. Will fail if there is no data in DB
-		val content = new ClassesVC(Screen.height * 0.7, 1)
-		new SingleFrameSetup(actorHandler, Frame.windowed(content.framed(margins.medium.any.square, primaryColors.light),
-			"DB Designer", Program)).start()
+		val content = new MainVC
+		new SingleFrameSetup(actorHandler, Frame.windowed(content, "DB Designer", Program)).start()
 	}.failure.foreach { Log(_, "Failed to run DB Designer client") }
 }

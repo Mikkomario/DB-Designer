@@ -1,6 +1,8 @@
 package dbd.client.controller
 
+import utopia.flow.util.CollectionExtensions._
 import dbd.client.database.DatabaseSelection
+import dbd.client.model.template.DatabaseSelectionData
 import dbd.core.database
 import dbd.core.database.{ConnectionPool, Databases}
 import dbd.core.model.existing.{Database, DatabaseConfiguration}
@@ -49,5 +51,15 @@ class DatabasesManager(implicit exc: ExecutionContext) extends SelectableWithPoi
 				new PointerWithEvents[Vector[Database]](Vector()) -> new PointerWithEvents(Database(-1,
 					DatabaseConfiguration(-1, -1, "Failed to Load")))
 		}
+	}
+	
+	
+	// INITIAL CODE	----------------------
+	
+	// Each time database selection changes, records it in the database
+	valuePointer.addListener { e =>
+		ConnectionPool.tryWith { implicit connection =>
+			DatabaseSelection.insert(DatabaseSelectionData(e.newValue.id))
+		}.failure.foreach { Log(_, s"Couldn't record a database change ($e)") }
 	}
 }

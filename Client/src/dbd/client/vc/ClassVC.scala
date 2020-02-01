@@ -32,7 +32,7 @@ import scala.concurrent.ExecutionContext
  * @since 11.1.2020, v0.1
  */
 class ClassVC(initialClass: ParentOrSubClass, classManager: ClassDisplayManager)
-			 (implicit baseCB: ComponentContextBuilder, fonts: Fonts, margins: Margins, colorScheme: ColorScheme,
+			 (implicit baseCB: ComponentContextBuilder, margins: Margins, colorScheme: ColorScheme,
 			  defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
 	extends StackableAwtComponentWrapperWrapper with Refreshable[ParentOrSubClass]
 {

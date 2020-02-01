@@ -23,11 +23,13 @@ import scala.concurrent.ExecutionContext
  * @since 17.1.2020, v0.1
  */
 class ClassesVC(targetHeight: Double, initialDatabaseId: Int)
-			   (implicit margins: Margins, baseCB: ComponentContextBuilder, fonts: Fonts, colorScheme: ColorScheme,
-				defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
+			   (implicit margins: Margins, baseCB: ComponentContextBuilder, colorScheme: ColorScheme,
+				localizer: Localizer, exc: ExecutionContext)
 	extends StackableAwtComponentWrapperWrapper with Refreshable[Int]
 {
 	// ATTRIBUTES	---------------------
+	
+	private implicit val language: String = "en"
 	
 	private val dataManager = new ClassDisplayManager(initialDatabaseId)
 	private val addClassButton = ImageAndTextButton.contextual(Icons.addBox.forButtonWithBackground(colorScheme.secondary.dark),
