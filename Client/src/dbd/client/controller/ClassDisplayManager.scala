@@ -27,6 +27,9 @@ class ClassDisplayManager(initialDatabaseId: Int)(implicit exc: ExecutionContext
 {
 	// ATTRIBUTES	-----------------------
 	
+	// Currently selected database's id
+	private var _databaseId = initialDatabaseId
+	
 	private val _contentPointer =
 	{
 		// Reads class and link data from DB
@@ -37,9 +40,6 @@ class ClassDisplayManager(initialDatabaseId: Int)(implicit exc: ExecutionContext
 		}
 		new PointerWithEvents(data)
 	}
-	
-	// Currently selected database's id
-	private var _databaseId = initialDatabaseId
 	
 	
 	// COMPUTED	---------------------------
@@ -68,7 +68,7 @@ class ClassDisplayManager(initialDatabaseId: Int)(implicit exc: ExecutionContext
 	private def dataFromDB =
 	{
 		ConnectionPool.tryWith { implicit connection =>
-			val dbAccess = Database(initialDatabaseId)
+			val dbAccess = Database(_databaseId)
 			val classes = dbAccess.classes.all
 			val links = dbAccess.links.all
 			pairData(classes, links)

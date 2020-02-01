@@ -62,4 +62,22 @@ class DatabasesManager(implicit exc: ExecutionContext) extends SelectableWithPoi
 			DatabaseSelection.insert(DatabaseSelectionData(e.newValue.id))
 		}.failure.foreach { Log(_, s"Couldn't record a database change ($e)") }
 	}
+	
+	
+	// OTHER	--------------------------
+	
+	/**
+	  * Adds a new database to the DB
+	  * @param newConfig First configuration for the new DB
+	  */
+	def addNewDatabase(newConfig: NewDatabaseConfiguration) =
+	{
+		ConnectionPool.tryWith { implicit connection => Databases.insert(newConfig) } match
+		{
+			case Success(newDB) =>
+				content :+= newDB
+				select(newDB)
+			case Failure(error) => Log(error, s"Failed to insert a new database with config: $newConfig")
+		}
+	}
 }

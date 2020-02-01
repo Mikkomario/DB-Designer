@@ -63,6 +63,11 @@ object Icons
 	def time = apply("time.png")
 	
 	/**
+	  * @return Icon for adding new items
+	  */
+	def add = apply("add.png")
+	
+	/**
 	 * @return Rectangular icon for adding new items
 	 */
 	def addBox = apply("add_box.png")

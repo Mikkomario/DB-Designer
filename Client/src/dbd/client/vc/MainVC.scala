@@ -23,7 +23,7 @@ class MainVC(implicit baseCB: ComponentContextBuilder, exc: ExecutionContext, lo
 {
 	// ATTRIBUTES	-----------------------
 	
-	private val dbVC = new DatabaseSelectionVC()
+	private val dbVC = new DatabaseSelectionVC(colorScheme.primary.dark.defaultTextColor)
 	private val classesVC = new ClassesVC(Screen.height * 0.7, dbVC.value.id)
 	
 	private val view = Stack.buildColumn(margin = 0.fixed) { stack =>
