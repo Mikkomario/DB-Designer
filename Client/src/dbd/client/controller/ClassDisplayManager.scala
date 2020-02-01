@@ -10,7 +10,8 @@ import dbd.core.model.existing.{Attribute, Class, Link}
 import dbd.core.model.partial.{NewAttribute, NewAttributeConfiguration, NewClass, NewClassInfo, NewLinkConfiguration, NewSubClass}
 import dbd.core.util.Log
 import utopia.flow.datastructure.mutable.PointerWithEvents
-import utopia.reflection.component.RefreshableWithPointer
+import utopia.flow.event.Changing
+import utopia.reflection.component.PoolWithPointer
 import utopia.vault.database.Connection
 
 import scala.concurrent.ExecutionContext
@@ -21,26 +22,63 @@ import scala.util.{Failure, Success}
  * @author Mikko Hilpinen
  * @since 18.1.2020, v0.1
  */
-class ClassDisplayManager(databaseId: Int)(implicit exc: ExecutionContext)
-	extends RefreshableWithPointer[Vector[DisplayedClass]]
+class ClassDisplayManager(initialDatabaseId: Int)(implicit exc: ExecutionContext)
+	extends PoolWithPointer[Vector[DisplayedClass], Changing[Vector[DisplayedClass]]]
 {
 	// ATTRIBUTES	-----------------------
 	
-	override val contentPointer =
+	private val _contentPointer =
 	{
 		// Reads class and link data from DB
-		val data = ConnectionPool.tryWith { implicit connection =>
-			val dbAccess = Database(databaseId)
-			val classes = dbAccess.classes.all
-			val links = dbAccess.links.all
-			pairData(classes, links)
-		} match
+		val data = dataFromDB match
 		{
 			case Success(data) => data
-			case Failure(error) => Log(error, s"Couldn't read class data for database $databaseId"); Vector()
+			case Failure(error) => Log(error, s"Couldn't read class data for database $initialDatabaseId"); Vector()
 		}
 		new PointerWithEvents(data)
 	}
+	
+	// Currently selected database's id
+	private var _databaseId = initialDatabaseId
+	
+	
+	// COMPUTED	---------------------------
+	
+	/**
+	  * @return Id of currently displayed database
+	  */
+	def currentDatabaseId = _databaseId
+	def currentDatabaseId_=(newDBId: Int) =
+	{
+		// When database changes, refreshes displayed data as well
+		if (_databaseId != newDBId)
+		{
+			_databaseId = newDBId
+			content = dataFromDB match
+			{
+				case Success(data) => data
+				case Failure(error) => Log(error, s"Failed to load data from DB ${_databaseId}"); Vector()
+			}
+		}
+	}
+	
+	private def content_=(newData: Vector[DisplayedClass]) = _contentPointer.value = newData
+	
+	// Reads current data status from DB
+	private def dataFromDB =
+	{
+		ConnectionPool.tryWith { implicit connection =>
+			val dbAccess = Database(initialDatabaseId)
+			val classes = dbAccess.classes.all
+			val links = dbAccess.links.all
+			pairData(classes, links)
+		}
+	}
+	
+	
+	// IMPLEMENTED	-----------------------
+	
+	override def contentPointer: Changing[Vector[DisplayedClass]] = _contentPointer
 	
 	
 	// OTHER	---------------------------
@@ -138,7 +176,7 @@ class ClassDisplayManager(databaseId: Int)(implicit exc: ExecutionContext)
 	def addNewClass(newClass: NewClass) =
 	{
 		// Inserts a new class to DB and then to the end of displayed classes list
-		ConnectionPool.tryWith { implicit connection => Database(databaseId).classes.insert(newClass) } match
+		ConnectionPool.tryWith { implicit connection => Database(initialDatabaseId).classes.insert(newClass) } match
 		{
 			case Success(newClass) => content = content :+ DisplayedClass(newClass, isExpanded = true)
 			case Failure(error) => Log(error, s"Failed to insert class $newClass to DB")
@@ -159,8 +197,8 @@ class ClassDisplayManager(databaseId: Int)(implicit exc: ExecutionContext)
 	{
 		// Inserts the new class to DB, then adds a link between the two classes
 		ConnectionPool.tryWith { implicit connection =>
-			val newClass = Database(databaseId).classes.insert(NewClass(newSubClass.classInfo))
-			newClass -> Database(databaseId).links.insert(newSubClass.toNewLinkConfiguration(newClass.id))
+			val newClass = Database(initialDatabaseId).classes.insert(NewClass(newSubClass.classInfo))
+			newClass -> Database(initialDatabaseId).links.insert(newSubClass.toNewLinkConfiguration(newClass.id))
 		} match
 		{
 			case Success(newData) =>
@@ -280,7 +318,7 @@ class ClassDisplayManager(databaseId: Int)(implicit exc: ExecutionContext)
 	{
 		// Inserts the new link to database, then updates displayed classes
 		ConnectionPool.tryWith { implicit connection =>
-			Database(databaseId).links.insert(link)
+			Database(initialDatabaseId).links.insert(link)
 		} match
 		{
 			case Success(newLink) => displaysWithLinkAdded(content, newLink).foreach { content = _ }

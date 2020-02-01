@@ -2,12 +2,11 @@ package dbd.client.vc
 
 import dbd.client.controller.{ClassDisplayManager, Icons}
 import dbd.client.dialog.EditClassDialog
-import dbd.client.model.{DisplayedClass, Fonts, ParentOrSubClass}
+import dbd.client.model.{Fonts, ParentOrSubClass}
 import utopia.reflection.shape.LengthExtensions._
-import dbd.core.model.existing.{Class, Link}
 import utopia.genesis.shape.shape2D.Direction2D
 import utopia.reflection.color.ColorScheme
-import utopia.reflection.component.RefreshableWithPointer
+import utopia.reflection.component.Refreshable
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
 import utopia.reflection.component.swing.button.ImageAndTextButton
 import utopia.reflection.container.swing.{CollectionView, Stack}
@@ -26,7 +25,7 @@ import scala.concurrent.ExecutionContext
 class ClassesVC(targetHeight: Double, initialDatabaseId: Int)
 			   (implicit margins: Margins, baseCB: ComponentContextBuilder, fonts: Fonts, colorScheme: ColorScheme,
 				defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
-	extends StackableAwtComponentWrapperWrapper with RefreshableWithPointer[Vector[DisplayedClass]]
+	extends StackableAwtComponentWrapperWrapper with Refreshable[Int]
 {
 	// ATTRIBUTES	---------------------
 	
@@ -51,7 +50,9 @@ class ClassesVC(targetHeight: Double, initialDatabaseId: Int)
 	
 	// IMPLEMENTED	---------------------
 	
-	override def contentPointer = dataManager.contentPointer
+	override def content_=(newContent: Int) = dataManager.currentDatabaseId = newContent
+	
+	override def content = dataManager.currentDatabaseId
 	
 	override protected def wrapped = view
 	
