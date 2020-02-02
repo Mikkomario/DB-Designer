@@ -98,6 +98,11 @@ object Icons
 	def expandLess = expandMore.map { _.flippedVertically }
 	
 	/**
+	  * @return Icon for displaying more options or information
+	  */
+	def more = apply("more.png")
+	
+	/**
 	 * @return Icon used with one-to-one links
 	 */
 	def oneOnOneLink = apply("double_arrow.png")

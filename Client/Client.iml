@@ -14,5 +14,6 @@
     <orderEntry type="module" module-name="Utopia-Genesis-Scala" />
     <orderEntry type="module" module-name="Utopia-Inception-Scala" />
     <orderEntry type="module" module-name="Utopia-Reflection" />
+    <orderEntry type="module" module-name="MySqlConversion" />
   </component>
 </module>
