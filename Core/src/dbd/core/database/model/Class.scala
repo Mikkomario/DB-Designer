@@ -52,7 +52,17 @@ object Class extends FromResultFactory[existing.Class] with Deprecatable
 	/**
 	 * @return A condition for class to not be deleted yet
 	 */
-	def notDeletedCondition = table("deletedAfter").isNull
+	def notDeletedCondition = deletionTimeColumn.isNull
+	
+	/**
+	  * @return Column that contains class creation time
+	  */
+	def creationTimeColumn = table("created")
+	
+	/**
+	  * @return Column that contains class deletion time
+	  */
+	def deletionTimeColumn = table("deletedAfter")
 	
 	/**
 	 * @return A model that has just been marked as deleted

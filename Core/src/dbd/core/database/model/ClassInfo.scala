@@ -7,10 +7,11 @@ import dbd.core.database.Tables
 import dbd.core.model.existing
 import dbd.core.model.partial.NewClassInfo
 import utopia.flow.datastructure.immutable.{Constant, Model}
-import utopia.vault.nosql.factory.{Deprecatable, StorableFactoryWithValidation}
+import utopia.vault.nosql.factory.{Deprecatable, RowFactoryWithTimestamps, StorableFactoryWithValidation}
 import utopia.vault.model.immutable.StorableWithFactory
 
 object ClassInfo extends StorableFactoryWithValidation[existing.ClassInfo] with Deprecatable
+	with RowFactoryWithTimestamps[existing.ClassInfo]
 {
 	// ATTRIBUTES	----------------------------
 	
@@ -18,6 +19,8 @@ object ClassInfo extends StorableFactoryWithValidation[existing.ClassInfo] with 
 	
 	
 	// IMPLEMENTED	----------------------------
+	
+	override def creationTimePropertyName = "created"
 	
 	override def table = Tables.classInfo
 	
@@ -57,11 +60,12 @@ object ClassInfo extends StorableFactoryWithValidation[existing.ClassInfo] with 
  * @since 11.1.2020, v0.1
  */
 case class ClassInfo(id: Option[Int] = None, classId: Option[Int] = None, name: Option[String] = None,
-					 isMutable: Option[Boolean] = None, deprecatedAfter: Option[Instant] = None)
+					 isMutable: Option[Boolean] = None, deprecatedAfter: Option[Instant] = None,
+					 created: Option[Instant] = None)
 	extends StorableWithFactory[existing.ClassInfo]
 {
 	override def factory = ClassInfo
 	
 	override def valueProperties = Vector("id" -> id, "classId" -> classId, "name" -> name, "isMutable" -> isMutable,
-		"deprecatedAfter" -> deprecatedAfter)
+		"deprecatedAfter" -> deprecatedAfter, "created" -> created)
 }

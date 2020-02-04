@@ -49,6 +49,7 @@ CREATE TABLE `class`
 	deleted_after DATETIME, 
 	
 	INDEX (deleted_after), 
+	INDEX (created), 
 	
 	FOREIGN KEY c_d_link_to_owner_db (database_id) 
 		REFERENCES `database`(id) ON DELETE CASCADE

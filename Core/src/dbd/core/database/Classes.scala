@@ -1,5 +1,9 @@
 package dbd.core.database
 
+import java.time.Instant
+
+import utopia.flow.generic.ValueConversions._
+import utopia.vault.sql.Extensions._
 import dbd.core.model.existing
 import dbd.core.model.partial.NewClass
 import utopia.vault.database.Connection
@@ -24,6 +28,30 @@ object Classes extends ManyModelAccess[existing.Class] with NonDeprecatedAccess[
 	 * @return An access point to that database's classes
 	 */
 	def inDatabaseWithId(databaseId: Int) = new ClassesInDatabase(databaseId)
+	
+	/**
+	  * @return An access point to all classes, including those that have already been deleted
+	  */
+	def historical = ClassesHistory
+	
+	
+	// OTHER	------------------------
+	
+	/**
+	  * @param threshold A time threshold
+	  * @param connection DB Connection
+	  * @return All new, non-deleted classes that were created after the specified time threshold
+	  */
+	def createdAfter(threshold: Instant)(implicit connection: Connection) =
+		find(factory.creationTimeColumn > threshold)
+	
+	/**
+	  * @param threshold A time threshold
+	  * @param connection DB Connection
+	  * @return All non-deleted classes that were created before the specified instant but were modified after that
+	  */
+	def modifiedAfter(threshold: Instant)(implicit connection: Connection) =
+		find(model.ClassInfo.createdAfterCondition(threshold) && factory.creationTimeColumn <= threshold)
 	
 	
 	// NESTED	------------------------
