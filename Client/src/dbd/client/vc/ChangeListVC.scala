@@ -23,10 +23,10 @@ import scala.collection.immutable.VectorBuilder
   * @author Mikko Hilpinen
   * @since 2.2.2020, v0.1
   */
-class ChangeListVC(initialList: ChangedItems, initialIsExpanded: Boolean, title: LocalizedString,
+class ChangeListVC(initialList: ChangedItems, initialIsExpanded: Boolean, initialTitle: LocalizedString,
 				   maxItemsPerRow: Int, backgroundUsed: ComponentColor)
 				  (implicit baseCB: ComponentContextBuilder, margins: Margins)
-	extends StackableAwtComponentWrapperWrapper with Refreshable[(ChangedItems, Boolean)]
+	extends StackableAwtComponentWrapperWrapper with Refreshable[(LocalizedString, ChangedItems, Boolean)]
 {
 	// ATTRIBUTES	-----------------------
 	
@@ -37,9 +37,10 @@ class ChangeListVC(initialList: ChangedItems, initialIsExpanded: Boolean, title:
 	private var _content = initialList
 	private var _isExpanded = initialIsExpanded
 	
+	private val titleLabel = TextLabel.contextual(initialTitle)
 	private val rowsSwitch = new SwitchPanel[AwtStackable]
 	private val view = Stack.buildRowWithContext(Leading) { stack =>
-		stack += TextLabel.contextual(title)
+		stack += titleLabel
 		stack += rowsSwitch
 	}
 	
@@ -61,17 +62,20 @@ class ChangeListVC(initialList: ChangedItems, initialIsExpanded: Boolean, title:
 	
 	override protected def wrapped = view
 	
-	override def content_=(newContent: (ChangedItems, Boolean)) =
+	override def content_=(newContent: (LocalizedString, ChangedItems, Boolean)) =
 	{
-		if (newContent._2 != _isExpanded || newContent._1 != _content)
+		val (newTitle, newItems, newExpand) = newContent
+		
+		if (newTitle != titleLabel.text || newExpand != _isExpanded || newItems != _content)
 		{
-			_content = newContent._1
-			_isExpanded = newContent._2
+			_content = newItems
+			_isExpanded = newExpand
+			titleLabel.text = newTitle
 			updateView()
 		}
 	}
 	
-	override def content = _content -> _isExpanded
+	override def content = (titleLabel.text, _content, _isExpanded)
 	
 	
 	// OTHER	---------------------------
