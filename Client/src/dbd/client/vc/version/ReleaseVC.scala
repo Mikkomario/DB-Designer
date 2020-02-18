@@ -1,10 +1,9 @@
-package dbd.client.vc
+package dbd.client.vc.version
 
 import java.time.Instant
 
-import utopia.reflection.shape.LengthExtensions._
-import utopia.reflection.localization.LocalString._
 import dbd.client.model.{ChangedItems, DisplayedRelease}
+import dbd.client.vc.SeparatorLine
 import utopia.reflection.color.ComponentColor
 import utopia.reflection.component.Refreshable
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
@@ -12,7 +11,9 @@ import utopia.reflection.component.swing.label.{ItemLabel, TextLabel}
 import utopia.reflection.container.stack.StackLayout.Leading
 import utopia.reflection.container.swing.Stack
 import utopia.reflection.controller.data.ContainerContentManager
+import utopia.reflection.localization.LocalString._
 import utopia.reflection.localization.{DisplayFunction, LocalizedString, Localizer}
+import utopia.reflection.shape.LengthExtensions._
 import utopia.reflection.shape.Margins
 import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
 

@@ -1,8 +1,6 @@
-package dbd.client.vc
+package dbd.client.vc.version
 
-import utopia.reflection.shape.LengthExtensions._
 import dbd.client.controller.Icons
-import utopia.reflection.localization.LocalString._
 import dbd.client.model.ChangedItems
 import utopia.reflection.color.ComponentColor
 import utopia.reflection.component.Refreshable
@@ -12,7 +10,9 @@ import utopia.reflection.component.swing.label.TextLabel
 import utopia.reflection.container.stack.StackLayout.Leading
 import utopia.reflection.container.swing.Stack.AwtStackable
 import utopia.reflection.container.swing.{Stack, SwitchPanel}
+import utopia.reflection.localization.LocalString._
 import utopia.reflection.localization.LocalizedString
+import utopia.reflection.shape.LengthExtensions._
 import utopia.reflection.shape.Margins
 import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
 
@@ -95,7 +95,7 @@ class ChangeListVC(initialList: ChangedItems, initialIsExpanded: Boolean, initia
 		val displayedTexts = allTexts.takeWhile { case (_, width) =>
 			currentWidth += width
 			currentWidth < maxItemsPerRow
-		}.map { _._1 }
+		}.map { _._1 + "," }
 		
 		// May replace the "..." with the last item in the list
 		val finalTexts = if (displayedTexts.size == allTexts.size - 1 && allTexts.last._2 < 2)
@@ -123,7 +123,8 @@ class ChangeListVC(initialList: ChangedItems, initialIsExpanded: Boolean, initia
 	
 	private def makeExpandedRows() =
 	{
-		val allTexts = allTextAndWidths
+		val withoutCommas = allTextAndWidths
+		val allTexts = withoutCommas.dropRight(1).map { case (text, width) => (text + ",") -> width } ++ withoutCommas.lastOption
 		val rowsBuilder = new VectorBuilder[Vector[String]]
 		var currentRowBuilder = new VectorBuilder[String]
 		var currentRowWidth = 0

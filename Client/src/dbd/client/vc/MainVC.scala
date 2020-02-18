@@ -2,6 +2,7 @@ package dbd.client.vc
 
 import utopia.reflection.shape.LengthExtensions._
 import dbd.client.model.Fonts
+import dbd.client.vc.structure.ClassesVC
 import utopia.genesis.shape.shape2D.Direction2D
 import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper

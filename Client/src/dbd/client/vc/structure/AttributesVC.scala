@@ -1,8 +1,8 @@
-package dbd.client.vc
+package dbd.client.vc.structure
 
-import utopia.reflection.shape.LengthExtensions._
 import dbd.client.controller.{ClassDisplayManager, Icons}
 import dbd.client.dialog.EditAttributeDialog
+import dbd.client.vc.GroupHeader
 import dbd.core.model.existing.Attribute
 import dbd.core.model.partial.NewAttribute
 import utopia.genesis.shape.Axis.X
@@ -15,6 +15,7 @@ import utopia.reflection.container.stack.segmented.SegmentedGroup
 import utopia.reflection.container.swing.Stack
 import utopia.reflection.controller.data.ContentManager
 import utopia.reflection.localization.Localizer
+import utopia.reflection.shape.LengthExtensions._
 import utopia.reflection.shape.Margins
 import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
 

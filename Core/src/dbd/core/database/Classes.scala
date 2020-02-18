@@ -30,9 +30,9 @@ object Classes extends ManyModelAccess[existing.Class] with NonDeprecatedAccess[
 	def inDatabaseWithId(databaseId: Int) = new ClassesInDatabase(databaseId)
 	
 	/**
-	  * @return An access point to all classes, including those that have already been deleted
+	  * @return An access point to class ids (without class data included)
 	  */
-	def historical = ClassesHistory
+	def ids = ClassIds
 	
 	
 	// OTHER	------------------------

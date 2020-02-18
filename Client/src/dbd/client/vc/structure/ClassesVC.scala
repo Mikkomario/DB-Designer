@@ -1,9 +1,8 @@
-package dbd.client.vc
+package dbd.client.vc.structure
 
 import dbd.client.controller.{ClassDisplayManager, Icons}
 import dbd.client.dialog.EditClassDialog
-import dbd.client.model.{Fonts, ParentOrSubClass}
-import utopia.reflection.shape.LengthExtensions._
+import dbd.client.model.ParentOrSubClass
 import utopia.genesis.shape.shape2D.Direction2D
 import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Refreshable
@@ -12,6 +11,7 @@ import utopia.reflection.component.swing.button.ImageAndTextButton
 import utopia.reflection.container.swing.{CollectionView, Stack}
 import utopia.reflection.controller.data.ContainerContentManager
 import utopia.reflection.localization.Localizer
+import utopia.reflection.shape.LengthExtensions._
 import utopia.reflection.shape.Margins
 import utopia.reflection.util.ComponentContextBuilder
 

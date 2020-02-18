@@ -1,32 +1,35 @@
-package dbd.client.main
+package dbd.client.test
 
-import utopia.flow.util.CollectionExtensions._
-import dbd.client.model.Fonts
-import dbd.client.vc.MainVC
-import dbd.core.database.ConnectionPool
-import dbd.core.util.{Log, ThreadPool}
+import java.time.Instant
+
 import utopia.reflection.shape.LengthExtensions._
+import dbd.client.model.{ChangedItems, Fonts}
+import dbd.client.vc.version.ChangeListVC
+import utopia.flow.util.TimeExtensions._
+import dbd.core.database.{ClassIds, Classes, ConnectionPool}
+import dbd.core.util.ThreadPool
 import utopia.genesis.color.{Color, RGB}
 import utopia.genesis.generic.GenesisDataType
 import utopia.genesis.handling.mutable.ActorHandler
 import utopia.reflection.color.{ColorScheme, ColorSet}
+import utopia.reflection.container.swing.Stack
 import utopia.reflection.container.swing.window.Frame
 import utopia.reflection.container.swing.window.WindowResizePolicy.Program
 import utopia.reflection.localization.{Localizer, NoLocalization}
 import utopia.reflection.shape.Margins
 import utopia.reflection.text.Font
-import utopia.reflection.util.{ComponentContextBuilder, SingleFrameSetup}
+import utopia.reflection.util.{ComponentContext, ComponentContextBuilder, SingleFrameSetup}
 import utopia.vault.util.ErrorHandling
 import utopia.vault.util.ErrorHandlingPrinciple.Throw
 
 import scala.concurrent.ExecutionContext
 
 /**
- * The main client app for DB Designer
- * @author Mikko Hilpinen
- * @since 11.1.2020, v0.1
- */
-object DBDesignerClient extends App
+  * A simple test for displaying version data
+  * @author Mikko Hilpinen
+  * @since 18.2.2020, v0.1
+  */
+object VersionViewTest extends App
 {
 	GenesisDataType.setup()
 	ErrorHandling.defaultPrinciple = Throw // Will throw errors during development
@@ -49,13 +52,30 @@ object DBDesignerClient extends App
 	implicit val baseCB: ComponentContextBuilder = ComponentContextBuilder(actorHandler, baseFont, secondaryColors,
 		secondaryColors.light, 320, insideMargins = margins.small.any.square, stackMargin = margins.medium.downscaling,
 		relatedItemsStackMargin = Some(margins.small.downscaling))
+	implicit val baseContext: ComponentContext = baseCB.result
 	
 	implicit val exc: ExecutionContext = ThreadPool.executionContext
-	
-	
-	// Reads displayed data from DB
-	ConnectionPool.tryWith { implicit connection =>
-		val content = new MainVC
-		new SingleFrameSetup(actorHandler, Frame.windowed(content, "DB Designer", Program)).start()
-	}.failure.foreach { Log(_, "Failed to run DB Designer client") }
+	ConnectionPool { implicit connection =>
+		// Reads changed data
+		val threshold = Instant.now() - 4.weeks
+		val newClasses = Classes.createdAfter(threshold)
+		val modifiedClasses = Classes.modifiedAfter(threshold)
+		
+		println("New classes: " + newClasses.size)
+		println("Modified classes: " + modifiedClasses.size)
+		
+		val newChanges = ChangedItems(newClasses, Map(), Vector())
+		val modChanges = ChangedItems(modifiedClasses, Map(), Vector())
+		
+		// class ChangeListVC(initialList: ChangedItems,initialIsExpanded: Boolean,initialTitle: LocalizedString,maxItemsPerRow: Int,backgroundUsed: ComponentColor
+		val newVC = new ChangeListVC(newChanges, false, "- New:", 5, primaryColors)
+		val modVC = new ChangeListVC(modChanges, false, "- Modified:", 5, primaryColors)
+		
+		val view = Stack.buildColumnWithContext() { stack =>
+			stack += newVC
+			stack += modVC
+		}.framed(margins.medium.any x margins.medium.any, primaryColors)
+		
+		new SingleFrameSetup(actorHandler, Frame.windowed(view, "DB Designer", Program)).start()
+	}
 }

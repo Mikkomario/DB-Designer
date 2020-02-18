@@ -1,6 +1,5 @@
-package dbd.client.vc
+package dbd.client.vc.structure
 
-import utopia.reflection.localization.LocalString._
 import dbd.client.controller.{ClassDisplayManager, Icons}
 import dbd.client.dialog.{DeleteQuestionDialog, EditLinkDialog}
 import dbd.client.model.DisplayedLink
@@ -12,6 +11,7 @@ import utopia.reflection.component.Refreshable
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
 import utopia.reflection.component.swing.button.{ButtonImageSet, ImageAndTextButton, ImageButton}
 import utopia.reflection.container.swing.Stack
+import utopia.reflection.localization.LocalString._
 import utopia.reflection.localization.Localizer
 import utopia.reflection.shape.Margins
 import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}

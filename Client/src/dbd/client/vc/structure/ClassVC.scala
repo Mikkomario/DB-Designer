@@ -1,13 +1,12 @@
-package dbd.client.vc
+package dbd.client.vc.structure
 
-import utopia.flow.util.CollectionExtensions._
 import dbd.client.controller.{ClassDisplayManager, Icons}
 import dbd.client.dialog.{DeleteQuestionDialog, EditClassDialog, EditSubClassDialog}
-import utopia.reflection.shape.LengthExtensions._
-import dbd.client.model.{Fonts, ParentOrSubClass}
+import dbd.client.model.ParentOrSubClass
 import dbd.core.model.existing.{Attribute, Class}
 import dbd.core.model.template.ClassLike
 import dbd.core.util.Log
+import utopia.flow.util.CollectionExtensions._
 import utopia.genesis.color.Color
 import utopia.genesis.event.{ConsumeEvent, MouseButton}
 import utopia.genesis.handling.MouseButtonStateListener
@@ -21,6 +20,7 @@ import utopia.reflection.component.swing.label.ItemLabel
 import utopia.reflection.container.stack.StackLayout.Center
 import utopia.reflection.container.swing.Stack
 import utopia.reflection.localization.{DisplayFunction, Localizer}
+import utopia.reflection.shape.LengthExtensions._
 import utopia.reflection.shape.{Border, Insets, Margins}
 import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
 

@@ -1,11 +1,9 @@
-package dbd.client.vc
+package dbd.client.vc.structure
 
-import utopia.reflection.shape.LengthExtensions._
-import utopia.reflection.localization.LocalString._
 import dbd.client.controller.{ClassDisplayManager, Icons}
 import dbd.client.dialog.{DeleteQuestionDialog, EditAttributeDialog, InfoDialog}
-import dbd.core.model.enumeration.AttributeType.{BooleanType, DoubleType, InstantType, IntType, ShortStringType}
 import dbd.core.model.enumeration.AttributeType
+import dbd.core.model.enumeration.AttributeType._
 import dbd.core.model.existing.Attribute
 import utopia.genesis.color.Color
 import utopia.genesis.image.Image
@@ -20,7 +18,9 @@ import utopia.reflection.component.swing.label.{ImageLabel, TextLabel}
 import utopia.reflection.container.stack.StackLayout.Center
 import utopia.reflection.container.stack.segmented.SegmentedGroup
 import utopia.reflection.container.swing.SegmentedRow
+import utopia.reflection.localization.LocalString._
 import utopia.reflection.localization.Localizer
+import utopia.reflection.shape.LengthExtensions._
 import utopia.reflection.shape.Margins
 import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
 
