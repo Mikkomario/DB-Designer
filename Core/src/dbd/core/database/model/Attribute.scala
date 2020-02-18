@@ -7,13 +7,16 @@ import dbd.core.database.Tables
 import dbd.core.model.existing
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.{Deprecatable, LinkedStorableFactory}
+import utopia.vault.nosql.factory.{Deprecatable, LinkedStorableFactory, RowFactoryWithTimestamps}
 
 object Attribute extends LinkedStorableFactory[existing.Attribute, existing.AttributeConfiguration] with Deprecatable
+	with RowFactoryWithTimestamps[existing.Attribute]
 {
 	// IMPLEMENTED	-----------------------
 	
-	override def nonDeprecatedCondition = table("deletedAfter").isNull && AttributeConfiguration.nonDeprecatedCondition
+	override def creationTimePropertyName = "created"
+	
+	override def nonDeprecatedCondition = notDeletedCondition && AttributeConfiguration.nonDeprecatedCondition
 	
 	override def childFactory = AttributeConfiguration
 	
@@ -22,6 +25,19 @@ object Attribute extends LinkedStorableFactory[existing.Attribute, existing.Attr
 			valid("classID").getInt, child, valid("deletedAfter").instant) }
 	
 	override def table = Tables.attribute
+	
+	
+	// COMPUTED	--------------------------
+	
+	/**
+	  * @return Condition that only returns non-deleted attributes
+	  */
+	def notDeletedCondition = deletedAfterColumn.isNull
+	
+	/**
+	  * @return Column that specifies whether and when this attribute is/was deleted
+	  */
+	def deletedAfterColumn = table("deletedAfter")
 	
 	
 	// OTHER	--------------------------

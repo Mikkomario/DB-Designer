@@ -13,13 +13,15 @@ import dbd.core.model.partial.NewLinkConfiguration
 import utopia.flow.datastructure.template
 import utopia.flow.datastructure.template.Property
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.{Deprecatable, StorableFactory}
+import utopia.vault.nosql.factory.{Deprecatable, RowFactoryWithTimestamps, StorableFactory}
 
-object LinkConfiguration extends StorableFactory[existing.LinkConfiguration] with Deprecatable
+object LinkConfiguration extends StorableFactory[existing.LinkConfiguration] with Deprecatable with RowFactoryWithTimestamps[existing.LinkConfiguration]
 {
 	// IMPLEMENTED	---------------------------
 	
 	override def nonDeprecatedCondition = table("deprecatedAfter").isNull
+	
+	override def creationTimePropertyName = "created"
 	
 	override def apply(model: template.Model[Property]) = table.requirementDeclaration.validate(model).toTry.flatMap { valid =>
 		// Link type must be parseable

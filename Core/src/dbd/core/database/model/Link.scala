@@ -7,9 +7,10 @@ import utopia.flow.generic.ValueConversions._
 import dbd.core.model.existing
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.{Deprecatable, LinkedStorableFactory}
+import utopia.vault.nosql.factory.{Deprecatable, LinkedStorableFactory, RowFactoryWithTimestamps}
 
 object Link extends LinkedStorableFactory[existing.Link, existing.LinkConfiguration] with Deprecatable
+	with RowFactoryWithTimestamps[existing.Link]
 {
 	// ATTRIBUTES	---------------------------
 	
@@ -20,6 +21,8 @@ object Link extends LinkedStorableFactory[existing.Link, existing.LinkConfigurat
 	
 	
 	// IMPLEMENTED	---------------------------
+	
+	override def creationTimePropertyName = "created"
 	
 	override def childFactory = LinkConfiguration
 	
@@ -36,9 +39,14 @@ object Link extends LinkedStorableFactory[existing.Link, existing.LinkConfigurat
 	// COMPUTED	--------------------------------
 	
 	/**
+	  * @return Column that specifies whether a row is deleted or not and when it was deleted
+	  */
+	def deletedAfterColumn = table(deletedAfterVarName)
+	
+	/**
 	 * @return A condition that only returns non-deleted links
 	 */
-	def notDeletedCondition = table("deletedAfter").isNull
+	def notDeletedCondition = deletedAfterColumn.isNull
 	
 	/**
 	 * @return A model that has just been marked as deleted

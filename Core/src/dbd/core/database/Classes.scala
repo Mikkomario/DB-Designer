@@ -37,6 +37,8 @@ object Classes extends ManyModelAccess[existing.Class] with NonDeprecatedAccess[
 	
 	// OTHER	------------------------
 	
+	// TODO: These methods should apply under specific database condition. Also, add similar methods to attributes and links
+	
 	/**
 	  * @param threshold A time threshold
 	  * @param connection DB Connection

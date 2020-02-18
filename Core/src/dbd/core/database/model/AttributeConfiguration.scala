@@ -9,9 +9,10 @@ import dbd.core.model.existing
 import dbd.core.model.partial.NewAttributeConfiguration
 import utopia.flow.datastructure.template.{Model, Property}
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.{Deprecatable, StorableFactory}
+import utopia.vault.nosql.factory.{Deprecatable, RowFactoryWithTimestamps, StorableFactory}
 
 object AttributeConfiguration extends StorableFactory[existing.AttributeConfiguration] with Deprecatable
+	with RowFactoryWithTimestamps[existing.AttributeConfiguration]
 {
 	// ATTRIBUTES	---------------------------
 	
@@ -19,6 +20,8 @@ object AttributeConfiguration extends StorableFactory[existing.AttributeConfigur
 	
 	
 	// IMPLEMENTED	---------------------------
+	
+	override def creationTimePropertyName = "created"
 	
 	override def apply(model: Model[Property]) = table.requirementDeclaration.validate(model).toTry.flatMap { valid =>
 		// Data type must be parseable
