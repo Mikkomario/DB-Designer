@@ -1,22 +1,22 @@
 package dbd.core.database
 
-import java.time.Instant
-
-import utopia.flow.generic.ValueConversions._
-import utopia.vault.sql.Extensions._
 import dbd.core.model.existing
 import dbd.core.model.partial.NewClass
 import utopia.vault.database.Connection
-import utopia.vault.nosql.access.{ManyModelAccess, NonDeprecatedAccess}
+import utopia.vault.nosql.access.NonDeprecatedAccess
 
 /**
  * Used for accessing multiple classes from DB at once
  * @author Mikko Hilpinen
  * @since 11.1.2020, v0.1
  */
-object Classes extends ManyModelAccess[existing.Class] with NonDeprecatedAccess[existing.Class, Vector[existing.Class]]
+object Classes extends ChangedModelsAccess[existing.Class, existing.ClassInfo] with NonDeprecatedAccess[existing.Class, Vector[existing.Class]]
 {
 	// IMPLEMENTED	--------------------
+	
+	override def creationTimeColumn = factory.creationTimeColumn
+	
+	override def configurationFactory = model.ClassInfo
 	
 	override def factory = model.Class
 	
@@ -24,47 +24,46 @@ object Classes extends ManyModelAccess[existing.Class] with NonDeprecatedAccess[
 	// COMPUTED	------------------------
 	
 	/**
-	 * @param databaseId Id of targeted database
-	 * @return An access point to that database's classes
-	 */
-	def inDatabaseWithId(databaseId: Int) = new ClassesInDatabase(databaseId)
-	
-	/**
 	  * @return An access point to class ids (without class data included)
 	  */
 	def ids = ClassIds
 	
+	/**
+	  * @return An access point to deleted classes
+	  */
+	def deleted = DeletedClasses
+	
 	
 	// OTHER	------------------------
 	
-	// TODO: These methods should apply under specific database condition. Also, add similar methods to attributes and links
-	
 	/**
-	  * @param threshold A time threshold
-	  * @param connection DB Connection
-	  * @return All new, non-deleted classes that were created after the specified time threshold
+	  * @param databaseId Id of targeted database
+	  * @return An access point to that database's classes
 	  */
-	def createdAfter(threshold: Instant)(implicit connection: Connection) =
-		find(factory.creationTimeColumn > threshold)
-	
-	/**
-	  * @param threshold A time threshold
-	  * @param connection DB Connection
-	  * @return All non-deleted classes that were created before the specified instant but were modified after that
-	  */
-	def modifiedAfter(threshold: Instant)(implicit connection: Connection) =
-		find(model.ClassInfo.createdAfterCondition(threshold) && factory.creationTimeColumn <= threshold)
+	def inDatabaseWithId(databaseId: Int) = new ClassesInDatabase(databaseId)
 	
 	
 	// NESTED	------------------------
 	
-	class ClassesInDatabase(databaseId: Int) extends ManyModelAccess[existing.Class]
+	class ClassesInDatabase(databaseId: Int) extends ChangedModelsAccess[existing.Class, existing.ClassInfo]
 	{
 		// IMPLEMENTED	----------------
+		
+		override def creationTimeColumn = factory.creationTimeColumn
+		
+		override def configurationFactory = Classes.this.configurationFactory
 		
 		override def globalCondition = Some(Classes.this.mergeCondition(factory.withDatabaseId(databaseId).toCondition))
 		
 		override def factory = Classes.this.factory
+		
+		
+		// COMPUTED	------------------------
+		
+		/**
+		  * @return An access point to deleted classes in this db
+		  */
+		def deleted = Classes.this.deleted.inDatabaseWithId(databaseId)
 		
 		
 		// OTHER	------------------------

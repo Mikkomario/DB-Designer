@@ -25,6 +25,12 @@ object Release extends StorableFactoryWithValidation[existing.Release] with RowF
 	// OTHER	----------------------------
 	
 	/**
+	  * @param databaseId Id of targeted database
+	  * @return A model with only db id set
+	  */
+	def withDatabaseId(databaseId: Int) = apply(databaseId = Some(databaseId))
+	
+	/**
 	 * @param data Data for insert
 	 * @return A model ready to be inserted to DB
 	 */
@@ -36,7 +42,7 @@ object Release extends StorableFactoryWithValidation[existing.Release] with RowF
  * @author Mikko Hilpinen
  * @since 28.1.2020, v0.1
  */
-case class Release(id: Option[Int] = None, databaseId: Option[Int] = None, versionNumber: Option[VersionNumber],
+case class Release(id: Option[Int] = None, databaseId: Option[Int] = None, versionNumber: Option[VersionNumber] = None,
 				   released: Option[Instant] = None) extends StorableWithFactory[existing.Release]
 {
 	override def factory = Release

@@ -48,9 +48,13 @@ object Links extends ManyModelAccess[existing.Link] with NonDeprecatedAccess[exi
 	 * Used for accessing links under a specific database
 	 * @param databaseId Id of target database
 	 */
-	class LinksInDatabase(databaseId: Int) extends ManyModelAccess[existing.Link]
+	class LinksInDatabase(databaseId: Int) extends ChangedModelsAccess[existing.Link, existing.LinkConfiguration]
 	{
 		// IMPLEMENTED	------------------
+		
+		override def creationTimeColumn = factory.creationTimeColumn
+		
+		override def configurationFactory = model.LinkConfiguration
 		
 		override def globalCondition = Some(Links.this.mergeCondition(factory.withDatabaseId(databaseId).toCondition))
 		

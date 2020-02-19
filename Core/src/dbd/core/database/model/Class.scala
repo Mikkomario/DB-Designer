@@ -16,8 +16,7 @@ object Class extends FromResultFactory[existing.Class] with Deprecatable
 {
 	// IMPLEMENTED	------------------------------
 	
-	override def nonDeprecatedCondition = ClassInfo.nonDeprecatedCondition && Attribute.nonDeprecatedCondition &&
-		notDeletedCondition
+	override def nonDeprecatedCondition = nonDeprecatedDataCondition && notDeletedCondition
 	
 	override def table = Tables.classTable
 	
@@ -48,6 +47,12 @@ object Class extends FromResultFactory[existing.Class] with Deprecatable
 	
 	
 	// COMPUTED	---------------------------------
+	
+	/**
+	  * @return A condition that only returns classes with non-deprecated specifications. Deleted classes may still be
+	  *         returned
+	  */
+	def nonDeprecatedDataCondition = ClassInfo.nonDeprecatedCondition && Attribute.nonDeprecatedCondition
 	
 	/**
 	 * @return A condition for class to not be deleted yet

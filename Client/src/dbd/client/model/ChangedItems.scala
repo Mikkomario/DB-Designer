@@ -2,6 +2,14 @@ package dbd.client.model
 
 import dbd.core.model.existing.{Attribute, Class}
 
+object ChangedItems
+{
+	/**
+	  * An empty changes list
+	  */
+	val empty = ChangedItems(Vector(), Map(), Vector())
+}
+
 /**
   * A model that lists items that are changed in some way
   * @author Mikko Hilpinen
