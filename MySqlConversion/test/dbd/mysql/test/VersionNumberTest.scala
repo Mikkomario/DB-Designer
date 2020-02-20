@@ -12,7 +12,12 @@ object VersionNumberTest extends App
 {
 	DataType.setup()
 	
-	assert(VersionNumber.parse("v1.12.0.3") == VersionNumber(Vector(1, 12, 0, 3)))
+	val testVersion = VersionNumber(Vector(1, 12, 0, 3))
+	assert(VersionNumber.parse("v1.12.0.3") == testVersion)
+	assert(testVersion.toString == "v1.12.0.3")
+	assert(testVersion.next() == VersionNumber(2))
+	assert(testVersion.next(1) == VersionNumber(1, 13))
+	assert(testVersion.next(2) == VersionNumber(1, 12, 1))
 	
 	println("Success!")
 }

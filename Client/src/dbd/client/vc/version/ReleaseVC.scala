@@ -83,7 +83,7 @@ class ReleaseVC(initialRelease: DisplayedRelease, backgroundColor: ComponentColo
 			_.versionNumber.toString.noLanguageLocalizationSkipped }.getOrElse("Unreleased")
 		_content.release.foreach { r => releaseTimeLabel.content = r.released }
 		releaseTimeLabel.isVisible = _content.release.isDefined
-		val changes = Vector("Added" -> _content.added, "Modified" -> _content.modified, "Removed" -> _content.removed)
+		val changes = Vector("- Added:" -> _content.added, "- Modified:" -> _content.modified, "- Removed:" -> _content.removed)
 			.filter { _._2.nonEmpty }
 		// TODO: Handle expansion (currently all default to false)
 		changeManager.content = changes.map { case (title, c) => (title.autoLocalized, c, false) }

@@ -2,9 +2,10 @@ package dbd.client.test
 
 import java.time.Instant
 
+import dbd.client.controller.ReadReleaseData
 import utopia.reflection.shape.LengthExtensions._
-import dbd.client.model.{ChangedItems, Fonts}
-import dbd.client.vc.version.ChangeListVC
+import dbd.client.model.{ChangedItems, DisplayedRelease, Fonts}
+import dbd.client.vc.version.{ChangeListVC, ReleaseVC}
 import utopia.flow.util.TimeExtensions._
 import dbd.core.database.{ClassIds, Classes, ConnectionPool}
 import dbd.core.util.ThreadPool
@@ -15,6 +16,7 @@ import utopia.reflection.color.{ColorScheme, ColorSet}
 import utopia.reflection.container.swing.Stack
 import utopia.reflection.container.swing.window.Frame
 import utopia.reflection.container.swing.window.WindowResizePolicy.Program
+import utopia.reflection.controller.data.ContainerContentManager
 import utopia.reflection.localization.{Localizer, NoLocalization}
 import utopia.reflection.shape.Margins
 import utopia.reflection.text.Font
@@ -56,25 +58,15 @@ object VersionViewTest extends App
 	
 	implicit val exc: ExecutionContext = ThreadPool.executionContext
 	ConnectionPool { implicit connection =>
-		// Reads changed data
-		val threshold = Instant.now() - 4.weeks
-		val newClasses = Classes.createdAfter(threshold)
-		val modifiedClasses = Classes.modifiedAfter(threshold)
+		// Reads release data
+		val releases = ReadReleaseData.forDatabaseWithId(1)
 		
-		println("New classes: " + newClasses.size)
-		println("Modified classes: " + modifiedClasses.size)
+		val releasesStack = Stack.column[ReleaseVC](margins.small.any)
+		val releaseManager = new ContainerContentManager[DisplayedRelease, Stack[ReleaseVC], ReleaseVC](
+			releasesStack)(r => new ReleaseVC(r, primaryColors))
+		releaseManager.content = releases
 		
-		val newChanges = ChangedItems(newClasses, Map(), Vector())
-		val modChanges = ChangedItems(modifiedClasses, Map(), Vector())
-		
-		// class ChangeListVC(initialList: ChangedItems,initialIsExpanded: Boolean,initialTitle: LocalizedString,maxItemsPerRow: Int,backgroundUsed: ComponentColor
-		val newVC = new ChangeListVC(newChanges, false, "- New:", 5, primaryColors)
-		val modVC = new ChangeListVC(modChanges, false, "- Modified:", 5, primaryColors)
-		
-		val view = Stack.buildColumnWithContext() { stack =>
-			stack += newVC
-			stack += modVC
-		}.framed(margins.medium.any x margins.medium.any, primaryColors)
+		val view = releasesStack.framed(margins.medium.any x margins.medium.any, primaryColors)
 		
 		new SingleFrameSetup(actorHandler, Frame.windowed(view, "DB Designer", Program)).start()
 	}
