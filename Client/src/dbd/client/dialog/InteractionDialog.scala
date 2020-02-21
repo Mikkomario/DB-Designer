@@ -52,20 +52,18 @@ trait InteractionDialog[A]
 	 * Displays an interactive dialog to the user
 	 * @param parentWindow Window that will "own" the new dialog
 	 * @param baseCB Component creation context (builder, implicit)
-	 * @param defaultLanguageCode ISO-code of the default language used (implicit)
-	 * @param localizer A localizer (implicit)
 	 * @param margins Margins used (implicit)
 	 * @param colorScheme Color scheme used (implicit)
 	 * @param exc Execution context (implicit)
 	 * @return A future of the closing of the dialog, with a selected result (or default if none was selected)
 	 */
 	def display(parentWindow: Window)
-			   (implicit baseCB: ComponentContextBuilder, defaultLanguageCode: String, localizer: Localizer,
-				margins: Margins, colorScheme: ColorScheme, exc: ExecutionContext) =
+			   (implicit baseCB: ComponentContextBuilder, margins: Margins, colorScheme: ColorScheme,
+				exc: ExecutionContext) =
 	{
 		// Creates the buttons based on button info
 		val actualizedButtons = buttonData.map { buttonData =>
-			buttonData -> ImageAndTextButton.contextualWithoutAction(buttonData.images, buttonData.rawText)(
+			buttonData -> ImageAndTextButton.contextualWithoutAction(buttonData.images, buttonData.text)(
 				baseCB.withColors(buttonData.color).result)
 		}
 		

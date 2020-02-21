@@ -16,7 +16,7 @@ import utopia.reflection.container.stack.StackLayout.Center
 import utopia.reflection.container.stack.segmented.SegmentedGroup
 import utopia.reflection.container.swing.window.Popup
 import utopia.reflection.container.swing.{SegmentedRow, Stack}
-import utopia.reflection.localization.LocalizedString
+import utopia.reflection.localization.{LocalizedString, Localizer}
 import utopia.reflection.shape.{Alignment, Margins}
 import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
 
@@ -28,8 +28,13 @@ import scala.concurrent.ExecutionContext
  * @since 15.1.2020, v0.1
  */
 abstract class InputDialog[A](implicit colorScheme: ColorScheme, baseCB: ComponentContextBuilder, margins: Margins,
-							  exc: ExecutionContext) extends InteractionDialog[A]
+							  exc: ExecutionContext, localizer: Localizer) extends InteractionDialog[A]
 {
+	// ATTRIBUTES	---------------------
+	
+	private implicit val language: String = "en"
+	
+	
 	// ABSTRACT	-------------------------
 	
 	/**
@@ -76,7 +81,7 @@ abstract class InputDialog[A](implicit colorScheme: ColorScheme, baseCB: Compone
 					None -> false
 			}
 		})
-		Vector(okButton, DialogButtonInfo.cancel())
+		Vector(okButton, DialogButtonInfo.cancel("Cancel"))
 	}
 	
 	override protected def dialogContent =

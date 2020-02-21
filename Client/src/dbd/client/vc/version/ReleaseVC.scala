@@ -14,6 +14,7 @@ import dbd.core.database.{ConnectionPool, Database}
 import dbd.core.util.Log
 import dbd.mysql.controller.SqlWriter
 import dbd.mysql.database.Release
+import utopia.genesis.shape.shape2D.Direction2D
 import utopia.reflection.color.{ColorScheme, ComponentColor}
 import utopia.reflection.component.Refreshable
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
@@ -116,7 +117,7 @@ class ReleaseVC(initialRelease: DisplayedRelease, backgroundColor: ComponentColo
 			mainRow += SeparatorLine()
 			mainRow += buttonView
 		}
-		stack += changesStack
+		stack += changesStack.alignedToSide(Direction2D.Left, useLowPriorityLength = true)
 	}
 	
 	

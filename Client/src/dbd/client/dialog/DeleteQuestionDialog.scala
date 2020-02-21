@@ -87,9 +87,11 @@ object DeleteQuestionDialog
  * @since 13.1.2020, v0.1
  */
 class DeleteQuestionDialog(override val title: LocalizedString, question: LocalizedString)
-						  (implicit baseContext: ComponentContext, colorScheme: ColorScheme)
+						  (implicit baseContext: ComponentContext, colorScheme: ColorScheme, localizer: Localizer)
 	extends InteractionDialog[Boolean]
 {
+	import DeleteQuestionDialog.language
+	
 	// IMPLEMENTED	------------------------
 	
 	override protected def buttonData = Vector(new DialogButtonInfo[Boolean]("Yes", Icons.delete,
