@@ -103,6 +103,16 @@ object Icons
 	def more = apply("more.png")
 	
 	/**
+	  * @return An icon for uploading to cloud
+	  */
+	def upload = apply("upload.png")
+	
+	/**
+	  * @return An icon that represents an sql file
+	  */
+	def sqlFile = apply("sql.png")
+	
+	/**
 	 * @return Icon used with one-to-one links
 	 */
 	def oneOnOneLink = apply("double_arrow.png")

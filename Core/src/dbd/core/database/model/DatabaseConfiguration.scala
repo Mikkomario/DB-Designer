@@ -31,7 +31,7 @@ object DatabaseConfiguration extends StorableFactoryWithValidation[existing.Data
 	/**
 	  * @return A model that has just been marked as deprecated
 	  */
-	def nowDeprecated = apply(deprecatedAfter = Some(Instant.now()))
+	def nowDeprecated = withDeprecationTime(Instant.now())
 	
 	
 	// OTHER	-------------------------
@@ -41,6 +41,12 @@ object DatabaseConfiguration extends StorableFactoryWithValidation[existing.Data
 	  * @return A model with database id set
 	  */
 	def withDatabaseId(dbId: Int) = apply(databaseId = Some(dbId))
+	
+	/**
+	  * @param deprecationTime A deprecation time
+	  * @return A model with specified deprecation time set
+	  */
+	def withDeprecationTime(deprecationTime: Instant) = apply(deprecatedAfter = Some(deprecationTime))
 	
 	/**
 	 * Inserts a new database configuration to the DB

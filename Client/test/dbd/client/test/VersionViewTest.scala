@@ -63,11 +63,16 @@ object VersionViewTest extends App
 		
 		val releasesStack = Stack.column[ReleaseVC](margins.small.any)
 		val releaseManager = new ContainerContentManager[DisplayedRelease, Stack[ReleaseVC], ReleaseVC](
-			releasesStack)(r => new ReleaseVC(r, primaryColors))
+			releasesStack)(r => new ReleaseVC(r, primaryColors)(uploadButtonPressed))
 		releaseManager.content = releases
 		
 		val view = releasesStack.framed(margins.medium.any x margins.medium.any, primaryColors)
 		
 		new SingleFrameSetup(actorHandler, Frame.windowed(view, "DB Designer", Program)).start()
+	}
+	
+	private def uploadButtonPressed() =
+	{
+		println("Upload button pressed")
 	}
 }

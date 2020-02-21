@@ -1,9 +1,12 @@
 package dbd.core.database
 
+import java.time.Instant
+
 import utopia.flow.generic.ValueConversions._
 import dbd.core.model.existing
 import dbd.core.model.partial.NewDatabaseConfiguration
 import utopia.vault.database.Connection
+import utopia.vault.model.enumeration.ComparisonOperator.Larger
 import utopia.vault.nosql.access.{NonDeprecatedAccess, SingleIdModelAccess, SingleModelAccess, UniqueAccess}
 import utopia.vault.sql.Where
 
@@ -75,17 +78,45 @@ object Database extends SingleModelAccess[existing.Database] with NonDeprecatedA
 			
 			override def factory = model.DatabaseConfiguration
 			
-			override def condition = factory.withDatabaseId(databaseId).toCondition && factory.nonDeprecatedCondition
+			override val condition = factory.withDatabaseId(databaseId).toCondition && factory.nonDeprecatedCondition
 			
 			
 			// OTHER	----------------
 			
+			/**
+			  * @param time A specific time
+			  * @return An access point to this database's configuration at that specific time
+			  */
+			def during(time: Instant) = new ConfigurationHistory(time)
+			
+			/**
+			  * Updates a database's current configuration
+			  * @param newData New configuration
+			  * @param connection DB Connection
+			  * @return Newly inserted configuration
+			  */
 			def update(newData: NewDatabaseConfiguration)(implicit connection: Connection) =
 			{
 				// Deprecates the old version and inserts the new one
 				connection(factory.nowDeprecated.toUpdateStatement() + globalCondition.map { Where(_) })
 				factory.insert(databaseId, newData)
 			}
+		}
+		
+		/**
+		  * Access an individual database's configuration at certain time point
+		  * @param readTime Targeted time point
+		  */
+		class ConfigurationHistory(readTime: Instant) extends SingleModelAccess[existing.DatabaseConfiguration]
+			with UniqueAccess[existing.DatabaseConfiguration]
+		{
+			// IMPLEMENTED	--------------
+			
+			override val condition = factory.withDatabaseId(databaseId).toCondition && (
+				factory.createdBeforeCondition(readTime, isInclusive = true),
+				factory.nonDeprecatedCondition || factory.withDeprecationTime(readTime).toConditionWithOperator(Larger))
+			
+			override def factory = model.DatabaseConfiguration
 		}
 	}
 }
