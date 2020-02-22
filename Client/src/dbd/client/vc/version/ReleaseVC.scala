@@ -62,7 +62,7 @@ class ReleaseVC(initialRelease: DisplayedRelease, backgroundColor: ComponentColo
 		_.versionNumber.toString.noLanguageLocalizationSkipped }.getOrElse("Unreleased"))
 	private val releaseTimeLabel = ItemLabel.contextual(initialRelease.release.map { _.released }.getOrElse(Instant.now()),
 		DisplayFunction.ddmmyyyy)
-	private val changesStack = Stack.column[ChangeListVC](margin = margins.medium.downscaling, layout = Leading)
+	private val changesStack = Stack.column[ChangeListVC](margin = margins.small.downscaling, layout = Leading)
 	
 	private val changeManager = new ContainerContentManager[
 		(LocalizedString, ChangedItems, Boolean), Stack[ChangeListVC], ChangeListVC](changesStack)({

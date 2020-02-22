@@ -35,7 +35,7 @@ class ReleasesVC(initialDatabaseId: Int)
 	private var databaseId = initialDatabaseId
 	
 	private val backgroundColor = colorScheme.primary.light
-	private val releasesStack = Stack.column[ReleaseVC](margins.small.any)
+	private val releasesStack = Stack.column[ReleaseVC](margins.medium.downscaling)
 	private val releaseManager = new ContainerContentManager[DisplayedRelease, Stack[ReleaseVC], ReleaseVC](
 		releasesStack)(r => new ReleaseVC(r, backgroundColor)({ () => onUploadPressed() }))
 	
@@ -83,11 +83,13 @@ class ReleasesVC(initialDatabaseId: Int)
 			val targetedDatabaseId = databaseId
 			new PublishReleaseDialog(releaseManager.content.findMap { _.release }.map { _.versionNumber })
 				.display(window).foreach { _.foreach { newVersionNumber =>
-					ConnectionPool.tryWith { implicit connection =>
-						GenerateTableStructure(targetedDatabaseId, newVersionNumber)
-					}.failure.foreach { Log(_, "Failed to upload a new release") }
-				} }
+				ConnectionPool.tryWith { implicit connection =>
+					GenerateTableStructure(targetedDatabaseId, newVersionNumber)
+				}.failure.foreach { Log(_, "Failed to upload a new release") }
+			
+				// Once data has been uploaded, updates view
+				updateData()
+			} }
 		}
-		updateData()
 	}
 }

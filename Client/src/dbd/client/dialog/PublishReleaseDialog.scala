@@ -17,7 +17,7 @@ object PublishReleaseDialog
 	private implicit val language: String = "en"
 	
 	private val versionNumberRegex = Regex("v").noneOrOnce + Regex.digit.oneOrMoreTimes +
-		(Regex("\\.") + Regex.digit.oneOrMoreTimes).zeroOrMoreTimes
+		(Regex("\\.") + Regex.digit.oneOrMoreTimes).withinParenthesis.zeroOrMoreTimes
 	private val versionNumberFilter = Regex("[v.]") || Regex.digit
 }
 

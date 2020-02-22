@@ -49,13 +49,13 @@ class MainVC(implicit baseCB: ComponentContextBuilder, exc: ExecutionContext, lo
 	// Whenever database selection changes, informs the main view
 	dbVC.addValueListener { e => mainContentPanel.content.foreach { _.content = e.newValue.id } }
 	
+	mainTab.selectOne(ClassStructure)
+	mainContentPanel.set(ClassStructure.constructView(dbVC.selected.id))
+	
 	// Whenever main tab is switched, reconstructs the main view
 	mainTab.addValueListener { _.newValue.foreach { newState =>
 		mainContentPanel.set(newState.constructView(dbVC.selected.id)) }
 	}
-	
-	// Starts with class VC open
-	mainTab.selectOne(ClassStructure)
 	
 	
 	// IMPLEMENTED	------------------------
