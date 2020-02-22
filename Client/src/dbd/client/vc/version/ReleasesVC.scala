@@ -34,13 +34,18 @@ class ReleasesVC(initialDatabaseId: Int)
 	
 	private var databaseId = initialDatabaseId
 	
-	private val backgroundColor = colorScheme.primary
+	private val backgroundColor = colorScheme.primary.light
 	private val releasesStack = Stack.column[ReleaseVC](margins.small.any)
 	private val releaseManager = new ContainerContentManager[DisplayedRelease, Stack[ReleaseVC], ReleaseVC](
 		releasesStack)(r => new ReleaseVC(r, backgroundColor)({ () => onUploadPressed() }))
 	
 	private val view = releasesStack.alignedToSide(Up, useLowPriorityLength = true)
 		.framed(margins.medium.any.square, backgroundColor)
+	
+	
+	// INITIAL CODE	-------------------------
+	
+	updateData()
 	
 	
 	// IMPLEMENTED	-------------------------
