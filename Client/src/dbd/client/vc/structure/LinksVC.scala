@@ -5,6 +5,7 @@ import dbd.client.dialog.EditLinkDialog
 import dbd.client.model.{DisplayedClass, DisplayedLink}
 import dbd.client.vc.GroupHeader
 import dbd.core.model.existing.Class
+import utopia.genesis.color.Color
 import utopia.genesis.shape.shape2D.Direction2D
 import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Refreshable
@@ -24,7 +25,7 @@ import scala.concurrent.ExecutionContext
  * @author Mikko Hilpinen
  * @since 20.1.2020, v0.1
  */
-class LinksVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)
+class LinksVC(initialClass: DisplayedClass, classManager: ClassDisplayManager, parentBackground: Color)
 			 (implicit margins: Margins, baseCB: ComponentContextBuilder, colorScheme: ColorScheme,
 			  localizer: Localizer, exc: ExecutionContext)
 	extends StackableAwtComponentWrapperWrapper with Refreshable[DisplayedClass]
@@ -38,7 +39,7 @@ class LinksVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)
 	
 	private val buttonsStack = Stack.column[LinkRowVC](margins.small.downscaling)
 	private val manager = new ContainerContentManager[(Class, DisplayedLink), Stack[LinkRowVC], LinkRowVC](buttonsStack)({
-		case (c, link) => new LinkRowVC(c, link, classManager) })
+		case (c, link) => new LinkRowVC(c, link, classManager, parentBackground) })
 	
 	private val view = Stack.buildColumnWithContext(isRelated = true) { mainStack =>
 		mainStack += GroupHeader("Links")

@@ -31,9 +31,11 @@ class ClassesVC(targetHeight: Double, initialDatabaseId: Int)
 	
 	private implicit val language: String = "en"
 	
+	private val backgroundColor = colorScheme.primary.light
+	private val buttonColor = colorScheme.secondary.forBackground(backgroundColor)
 	private val dataManager = new ClassDisplayManager(initialDatabaseId)
-	private val addClassButton = ImageAndTextButton.contextual(Icons.addBox.forButtonWithBackground(colorScheme.secondary.dark),
-		"Add Class") { () => addButtonPressed() }(baseCB.withColors(colorScheme.secondary.dark).result)
+	private val addClassButton = ImageAndTextButton.contextual(Icons.addBox.forButtonWithBackground(buttonColor),
+		"Add Class") { () => addButtonPressed() }(baseCB.withColors(buttonColor).result)
 	private val classView = new CollectionView[ClassVC](Direction2D.Down, targetHeight, margins.medium.downscaling)
 	private val displayManager = new ContainerContentManager[ParentOrSubClass, CollectionView[ClassVC], ClassVC](classView)(
 		c => new ClassVC(c, dataManager))
@@ -41,7 +43,7 @@ class ClassesVC(targetHeight: Double, initialDatabaseId: Int)
 		stack += classView
 		stack += addClassButton.alignedToSide(Direction2D.Right, useLowPriorityLength = true)
 	}(baseCB.result).alignedToSide(Direction2D.Left, useLowPriorityLength = true)
-		.framed(margins.medium.any.square, colorScheme.primary.light)
+		.framed(margins.medium.any.square, backgroundColor)
 	
 	
 	// INITIAL CODE	---------------------

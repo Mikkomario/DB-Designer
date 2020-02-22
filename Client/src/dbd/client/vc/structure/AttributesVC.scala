@@ -5,6 +5,7 @@ import dbd.client.dialog.EditAttributeDialog
 import dbd.client.vc.GroupHeader
 import dbd.core.model.existing.Attribute
 import dbd.core.model.partial.NewAttribute
+import utopia.genesis.color.Color
 import utopia.genesis.shape.Axis.X
 import utopia.genesis.shape.shape2D.Direction2D
 import utopia.reflection.color.ColorScheme
@@ -26,7 +27,8 @@ import scala.concurrent.ExecutionContext
  * @author Mikko Hilpinen
  * @since 11.1.2020, v0.1
  */
-class AttributesVC(initialClassId: Int, initialAttributes: Vector[Attribute] = Vector(), classManager: ClassDisplayManager)
+class AttributesVC(initialClassId: Int, initialAttributes: Vector[Attribute] = Vector(),
+				   classManager: ClassDisplayManager, parentBackground: Color)
 				  (implicit baseCB: ComponentContextBuilder, margins: Margins, colorScheme: ColorScheme,
 				   defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
 	extends StackableAwtComponentWrapperWrapper with Refreshable[(Int, Vector[Attribute])]
@@ -83,7 +85,7 @@ class AttributesVC(initialClassId: Int, initialAttributes: Vector[Attribute] = V
 		override def displays = attributesStack.components
 		
 		override protected def addDisplaysFor(values: Vector[Attribute]) = attributesStack ++= values.map {
-			new AttributeRowVC(segmentGroup, _, classManager) }
+			new AttributeRowVC(segmentGroup, _, classManager, parentBackground) }
 		
 		override protected def dropDisplays(dropped: Vector[AttributeRowVC]) =
 		{

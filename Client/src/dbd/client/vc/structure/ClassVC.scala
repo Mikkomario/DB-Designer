@@ -42,12 +42,13 @@ class ClassVC(initialClass: ParentOrSubClass, classManager: ClassDisplayManager)
 	
 	private var _content = initialClass
 	
-	private val headerButtonColor = colorScheme.secondary.dark
+	private val headerBackground = colorScheme.primary.default
+	private val headerButtonColor = colorScheme.secondary.forBackground(headerBackground)
 	private val expandButton = new ImageCheckBox(Icons.expandMore.forButtonWithoutText(headerButtonColor),
 		Icons.expandLess.forButtonWithoutText(headerButtonColor), initialClass.isExpanded)
 	
 	private val classNameLabel = ItemLabel.contextual(initialClass.displayedClass.classData,
-		DisplayFunction.noLocalization[Class] { _.info.name })(baseCB.copy(textColor = Color.white).result)
+		DisplayFunction.noLocalization[Class] { _.info.name })(baseCB.copy(textColor = headerBackground.defaultTextColor).result)
 	
 	private val header = Stack.buildRowWithContext(layout = Center) { headerRow =>
 		headerRow += expandButton
@@ -81,11 +82,12 @@ class ClassVC(initialClass: ParentOrSubClass, classManager: ClassDisplayManager)
 					if (_) classManager.deleteClass(classToDelete) }
 			}
 		}
-	}.framed(margins.small.downscaling x margins.small.any, colorScheme.primary)
+	}.framed(margins.small.downscaling x margins.small.any, headerBackground)
 	
+	private val contentAreaBackground = colorScheme.gray.dark
 	private val attributeSection = new AttributesVC(initialClass.displayedClass.classId,
-		orderedAttributes(initialClass), classManager)
-	private val linksSection = new LinksVC(initialClass.displayedClass, classManager)
+		orderedAttributes(initialClass), classManager, contentAreaBackground)
+	private val linksSection = new LinksVC(initialClass.displayedClass, classManager, contentAreaBackground)
 	private val subClassSection = new SubClassesVC(initialClass, classManager)
 	private val classContentView = Stack.buildColumnWithContext() { stack =>
 		stack += attributeSection

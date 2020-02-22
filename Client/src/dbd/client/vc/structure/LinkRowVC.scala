@@ -5,6 +5,7 @@ import dbd.client.dialog.{DeleteQuestionDialog, EditLinkDialog}
 import dbd.client.model.DisplayedLink
 import dbd.core.model.enumeration.LinkTypeCategory.{ManyToMany, ManyToOne, OneToOne}
 import dbd.core.model.existing.Class
+import utopia.genesis.color.Color
 import utopia.genesis.image.Image
 import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Refreshable
@@ -23,10 +24,9 @@ import scala.concurrent.ExecutionContext
  * @author Mikko Hilpinen
  * @since 20.1.2020, v0.1
  */
-// TODO: Get rid of passing default language code as a parameter to dialog
-class LinkRowVC(initialClass: Class, initialLink: DisplayedLink, classManager: ClassDisplayManager)
+class LinkRowVC(initialClass: Class, initialLink: DisplayedLink, classManager: ClassDisplayManager, parentBackground: Color)
 			   (implicit baseCB: ComponentContextBuilder, colorScheme: ColorScheme, margins: Margins,
-				defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
+				localizer: Localizer, exc: ExecutionContext)
 	extends StackableAwtComponentWrapperWrapper with Refreshable[(Class, DisplayedLink)]
 {
 	// ATTRIBUTES	------------------------
@@ -35,14 +35,15 @@ class LinkRowVC(initialClass: Class, initialLink: DisplayedLink, classManager: C
 	
 	private var _content = initialClass -> initialLink
 	
-	private val buttonColor = colorScheme.primary
+	private val buttonColor = colorScheme.primary.forBackground(parentBackground)
 	private val linkButton = ImageAndTextButton.contextual(iconForLinkType,
 		initialLink.displayName.noLanguageLocalizationSkipped){ () => classManager.openLink(classId,
 		displayedLink.otherClass.id) }(baseCB.withColors(buttonColor).result)
 	private val view = Stack.buildRowWithContext(isRelated = true) { row =>
+		val secondaryButtonsColor = colorScheme.secondary.forBackground(parentBackground)
 		row += linkButton
 		// Adds link edit button
-		row += ImageButton.contextual(Icons.edit.forButtonWithoutText(colorScheme.secondary)) { () =>
+		row += ImageButton.contextual(Icons.edit.forButtonWithoutText(secondaryButtonsColor)) { () =>
 			parentWindow.foreach { window =>
 				val linkToEdit = displayedLink
 				new EditLinkDialog(Some(linkToEdit.configuration), displayedClass, classManager.linkableClasses(classId))
@@ -50,7 +51,7 @@ class LinkRowVC(initialClass: Class, initialLink: DisplayedLink, classManager: C
 				} } }
 		}
 		// Adds delete link button
-		row += ImageButton.contextual(Icons.close.forButtonWithoutText(colorScheme.secondary)) { () =>
+		row += ImageButton.contextual(Icons.close.forButtonWithoutText(secondaryButtonsColor)) { () =>
 			parentWindow.foreach { window =>
 				val linkToDelete = displayedLink
 				DeleteQuestionDialog.forLink(linkToDelete.displayName).display(window).foreach {

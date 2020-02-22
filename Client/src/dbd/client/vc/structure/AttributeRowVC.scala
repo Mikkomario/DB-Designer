@@ -31,7 +31,8 @@ import scala.concurrent.ExecutionContext
  * @author Mikko Hilpinen
  * @since 11.1.2020, v0.1
  */
-class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attribute, classManager: ClassDisplayManager)
+class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attribute, classManager: ClassDisplayManager,
+					 parentBackground: Color)
 					(implicit baseCB: ComponentContextBuilder, margins: Margins, colorScheme: ColorScheme,
 					 defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
 	extends StackableAwtComponentWrapperWrapper with Refreshable[Attribute]
@@ -45,7 +46,8 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 	private val imageLabel = ImageLabel.contextual(iconForType(initialAttribute.configuration.dataType))
 	private val attNameLabel = TextLabel.contextual(initialAttribute.configuration.name.noLanguageLocalizationSkipped)(
 		baseCB.mapInnerMargins { _.withLowPriorityFor(X) }.result)
-	private val editAttributeButton = ImageButton.contextual(Icons.edit.forButtonWithoutText(colorScheme.secondary)) { () =>
+	private val buttonColor = colorScheme.secondary.forBackground(parentBackground)
+	private val editAttributeButton = ImageButton.contextual(Icons.edit.forButtonWithoutText(buttonColor)) { () =>
 		parentWindow.foreach { window =>
 			val attributeToEdit = content
 			new EditAttributeDialog(Some(attributeToEdit)).display(window).foreach { _.foreach { edited =>
@@ -54,7 +56,7 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 		}
 	}
 	// TODO: WET WET
-	private val deleteAttributeButton = ImageButton.contextual(Icons.close.forButtonWithoutText(colorScheme.secondary)) { () =>
+	private val deleteAttributeButton = ImageButton.contextual(Icons.close.forButtonWithoutText(buttonColor)) { () =>
 		parentWindow.foreach { window =>
 			val attributeToDelete = content
 			// Will not delete the attribute if it's used in an owned link
