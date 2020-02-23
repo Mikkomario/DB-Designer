@@ -25,7 +25,7 @@ object SqlWriter
 	def apply(databaseName: String, tables: Vector[Table]) =
 	{
 		// Orders the tables so that tables that link to other tables will always be created after those tables
-		val tablesInOrder = orderTables(tables)
+		val tablesInOrder = orderTablesForCreation(tables)
 		val tablesById = tables.map { t => t.id -> t }.toMap
 		
 		// Writes table sql
@@ -123,11 +123,21 @@ object SqlWriter
 		}
 	}
 	
-	private def fkToSql(fk: ForeignKey, column: Column, targetTableName: String) =
-		s"CONSTRAINT ${fk.baseName}_fk FOREIGN KEY ${fk.baseName}_idx (`${
+	/**
+	  * Converts a foreign key to sql
+	  * @param fk Foreign key to convert
+	  * @param column Column associated with the key (in origin table)
+	  * @param targetTableName Name of the targeted table
+	  * @return Foreign key sql
+	  */
+	def fkToSql(fk: ForeignKey, column: Column, targetTableName: String) =
+		s"CONSTRAINT ${fk.constraintName} FOREIGN KEY ${fk.indexName} (`${
 			column.name}`) REFERENCES `$targetTableName`(`id`) ON DELETE ${if (column.allowsNull) "SET NULL" else "CASCADE"}"
 	
-	private def indexToSql(index: Index, columnName: String) = s"INDEX ${index.name} (`$columnName`)"
+	/**
+	  * Converts an index to sql
+	  */
+	def indexToSql(index: Index, columnName: String) = s"INDEX ${index.name} (`$columnName`)"
 	
 	/**
 	  * @return An sql representation of the specified column
@@ -148,7 +158,12 @@ object SqlWriter
 		case InstantType => "DATETIME" // Timestamp type is already reserved for the 'created' column
 	}
 	
-	private def orderTables(tables: Vector[Table]) =
+	/**
+	  * Orders specified tables so that they can be created without foreign key problems
+	  * @param tables Tables to order
+	  * @return Ordered tables
+	  */
+	def orderTablesForCreation(tables: Vector[Table]) =
 	{
 		var ordered = Vector[Table]()
 		var next = tables

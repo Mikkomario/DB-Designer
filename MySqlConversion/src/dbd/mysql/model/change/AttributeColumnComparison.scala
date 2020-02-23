@@ -26,4 +26,26 @@ case class AttributeColumnComparison(attributeId: Int, oldVersion: Column, newVe
 		else
 			None
 	}
+	
+	/**
+	  * @return Index added in this change
+	  */
+	def addedIndex = newVersion.index.flatMap { newIndex =>
+		oldVersion.index match
+		{
+			case Some(oldIndex) => if (newIndex.name == oldIndex.name) None else Some(newIndex)
+			case None => Some(newIndex)
+		}
+	}
+	
+	/**
+	  * @return Index removed in this change
+	  */
+	def removedIndex = oldVersion.index.flatMap { oldIndex =>
+		newVersion.index match
+		{
+			case Some(newIndex) => if (newIndex.name == oldIndex.name) None else Some(oldIndex)
+			case None => Some(oldIndex)
+		}
+	}
 }

@@ -62,6 +62,32 @@ case class TableComparison(classId: Int, oldVersion: Table, newVersion: Table)
 	def removedColumnsSql = toAlterTableSql((removedAttColumns ++ removedLinkColumns).map { c =>
 		s"DROP `${c.name}`" })
 	
+	/**
+	  * @return Sql statement for adding new indices (based on column changes)
+	  */
+	def newIndicesSql = toAlterTableSql(comparableAttColumns.flatMap { c =>
+		c.addedIndex.map { c.newVersion -> _ } }.map { case (c, i) => s"ADD ${SqlWriter.indexToSql(i, c.name)}" })
+	
+	/**
+	  * @return Sql statement for removing old indices (based on column changes)
+	  */
+	def removedIndicesSql = toAlterTableSql(comparableAttColumns.flatMap { _.removedIndex }.map { i =>
+		s"DROP INDEX ${i.name}" })
+	
+	/**
+	  * @param tablesForIds All tables matched with their ids
+	  * @return Alter table statement for adding new foreign keys to this table. None if not changed.
+	  */
+	def newForeignKeysSql(tablesForIds: Map[Int, Table]) = toAlterTableSql(comparableLinkColumns.flatMap { c =>
+		c.newForeignKey.map { c -> _ } }.map { case (c, fk) =>
+		s"ADD ${SqlWriter.fkToSql(fk, c.newVersion, tablesForIds(fk.targetTableId).name)}" })
+	
+	/**
+	  * @return Alter table statement for removing old foreign keys from this table. None if not changed
+	  */
+	def removedForeignKeysSql = toAlterTableSql(comparableLinkColumns.flatMap { _.removedForeignKey }
+		.flatMap { fk => Vector(s"DROP FOREIGN KEY ${fk.constraintName}", s"DROP INDEX ${fk.indexName}") })
+	
 	private def toAlterTableSql(lines: Seq[String]) =
 	{
 		if (lines.nonEmpty)
