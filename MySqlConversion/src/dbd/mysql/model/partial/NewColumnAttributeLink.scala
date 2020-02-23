@@ -1,5 +1,6 @@
 package dbd.mysql.model.partial
 
+import dbd.core.model.existing.AttributeConfiguration
 import dbd.mysql.model.template.ColumnAttributeLinkLike
 
 /**
@@ -7,4 +8,5 @@ import dbd.mysql.model.template.ColumnAttributeLinkLike
  * @author Mikko Hilpinen
  * @since 29.1.2020, v0.1
  */
-case class NewColumnAttributeLink(attributeConfigurationId: Int, index: Option[NewIndex]) extends ColumnAttributeLinkLike[NewIndex]
+case class NewColumnAttributeLink(attributeConfiguration: AttributeConfiguration, index: Option[NewIndex])
+	extends ColumnAttributeLinkLike[NewIndex]

@@ -131,7 +131,7 @@ object GenerateTableStructure
 	private def attributeToColumn(attribute: Attribute, attributeName: String, namePrefix: String) =
 	{
 		val index = if (attribute.isSearchKey) Some(NewIndex(s"${namePrefix}_${attributeName}_idx")) else None
-		NewColumn(Right(NewColumnAttributeLink(attribute.id, index)), attributeName, attribute.dataType, attribute.isOptional)
+		NewColumn(Right(NewColumnAttributeLink(attribute.configuration, index)), attributeName, attribute.dataType, attribute.isOptional)
 	}
 	
 	private def insertColumnsAndForeignKeys(table: Table, links: Vector[Link], prefix: String,
@@ -155,7 +155,7 @@ object GenerateTableStructure
 	{
 		// Creates foreign key first
 		val fk = NewForeignKey(targetTable.id, s"${namePrefix}_$linkName")
-		val linkConnection = NewColumnLinkLink(link.id, fk)
+		val linkConnection = NewColumnLinkLink(link.configuration, fk)
 		NewColumn(Left(linkConnection), linkName + "_id", IntType, link.linkType.isOptional)
 	}
 }

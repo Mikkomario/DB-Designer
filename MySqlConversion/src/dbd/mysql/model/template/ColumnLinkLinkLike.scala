@@ -1,5 +1,7 @@
 package dbd.mysql.model.template
 
+import dbd.core.model.existing.LinkConfiguration
+
 /**
  * Common trait for models that link columns and links
  * @author Mikko Hilpinen
@@ -7,12 +9,22 @@ package dbd.mysql.model.template
  */
 trait ColumnLinkLinkLike[FK <: ForeignKeyLike]
 {
+	// ABSTRACT	--------------------------
+	
 	/**
 	 * @return Id of associated link
 	 */
-	def linkConfigurationId: Int
+	def linkConfiguration: LinkConfiguration
 	/**
 	 * @return Associated foreign key data
 	 */
 	def foreignKey: FK
+	
+	
+	// COMPUTED	--------------------------
+	
+	/**
+	  * @return Id of the link associated with this column
+	  */
+	def linkId = linkConfiguration.linkId
 }

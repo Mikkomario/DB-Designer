@@ -1,24 +1,27 @@
 package dbd.mysql.database.model
 
+import dbd.core.database.model.LinkConfiguration
 import dbd.mysql.database.Tables
 import utopia.flow.generic.ValueConversions._
 import dbd.mysql.model.existing
 import dbd.mysql.model.partial.NewColumnLinkLink
-import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.vault.database.Connection
-import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.LinkedStorableFactory
+import utopia.vault.model.immutable.{Row, StorableWithFactory}
+import utopia.vault.nosql.factory.FromRowFactory
 
-object ColumnLinkLink extends LinkedStorableFactory[existing.ColumnLinkLink, existing.ForeignKey]
+object ColumnLinkLink extends FromRowFactory[existing.ColumnLinkLink]
 {
 	// IMPLEMENTED	--------------------------
 	
-	override def childFactory = ForeignKey
-	
-	override def apply(model: Model[Constant], child: existing.ForeignKey) = table.requirementDeclaration
-		.validate(model).toTry.map { valid =>
-		existing.ColumnLinkLink(valid("id").getInt, valid("columnId").getInt, valid("linkConfigurationId").getInt, child)
+	override def apply(row: Row) = table.requirementDeclaration.validate(row(table)).toTry.flatMap { valid =>
+		ForeignKey(row).flatMap { foreignKey =>
+			LinkConfiguration(row).map { linkConfig =>
+				existing.ColumnLinkLink(valid("id").getInt, valid("columnId").getInt, linkConfig, foreignKey)
+			}
+		}
 	}
+	
+	override def joinedTables = ForeignKey.tables ++ LinkConfiguration.tables
 	
 	override def table = Tables.columnLinkLink
 	
@@ -36,8 +39,8 @@ object ColumnLinkLink extends LinkedStorableFactory[existing.ColumnLinkLink, exi
 	{
 		// Inserts the foreign key first
 		val newFK = ForeignKey.insert(data.foreignKey)
-		val newId = apply(None, Some(columnId), Some(data.linkConfigurationId), Some(newFK.id)).insert().getInt
-		existing.ColumnLinkLink(newId, columnId, data.linkConfigurationId, newFK)
+		val newId = apply(None, Some(columnId), Some(data.linkConfiguration.id), Some(newFK.id)).insert().getInt
+		existing.ColumnLinkLink(newId, columnId, data.linkConfiguration, newFK)
 	}
 }
 

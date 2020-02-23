@@ -1,5 +1,6 @@
 package dbd.mysql.model.existing
 
+import dbd.core.model.existing.AttributeConfiguration
 import dbd.mysql.model.template.ColumnAttributeLinkLike
 
 /**
@@ -7,5 +8,5 @@ import dbd.mysql.model.template.ColumnAttributeLinkLike
  * @author Mikko Hilpinen
  * @since 29.1.2020, v0.1
  */
-case class ColumnAttributeLink(id: Int, columnId: Int, attributeConfigurationId: Int, index: Option[Index])
+case class ColumnAttributeLink(id: Int, columnId: Int, attributeConfiguration: AttributeConfiguration, index: Option[Index])
 	extends ColumnAttributeLinkLike[Index]

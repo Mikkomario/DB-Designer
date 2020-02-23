@@ -42,7 +42,13 @@ object SqlWriter
 		sql.result()
 	}
 	
-	private def tableToSql(table: Table, tablesById: Map[Int, Table]) =
+	/**
+	  * Writes a create table statement
+	  * @param table Table to create
+	  * @param tablesById All tables in database, mapped by table id
+	  * @return Create table sql statement
+	  */
+	def tableToSql(table: Table, tablesById: Map[Int, Table]) =
 	{
 		val sql = new StringBuilder
 		// Inserts table declaration
@@ -123,10 +129,17 @@ object SqlWriter
 	
 	private def indexToSql(index: Index, columnName: String) = s"INDEX ${index.name} (`$columnName`)"
 	
-	private def columnToSql(column: Column) =
-		s"`${column.name}` ${dataTypeToSql(column)}${if (column.allowsNull) "" else " NOT NULL"}"
+	/**
+	  * @return An sql representation of the specified column
+	  */
+	def columnToSql(column: Column) = s"`${column.name}` ${dataTypeToSql(column)}${if (column.allowsNull) "" else " NOT NULL"}"
 	
-	private def dataTypeToSql(column: Column) = column.dataType match
+	/**
+	  * Converts a column's data type to sql
+	  * @param column Targeted column
+	  * @return Sql representation of that column's desired data type
+	  */
+	def dataTypeToSql(column: Column) = column.dataType match
 	{
 		case ShortStringType => s"VARCHAR(${if (column.hasIndex) 64 else 255})"
 		case IntType => "INT"

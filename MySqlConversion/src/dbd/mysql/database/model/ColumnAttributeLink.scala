@@ -1,5 +1,6 @@
 package dbd.mysql.database.model
 
+import dbd.core.database.model.AttributeConfiguration
 import dbd.mysql.database.Tables
 import utopia.flow.generic.ValueConversions._
 import dbd.mysql.model.existing
@@ -14,16 +15,20 @@ object ColumnAttributeLink extends FromRowFactory[existing.ColumnAttributeLink]
 	
 	override def apply(row: Row) =
 	{
-		table.requirementDeclaration.validate(row(table)).toTry.map { model =>
-			val index = Index.parseIfPresent(row)
-			existing.ColumnAttributeLink(model("id").getInt, model("columnId").getInt,
-				model("attributeConfigurationId").getInt, index)
+		table.requirementDeclaration.validate(row(table)).toTry.flatMap { model =>
+			// Attribute configuration must be parseable
+			AttributeConfiguration(row).map { attributeConfig =>
+				// index is optional
+				val index = Index.parseIfPresent(row)
+				existing.ColumnAttributeLink(model("id").getInt, model("columnId").getInt,
+					attributeConfig, index)
+			}
 		}
 	}
 	
 	override def table = Tables.columnAttributeLink
 	
-	override def joinedTables = Index.tables
+	override def joinedTables = Index.tables ++ AttributeConfiguration.tables
 	
 	
 	// OTHER	-------------------------
@@ -38,8 +43,8 @@ object ColumnAttributeLink extends FromRowFactory[existing.ColumnAttributeLink]
 	def insert(columnId: Int, data: NewColumnAttributeLink)(implicit connection: Connection) =
 	{
 		val newIndex = data.index.map { Index.insert(_) }
-		val newId = apply(None, Some(columnId), Some(data.attributeConfigurationId), newIndex.map { _.id }).insert().getInt
-		existing.ColumnAttributeLink(newId, columnId, data.attributeConfigurationId, newIndex)
+		val newId = apply(None, Some(columnId), Some(data.attributeConfiguration.id), newIndex.map { _.id }).insert().getInt
+		existing.ColumnAttributeLink(newId, columnId, data.attributeConfiguration, newIndex)
 	}
 }
 
