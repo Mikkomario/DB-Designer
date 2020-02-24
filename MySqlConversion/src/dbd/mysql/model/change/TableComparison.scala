@@ -19,8 +19,10 @@ case class TableComparison(classId: Int, oldVersion: Table, newVersion: Table)
 	private val (removedAttColumns, comparableAttColumns, addedAttColumns) = oldAttributeColumns.listChanges(
 		newAttributeColumns) { _.linkedData.rightOption.get.attributeId } { case (attId, o, n) =>
 		AttributeColumnComparison(attId, o, n) }
+	// TODO: Throws if this comparison's class id is not part of the linked ids
 	private val (removedLinkColumns, comparableLinkColumns, addedLinkColumns) = oldLinkColumns.listChanges(newLinkColumns) {
-		_.linkedData.leftOption.get.linkId } { case (linkId, o, n) => LinkColumnComparison(linkId, o, n) }
+		_.linkedData.leftOption.get.linkConfiguration.oppositeClassId(classId).get } { case (linkId, o, n) =>
+		LinkColumnComparison(linkId, o, n) }
 	
 	
 	// COMPUTED	----------------------------------
@@ -65,28 +67,42 @@ case class TableComparison(classId: Int, oldVersion: Table, newVersion: Table)
 	/**
 	  * @return Sql statement for adding new indices (based on column changes)
 	  */
-	def newIndicesSql = toAlterTableSql(comparableAttColumns.flatMap { c =>
-		c.addedIndex.map { c.newVersion -> _ } }.map { case (c, i) => s"ADD ${SqlWriter.indexToSql(i, c.name)}" })
+	def newIndicesSql =
+	{
+		val newIndices = comparableAttColumns.flatMap { c =>
+			c.addedIndex.map { c.newVersion -> _ } } ++ addedAttColumns.flatMap { c => c.index.map { c -> _ } }
+		toAlterTableSql(newIndices.map { case (c, i) => s"ADD ${SqlWriter.indexToSql(i, c.name)}" })
+	}
 	
 	/**
 	  * @return Sql statement for removing old indices (based on column changes)
 	  */
-	def removedIndicesSql = toAlterTableSql(comparableAttColumns.flatMap { _.removedIndex }.map { i =>
-		s"DROP INDEX ${i.name}" })
+	def removedIndicesSql =
+	{
+		val removedIndices = comparableAttColumns.flatMap { _.removedIndex } ++ removedAttColumns.flatMap { _.index }
+		toAlterTableSql(removedIndices.map { i => s"DROP INDEX ${i.name}" })
+	}
 	
 	/**
 	  * @param tablesForIds All tables matched with their ids
 	  * @return Alter table statement for adding new foreign keys to this table. None if not changed.
 	  */
-	def newForeignKeysSql(tablesForIds: Map[Int, Table]) = toAlterTableSql(comparableLinkColumns.flatMap { c =>
-		c.newForeignKey.map { c -> _ } }.map { case (c, fk) =>
-		s"ADD ${SqlWriter.fkToSql(fk, c.newVersion, tablesForIds(fk.targetTableId).name)}" })
+	def newForeignKeysSql(tablesForIds: Map[Int, Table]) =
+	{
+		val newFks = comparableLinkColumns.flatMap { c => c.newForeignKey.map { c.newVersion -> _ } } ++
+			addedLinkColumns.flatMap { c => c.foreignKey.map { c -> _ } }
+		toAlterTableSql(newFks.map { case (c, fk) =>
+			s"ADD ${SqlWriter.fkToSql(fk, c, tablesForIds(fk.targetTableId).name)}" })
+	}
 	
 	/**
 	  * @return Alter table statement for removing old foreign keys from this table. None if not changed
 	  */
-	def removedForeignKeysSql = toAlterTableSql(comparableLinkColumns.flatMap { _.removedForeignKey }
-		.flatMap { fk => Vector(s"DROP FOREIGN KEY ${fk.constraintName}", s"DROP INDEX ${fk.indexName}") })
+	def removedForeignKeysSql =
+	{
+		val removedFks = comparableLinkColumns.flatMap { _.removedForeignKey } ++ removedLinkColumns.flatMap { _.foreignKey }
+		toAlterTableSql(removedFks.flatMap { fk => Vector(s"DROP FOREIGN KEY ${fk.constraintName}", s"DROP INDEX ${fk.indexName}") })
+	}
 	
 	private def toAlterTableSql(lines: Seq[String]) =
 	{

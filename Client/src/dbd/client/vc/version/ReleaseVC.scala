@@ -1,19 +1,11 @@
 package dbd.client.vc.version
 
-import java.awt.Desktop
-import java.nio.file.Path
 import java.time.Instant
 
-import utopia.flow.util.CollectionExtensions._
-import dbd.core.model.enumeration.NamingConvention._
-import utopia.flow.util.FileExtensions._
 import dbd.client.controller.Icons
+import dbd.client.dialog.ExportSqlDialog
 import dbd.client.model.{ChangedItems, DisplayedRelease}
 import dbd.client.vc.SeparatorLine
-import dbd.core.database.{ConnectionPool, Database}
-import dbd.core.util.Log
-import dbd.mysql.controller.SqlWriter
-import dbd.mysql.database.Release
 import utopia.genesis.shape.shape2D.Direction2D
 import utopia.reflection.color.{ColorScheme, ComponentColor}
 import utopia.reflection.component.Refreshable
@@ -31,13 +23,10 @@ import utopia.reflection.shape.Margins
 import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
 
 import scala.concurrent.ExecutionContext
-import scala.util.{Failure, Success}
 
 object ReleaseVC
 {
 	private implicit val language: String = "en"
-	
-	private val exportDirectory: Path = "export/sql"
 }
 
 /**
@@ -62,7 +51,7 @@ class ReleaseVC(initialRelease: DisplayedRelease, backgroundColor: ComponentColo
 		_.versionNumber.toString.noLanguageLocalizationSkipped }.getOrElse("Unreleased"))
 	private val releaseTimeLabel = ItemLabel.contextual(initialRelease.release.map { _.released }.getOrElse(Instant.now()),
 		DisplayFunction.ddmmyyyy)
-	private val changesStack = Stack.column[ChangeListVC](margin = margins.small.downscaling, layout = Leading)
+	private val changesStack = Stack.column[ChangeListVC](margin = 0.fixed, layout = Leading)
 	
 	private val changeManager = new ContainerContentManager[
 		(LocalizedString, ChangedItems, Boolean), Stack[ChangeListVC], ChangeListVC](changesStack)({
@@ -72,41 +61,7 @@ class ReleaseVC(initialRelease: DisplayedRelease, backgroundColor: ComponentColo
 	private val uploadButton = ImageAndTextButton.contextual(Icons.upload.forButtonWithBackground(uploadButtonColor),
 		"Upload")(onUploadButtonPressed)(baseCB.withColors(uploadButtonColor).result)
 	private val exportSqlButton = ImageButton.contextual(Icons.sqlFile.forButtonWithoutText(uploadButtonColor)) { () =>
-		_content.release.foreach { release =>
-			ConnectionPool.tryWith { implicit connection =>
-				Database(release.databaseId).configuration.during(release.released).get.foreach { dbConfiguration =>
-					// Checks whether there already exists an sql file
-					val databaseName = dbConfiguration.name.toUnderscore
-					val exportFilePath = exportDirectory/databaseName/s"$databaseName-${release.versionNumber}.sql"
-					val pathWithData =
-					{
-						if (exportFilePath.exists)
-							Success(exportFilePath)
-						else
-						{
-							// Exports sql file if necessary
-							exportFilePath.createParentDirectories().flatMap { _ =>
-								val tables = Release(release.id).tables
-								val sql = SqlWriter(databaseName, tables)
-								exportFilePath.write(sql)
-							}
-						}
-					}
-					
-					// Opens the file in desktop
-					pathWithData match
-					{
-						case Success(filePath) =>
-							// TODO: Handle exceptions and if desktop is not supported, show dialog
-							if (Desktop.isDesktopSupported)
-								Desktop.getDesktop.open(filePath.toFile)
-						case Failure(error) =>
-							// TODO: Show error
-							Log(error, "Failed to export table structure to sql")
-					}
-				}
-			}.failure.foreach { Log(_, "Export to SQL failed") }
-		}
+		_content.release.foreach { release => parentWindow.foreach { window => new ExportSqlDialog(release).display(window) } }
 	}
 	val buttonView = SwitchPanel[AwtStackable](exportSqlButton)
 	

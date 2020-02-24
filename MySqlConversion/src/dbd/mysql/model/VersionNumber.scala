@@ -43,7 +43,7 @@ case class VersionNumber(numbers: Vector[Int])
 	  */
 	def next(updateLevel: Int = 0) =
 	{
-		if (numbers.size < updateLevel)
+		if (numbers.size <= updateLevel)
 			VersionNumber(numbers.padTo(updateLevel, 0) :+ 1)
 		else
 			VersionNumber(numbers.take(updateLevel) :+ (numbers(updateLevel) + 1))

@@ -1,8 +1,10 @@
 package dbd.mysql.database
 
+import java.time.Instant
+
 import dbd.mysql.model.existing
 import utopia.vault.database.Connection
-import utopia.vault.nosql.access.ManyModelAccess
+import utopia.vault.nosql.access.{ManyIdAccess, ManyModelAccess}
 
 /**
   * Used for accessing multiple releases at a time
@@ -13,9 +15,17 @@ object Releases extends ManyModelAccess[existing.Release]
 {
 	// IMPLEMENTED	-------------------------
 	
-	override def factory = model.Release
+	override val factory = model.Release
 	
-	override def globalCondition = None
+	override val globalCondition = None
+	
+	
+	// COMPUTED	-----------------------------
+	
+	/**
+	  * An access point to release ids
+	  */
+	val ids = ManyIdAccess.wrap(factory) { _.int }
 	
 	
 	// OTHER	-----------------------------
@@ -35,7 +45,7 @@ object Releases extends ManyModelAccess[existing.Release]
 		
 		override def factory = Releases.this.factory
 		
-		override def globalCondition = Some(Releases.this.mergeCondition(
+		override val globalCondition = Some(Releases.this.mergeCondition(
 			factory.withDatabaseId(databaseId).toCondition))
 		
 		
@@ -55,6 +65,17 @@ object Releases extends ManyModelAccess[existing.Release]
 		  * @param connection DB Connection
 		  * @return Up to 'numberOfReleases' latest releases from the database
 		  */
-		def takeLatest(numberOfReleases: Int)(implicit connection: Connection) = factory.takeLatest(numberOfReleases)
+		def takeLatest(numberOfReleases: Int)(implicit connection: Connection) =
+			factory.takeLatestWhere(globalCondition.get, numberOfReleases)
+		
+		/**
+		  * Finds a number of releases before specified timestamp
+		  * @param threshold Time threshold (exclusive)
+		  * @param maxNumberOfResults Maximum number of releases returned (default = 10)
+		  * @param connection DB Connection (implicit)
+		  * @return Up to 'maxNumberOfResults' releases in this database before specified timestamp
+		  */
+		def before(threshold: Instant, maxNumberOfResults: Int = 10)(implicit connection: Connection) =
+			factory.createdBefore(threshold, maxNumberOfResults, additionalCondition = globalCondition)
 	}
 }

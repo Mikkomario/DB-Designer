@@ -4,7 +4,6 @@ import java.nio.file.Path
 import java.time.format.DateTimeFormatter
 
 import scala.language.existentials
-
 import dbd.mysql.database
 import utopia.flow.util.CollectionExtensions._
 import dbd.core.model.enumeration.NamingConvention._
@@ -12,10 +11,12 @@ import dbd.core.database.{ConnectionPool, Database}
 import dbd.core.model.error.NoDataFoundException
 import dbd.core.util.Log
 import dbd.mysql.controller.SqlWriter
+import dbd.mysql.database.Releases
 import dbd.mysql.model.change.ReleasesComparison
 import utopia.flow.util.TimeExtensions._
 import utopia.flow.util.FileExtensions._
 import dbd.mysql.model.existing.Release
+import utopia.flow.datastructure.mutable.PointerWithEvents
 import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.swing.{DropDown, TabSelection}
 import utopia.reflection.localization.{DisplayFunction, LocalString, LocalizedString, Localizer}
@@ -24,7 +25,7 @@ import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
 
 import scala.collection.immutable.VectorBuilder
 import scala.concurrent.ExecutionContext
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 
 object ExportSqlDialog
 {
@@ -37,7 +38,6 @@ object ExportSqlDialog
 	{
 		val name: LocalString
 	}
-	//
 	
 	private object ExportMode
 	{
@@ -47,7 +47,7 @@ object ExportSqlDialog
 		}
 		case object Changes extends ExportMode
 		{
-			override val name = "Changes Since..."
+			override val name = "Changes Since"
 		}
 		
 		val values = Vector(All, Changes)
@@ -83,7 +83,7 @@ object ExportSqlDialog
   * @author Mikko Hilpinen
   * @since 23.2.2020, v0.1
   */
-class ExportSqlDialog(release: Release, previousReleases: Vector[Release])
+class ExportSqlDialog(release: Release)
 					 (implicit baseCB: ComponentContextBuilder, colorScheme: ColorScheme, margins: Margins,
 					  localizer: Localizer, exc: ExecutionContext) extends InputDialog[Unit]
 {
@@ -93,15 +93,36 @@ class ExportSqlDialog(release: Release, previousReleases: Vector[Release])
 	
 	// ATTRIBUTES	-----------------------
 	
+	private val previousReleases = ConnectionPool.tryWith { implicit connection =>
+		Releases.forDatabaseWithId(release.databaseId).before(release.released, 25)
+	} match
+	{
+		case Success(releases) => releases
+		case Failure(error) =>
+			Log(error, "Failed to read releases data")
+			Vector()
+	}
+	
 	private implicit val baseContext: ComponentContext = baseCB.result
 	private val changeOptionIsAvailable = previousReleases.nonEmpty
+	private val changeVisibilityPointer =
+	{
+		if (changeOptionIsAvailable)
+			Some(new PointerWithEvents(true))
+		else
+			None
+	}
 	
 	private val selectModeTab =
 	{
 		if (changeOptionIsAvailable)
-			Some(TabSelection.contextual[ExportMode](DisplayFunction.localized[ExportMode] { _.name }, ExportMode.values,
+		{
+			val tab = TabSelection.contextual[ExportMode](DisplayFunction.localized[ExportMode] { _.name }, ExportMode.values,
 				margins.small)(baseCB.withColors(colorScheme.primary).withHighlightColor(
-				colorScheme.secondary.forBackground(colorScheme.primary)).result))
+				colorScheme.secondary.forBackground(colorScheme.primary)).result)
+			tab.selectOne(Changes)
+			Some(tab)
+		}
 		else
 			None
 	}
@@ -125,6 +146,9 @@ class ExportSqlDialog(release: Release, previousReleases: Vector[Release])
 	// INITIAL CODE	-----------------------
 	
 	actionDD.selectOne(Open)
+	// Selected mode affects version select visibility (if available)
+	selectModeTab.foreach { tab => changeVisibilityPointer.foreach { pointer => tab.addValueListener { e =>
+		pointer.value = e.newValue.contains(Changes) } } }
 	
 	
 	// IMPLEMENTED	-----------------------
@@ -133,8 +157,9 @@ class ExportSqlDialog(release: Release, previousReleases: Vector[Release])
 	{
 		val buffer = new VectorBuilder[InputRowInfo]
 		selectModeTab.foreach { f => buffer += InputRowInfo("Mode", f) }
-		baseVersionSelectDD.foreach { f => buffer += InputRowInfo("Since Version", f) }
-		buffer += InputRowInfo("Then", actionDD)
+		baseVersionSelectDD.foreach { f => buffer += InputRowInfo("Since Version", f,
+			rowVisibilityPointer = changeVisibilityPointer) }
+		buffer += InputRowInfo("Action", actionDD)
 		
 		buffer.result()
 	}

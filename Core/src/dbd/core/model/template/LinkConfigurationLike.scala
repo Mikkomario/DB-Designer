@@ -51,4 +51,18 @@ trait LinkConfigurationLike
 		originClassId == other.originClassId && targetClassId == other.targetClassId &&
 		nameInOrigin == other.nameInOrigin && nameInTarget == other.nameInTarget && isOwned == other.isOwned &&
 		mappingKeyAttributeId == other.mappingKeyAttributeId
+	
+	/**
+	  * @param classId The other class id
+	  * @return The other class id in this link. None if specified class id doesn't belong to this link.
+	  */
+	def oppositeClassId(classId: Int) =
+	{
+		if (classId == originClassId)
+			Some(targetClassId)
+		else if (classId == targetClassId)
+			Some(originClassId)
+		else
+			None
+	}
 }
