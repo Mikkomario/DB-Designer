@@ -89,7 +89,7 @@ case class TableComparison(classId: Int, oldVersion: Table, newVersion: Table)
 	  */
 	def newForeignKeysSql(tablesForIds: Map[Int, Table]) =
 	{
-		val newFks = comparableLinkColumns.flatMap { c => c.newForeignKey.map { c.newVersion -> _ } } ++
+		val newFks = comparableLinkColumns.flatMap { c => c.newForeignKey(tablesForIds).map { c.newVersion -> _ } } ++
 			addedLinkColumns.flatMap { c => c.foreignKey.map { c -> _ } }
 		toAlterTableSql(newFks.map { case (c, fk) =>
 			s"ADD ${SqlWriter.fkToSql(fk, c, tablesForIds(fk.targetTableId).name)}" })
@@ -98,9 +98,10 @@ case class TableComparison(classId: Int, oldVersion: Table, newVersion: Table)
 	/**
 	  * @return Alter table statement for removing old foreign keys from this table. None if not changed
 	  */
-	def removedForeignKeysSql =
+	def removedForeignKeysSql(tablesForIds: Map[Int, Table]) =
 	{
-		val removedFks = comparableLinkColumns.flatMap { _.removedForeignKey } ++ removedLinkColumns.flatMap { _.foreignKey }
+		val removedFks = comparableLinkColumns.flatMap { _.removedForeignKey(tablesForIds) } ++
+			removedLinkColumns.flatMap { _.foreignKey }
 		toAlterTableSql(removedFks.flatMap { fk => Vector(s"DROP FOREIGN KEY ${fk.constraintName}", s"DROP INDEX ${fk.indexName}") })
 	}
 	

@@ -36,7 +36,7 @@ class ClassDisplayManager(initialDatabaseId: Int)(implicit exc: ExecutionContext
 		val data = dataFromDB match
 		{
 			case Success(data) => data
-			case Failure(error) => Log(error, s"Couldn't read class data for database $initialDatabaseId"); Vector()
+			case Failure(error) => Log(error, s"Couldn't read class data for database ${_databaseId}"); Vector()
 		}
 		new PointerWithEvents(data)
 	}
@@ -176,7 +176,7 @@ class ClassDisplayManager(initialDatabaseId: Int)(implicit exc: ExecutionContext
 	def addNewClass(newClass: NewClass) =
 	{
 		// Inserts a new class to DB and then to the end of displayed classes list
-		ConnectionPool.tryWith { implicit connection => Database(initialDatabaseId).classes.insert(newClass) } match
+		ConnectionPool.tryWith { implicit connection => Database(_databaseId).classes.insert(newClass) } match
 		{
 			case Success(newClass) => content = content :+ DisplayedClass(newClass, isExpanded = true)
 			case Failure(error) => Log(error, s"Failed to insert class $newClass to DB")
@@ -197,8 +197,8 @@ class ClassDisplayManager(initialDatabaseId: Int)(implicit exc: ExecutionContext
 	{
 		// Inserts the new class to DB, then adds a link between the two classes
 		ConnectionPool.tryWith { implicit connection =>
-			val newClass = Database(initialDatabaseId).classes.insert(NewClass(newSubClass.classInfo))
-			newClass -> Database(initialDatabaseId).links.insert(newSubClass.toNewLinkConfiguration(newClass.id))
+			val newClass = Database(_databaseId).classes.insert(NewClass(newSubClass.classInfo))
+			newClass -> Database(_databaseId).links.insert(newSubClass.toNewLinkConfiguration(newClass.id))
 		} match
 		{
 			case Success(newData) =>
@@ -318,7 +318,7 @@ class ClassDisplayManager(initialDatabaseId: Int)(implicit exc: ExecutionContext
 	{
 		// Inserts the new link to database, then updates displayed classes
 		ConnectionPool.tryWith { implicit connection =>
-			Database(initialDatabaseId).links.insert(link)
+			Database(_databaseId).links.insert(link)
 		} match
 		{
 			case Success(newLink) => displaysWithLinkAdded(content, newLink).foreach { content = _ }

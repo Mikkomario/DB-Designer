@@ -32,7 +32,8 @@ case class ReleasesComparison private(databaseId: Int, newTables: Vector[Table],
 {
 	// ATTRIBUTES	------------------------
 	
-	private val tablesById = (newTables ++ modifiedTables.map { _.newVersion }).map { t => t.id -> t }.toMap
+	private val tablesById = (newTables ++ modifiedTables.map { _.newVersion } ++ removedTables ++
+		modifiedTables.map { _.oldVersion }).map { t => t.id -> t }.toMap
 	
 	
 	// COMPUTED	----------------------------
@@ -98,7 +99,7 @@ case class ReleasesComparison private(databaseId: Int, newTables: Vector[Table],
 	
 	private def addNewForeignKeysStatements = modifiedTables.flatMap { _.newForeignKeysSql(tablesById) }
 	
-	private def removeOldForeignKeysStatements = modifiedTables.flatMap { _.removedForeignKeysSql }
+	private def removeOldForeignKeysStatements = modifiedTables.flatMap { _.removedForeignKeysSql(tablesById) }
 	
 	private def orderTablesForDeletion(tables: Vector[Table]): Vector[Table] =
 	{

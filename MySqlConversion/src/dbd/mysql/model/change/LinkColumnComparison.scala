@@ -1,6 +1,6 @@
 package dbd.mysql.model.change
 
-import dbd.mysql.model.existing.Column
+import dbd.mysql.model.existing.{Column, Table}
 
 /**
   * Compares two versions of a link column
@@ -18,10 +18,11 @@ case class LinkColumnComparison(linkId: Int, oldVersion: Column, newVersion: Col
 	/**
 	  * @return Foreign key added in this change
 	  */
-	def newForeignKey = newVersion.foreignKey.flatMap { fk =>
+	def newForeignKey(tablesById: Map[Int, Table]) = newVersion.foreignKey.flatMap { fk =>
 		oldVersion.foreignKey match
 		{
-			case Some(oldFk) => if (fk.targetTableId == oldFk.targetTableId && fk.baseName == oldFk.baseName) None else Some(fk)
+			case Some(oldFk) => if (tablesById(fk.targetTableId).classId == tablesById(oldFk.targetTableId).classId &&
+				fk.baseName == oldFk.baseName) None else Some(fk)
 			case None => Some(fk)
 		}
 	}
@@ -29,10 +30,12 @@ case class LinkColumnComparison(linkId: Int, oldVersion: Column, newVersion: Col
 	/**
 	  * @return Foreign key removed in this change
 	  */
-	def removedForeignKey = oldVersion.foreignKey.flatMap { fk =>
+		// TODO: Perhaps add checks if table isn't in that specified map
+	def removedForeignKey(tablesById: Map[Int, Table]) = oldVersion.foreignKey.flatMap { fk =>
 		newVersion.foreignKey match
 		{
-			case Some(newFk) => if (newFk.targetTableId == fk.targetTableId && newFk.baseName == fk.baseName) None else Some(fk)
+			case Some(newFk) => if (tablesById(newFk.targetTableId).classId == tablesById(fk.targetTableId).classId &&
+				newFk.baseName == fk.baseName) None else Some(fk)
 			case None => Some(fk)
 		}
 	}
