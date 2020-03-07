@@ -32,19 +32,34 @@ class DatabaseSelectionVC(buttonColor: Color)
 	private implicit val lang: String = "en"
 	
 	private val dataManager = new DatabasesManager()
-	
+	/*
+	val selection =
+	{
+		// Creates the no results view first
+		val searchPointer = new PointerWithEvents[Option[String]](None)
+		val addViewBG = colorScheme.gray.default
+		val buttonBG = colorScheme.secondary.forBackground(addViewBG)
+		val addButton = ImageAndTextButton.contextual(Icons.addBox.forButtonWithBackground(buttonBG),
+			"Create New Database") { () => displayAddDBDialog(searchPointer.value) }(baseCB.withColors(buttonBG).result)
+		val noResultsLabel = SearchFromField.noResultsLabel("No database found with name '%s'", searchPointer)(
+			baseCB.withTextColor(addViewBG.defaultTextColor).result)
+		val noResultsView = Stack.buildColumnWithContext() { stack =>
+			stack += noResultsLabel
+			stack += addButton
+		}.framed(margins.medium.any x margins.small.any, addViewBG)
+		
+		// Then the search & select field itself
+		SearchFromField.contextualWithTextOnly[Database]("Select Database", noResultsView,
+			displayFunction = DisplayFunction.noLocalization[Database] { _.configuration.name.toCapitalized },
+			contentPointer = dataManager.contentPointer, searchFieldPointer = searchPointer,
+			checkEquals = (a, b) => a.id == b.id)
+	}*/
 	private val selectionDD = DropDown.contextual("Select Database",
 		DisplayFunction.noLocalization[Database] { _.configuration.name.toCapitalized }, dataManager.content)
 	
 	private val view = Stack.buildRowWithContext(isRelated = true) { stack =>
 		stack += selectionDD
-		stack += ImageButton.contextual(Icons.add.forButtonWithoutText(buttonColor)) { () =>
-			parentWindow.foreach { window =>
-				new EditDatabaseDialog().display(window).foreach { _.foreach { newConfig =>
-					dataManager.addNewDatabase(newConfig)
-				} }
-			}
-		}
+		stack += ImageButton.contextual(Icons.add.forButtonWithoutText(buttonColor)) { () => displayAddDBDialog() }
 		stack += ImageButton.contextual(Icons.edit.forButtonWithoutText(buttonColor)) { () =>
 			parentWindow.foreach { window =>
 				val dbToEdit = value
@@ -80,4 +95,16 @@ class DatabaseSelectionVC(buttonColor: Color)
 	override def contentPointer = dataManager.contentPointer
 	
 	override def valuePointer = dataManager.valuePointer
+	
+	
+	// OTHER	-----------------------------
+	
+	private def displayAddDBDialog(initialDBName: Option[String] = None) =
+	{
+		parentWindow.foreach { window =>
+			new EditDatabaseDialog(newDBName = initialDBName).display(window).foreach { _.foreach { newConfig =>
+				dataManager.addNewDatabase(newConfig)
+			} }
+		}
+	}
 }

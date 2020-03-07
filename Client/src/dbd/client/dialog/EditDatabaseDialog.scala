@@ -15,7 +15,7 @@ import scala.concurrent.ExecutionContext
   * @author Mikko Hilpinen
   * @since 1.2.2020, v0.1
   */
-class EditDatabaseDialog(databaseToEdit: Option[DatabaseConfigurationLike] = None)
+class EditDatabaseDialog(databaseToEdit: Option[DatabaseConfigurationLike] = None, newDBName: Option[String] = None)
 						(implicit baseCB: ComponentContextBuilder, colorScheme: ColorScheme, margins: Margins,
 						 exc: ExecutionContext, localizer: Localizer)
 	extends InputDialog[Option[NewDatabaseConfiguration]]
@@ -25,7 +25,7 @@ class EditDatabaseDialog(databaseToEdit: Option[DatabaseConfigurationLike] = Non
 	private implicit val baseContext: ComponentContext = baseCB.result
 	private implicit val language: String = "en"
 	
-	private val nameField = TextField.contextual(initialText = databaseToEdit.map { _.name }.getOrElse(""),
+	private val nameField = TextField.contextual(initialText = databaseToEdit.map { _.name }.orElse(newDBName).getOrElse(""),
 		prompt = Some("Name for your database"))
 	
 	

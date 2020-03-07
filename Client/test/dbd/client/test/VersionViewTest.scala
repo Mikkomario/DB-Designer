@@ -1,13 +1,10 @@
 package dbd.client.test
 
-import java.time.Instant
-
 import dbd.client.controller.ReadReleaseData
 import utopia.reflection.shape.LengthExtensions._
-import dbd.client.model.{ChangedItems, DisplayedRelease, Fonts}
-import dbd.client.vc.version.{ChangeListVC, ReleaseVC}
-import utopia.flow.util.TimeExtensions._
-import dbd.core.database.{ClassIds, Classes, ConnectionPool}
+import dbd.client.model.{DisplayedRelease, Fonts}
+import dbd.client.vc.version.ReleaseVC
+import dbd.core.database.ConnectionPool
 import dbd.core.util.ThreadPool
 import utopia.genesis.color.{Color, RGB}
 import utopia.genesis.generic.GenesisDataType
@@ -63,7 +60,7 @@ object VersionViewTest extends App
 		
 		val releasesStack = Stack.column[ReleaseVC](margins.small.any)
 		val releaseManager = new ContainerContentManager[DisplayedRelease, Stack[ReleaseVC], ReleaseVC](
-			releasesStack)(r => new ReleaseVC(r, primaryColors)(uploadButtonPressed))
+			releasesStack)(r => new ReleaseVC(r, primaryColors)({ () => uploadButtonPressed() }))
 		releaseManager.content = releases
 		
 		val view = releasesStack.framed(margins.medium.any x margins.medium.any, primaryColors)
