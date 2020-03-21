@@ -7,13 +7,12 @@ import dbd.core.model.existing.{Attribute, Class}
 import dbd.core.model.template.ClassLike
 import dbd.core.util.Log
 import utopia.flow.util.CollectionExtensions._
-import utopia.genesis.color.Color
 import utopia.genesis.event.{ConsumeEvent, MouseButton}
 import utopia.genesis.handling.MouseButtonStateListener
 import utopia.genesis.shape.shape2D.Direction2D.Up
 import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Refreshable
-import utopia.reflection.component.drawing.BorderDrawer
+import utopia.reflection.component.drawing.immutable.BorderDrawer
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
 import utopia.reflection.component.swing.button.{ImageButton, ImageCheckBox}
 import utopia.reflection.component.swing.label.ItemLabel

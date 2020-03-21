@@ -5,6 +5,7 @@ import dbd.client.model.Fonts
 import dbd.client.vc.MainView.ClassStructure
 import dbd.client.vc.structure.ClassesVC
 import dbd.client.vc.version.ReleasesVC
+import utopia.genesis.shape.Axis.X
 import utopia.genesis.shape.shape2D.Direction2D
 import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Refreshable
@@ -31,7 +32,8 @@ class MainVC(implicit baseCB: ComponentContextBuilder, exc: ExecutionContext, lo
 	private val dbVC = new DatabaseSelectionVC(colorScheme.primary.dark.defaultTextColor)
 	
 	private val mainTab = TabSelection.contextual[MainView](DisplayFunction.localized[MainView] { _.name }, MainView.values,
-		margins.small)(baseCB.withColors(colorScheme.primary).withHighlightColor(colorScheme.secondary.light).result)
+		margins.small)(baseCB.withColors(colorScheme.primary).withHighlightColor(colorScheme.secondary.light).mapInsets {
+		_.mapAxis(X) { _.expanding } }.result)
 	private val mainContentPanel = new SwitchPanel[AwtStackable with Refreshable[Int]]
 	
 	private val view = Stack.buildColumn(margin = 0.fixed) { stack =>

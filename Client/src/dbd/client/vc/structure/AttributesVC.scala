@@ -5,6 +5,7 @@ import dbd.client.dialog.EditAttributeDialog
 import dbd.client.vc.GroupHeader
 import dbd.core.model.existing.Attribute
 import dbd.core.model.partial.NewAttribute
+import utopia.flow.datastructure.mutable.PointerWithEvents
 import utopia.genesis.color.Color
 import utopia.genesis.shape.Axis.X
 import utopia.genesis.shape.shape2D.Direction2D
@@ -58,11 +59,6 @@ class AttributesVC(initialClassId: Int, initialAttributes: Vector[Attribute] = V
 	}
 	
 	
-	// INITIAL CODE	-----------------------
-	
-	AttributesManager.content = initialAttributes
-	
-	
 	// IMPLEMENTED	-----------------------
 	
 	override protected def wrapped = view
@@ -80,6 +76,16 @@ class AttributesVC(initialClassId: Int, initialAttributes: Vector[Attribute] = V
 	
 	private object AttributesManager extends ContentManager[Attribute, AttributeRowVC]
 	{
+		// ATTRIBUTES	-------------------
+		
+		override val contentPointer = new PointerWithEvents[Vector[Attribute]](initialAttributes)
+		
+		
+		// INITIAL CODE	-------------------
+		
+		setup()
+		
+		
 		// IMPLEMENTED	-------------------
 		
 		override def displays = attributesStack.components

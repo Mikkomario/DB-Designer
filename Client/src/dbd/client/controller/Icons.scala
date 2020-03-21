@@ -3,6 +3,9 @@ package dbd.client.controller
 import java.nio.file.Path
 
 import dbd.client.model.Icon
+import dbd.core.model.enumeration.{AttributeType, LinkTypeCategory}
+import dbd.core.model.enumeration.AttributeType.{BooleanType, DoubleType, InstantType, IntType, ShortStringType}
+import dbd.core.model.enumeration.LinkTypeCategory.{ManyToMany, ManyToOne, OneToOne}
 import utopia.flow.util.FileExtensions._
 import utopia.flow.util.TimeExtensions._
 import utopia.flow.caching.multi.ReleasingCache
@@ -17,6 +20,8 @@ import utopia.genesis.shape.shape2D.Size
 object Icons
 {
 	// ATTRIBUTES	--------------------------
+	
+	private val empty = Icon(Image.empty)
 	
 	private val iconSourceDir: Path = "Client/images/icons" // TODO: Handle this path better in production
 	private val standardIconSize = Size.square(32)
@@ -140,4 +145,31 @@ object Icons
 	 * @return An icon with specified name
 	 */
 	def apply(iconName: String) = cache(iconName)
+	
+	/**
+	  * Finds an icon representing specified attribute type
+	  * @param attType An attribute type
+	  * @return Icon representing specified attribute type
+	  */
+	def forAttributeType(attType: AttributeType) = attType match
+	{
+		case ShortStringType => text
+		case IntType => numbers
+		case DoubleType => decimalNumber
+		case BooleanType => checkBox
+		case InstantType => time
+		case _ => empty // TODO: Add support for other types
+	}
+	
+	/**
+	  * Finds an icon representing specified link type
+	  * @param linkType A link type
+	  * @return An icon for that link type
+	  */
+	def forLinkType(linkType: LinkTypeCategory) = linkType match
+	{
+		case ManyToOne => manyToOneLink
+		case OneToOne => oneOnOneLink
+		case ManyToMany => manyToManyLink
+	}
 }

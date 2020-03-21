@@ -71,8 +71,8 @@ abstract class InputDialog[A](implicit colorScheme: ColorScheme, baseCB: Compone
 						row += TextLabel.contextual(redirect._2)
 					}.framed(margins.medium.any.square, colors.background)
 					val popup = Popup(redirect._1, popupContent, context.actorHandler,
-						(cSize, pSize) => Point(cSize.width + margins.medium, -(pSize.height - cSize.height) / 2),
-						hideWhenFocusLost = false)
+						hideWhenFocusLost = false, Alignment.Left) { (cSize, pSize) =>
+						Point(cSize.width + margins.medium, -(pSize.height - cSize.height) / 2) }
 					dismissButton.registerAction(() => popup.close())
 					// Closes the pop-up if any key is pressed or after a delay
 					popup.addKeyStateListener(KeyStateListener.onAnyKeyPressed { _ => popup.close() })

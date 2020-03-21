@@ -7,11 +7,10 @@ import dbd.core.model.enumeration.AttributeType._
 import dbd.core.model.existing.Attribute
 import utopia.genesis.color.Color
 import utopia.genesis.image.Image
-import utopia.genesis.shape.Axis.X
 import utopia.genesis.shape.shape2D.Line
 import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Refreshable
-import utopia.reflection.component.drawing.{CustomDrawer, DrawLevel}
+import utopia.reflection.component.drawing.template.{CustomDrawer, DrawLevel}
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
 import utopia.reflection.component.swing.button.ImageButton
 import utopia.reflection.component.swing.label.{ImageLabel, TextLabel}
@@ -45,7 +44,7 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 	
 	private val imageLabel = ImageLabel.contextual(iconForType(initialAttribute.configuration.dataType))
 	private val attNameLabel = TextLabel.contextual(initialAttribute.configuration.name.noLanguageLocalizationSkipped)(
-		baseCB.mapInnerMargins { _.withLowPriorityFor(X) }.result)
+		baseCB.mapInsets { _.mapRight { _.expanding } }.result)
 	private val buttonColor = colorScheme.secondary.forBackground(parentBackground)
 	private val editAttributeButton = ImageButton.contextual(Icons.edit.forButtonWithoutText(buttonColor)) { () =>
 		parentWindow.foreach { window =>
@@ -75,9 +74,9 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 	private val row = SegmentedRow.partOfGroupWithItems(group, Vector(imageLabel, attNameLabel, editAttributeButton,
 		deleteAttributeButton), margin = margins.small.downscaling, layout = Center)
 	
-	private lazy val searchKeyDrawer = CustomDrawer(DrawLevel.Foreground, (drawer, bounds) =>
+	private lazy val searchKeyDrawer = CustomDrawer(DrawLevel.Foreground) { (drawer, bounds) =>
 		drawer.withEdgeColor(Color.black.withAlpha(0.55)).withStroke(margins.verySmall.toInt)
-			.draw(Line(bounds.bottomLeft, bounds.bottomRight)))
+			.draw(Line(bounds.bottomLeft, bounds.bottomRight)) }
 	
 	
 	// INITIAL CODE	----------------------
@@ -126,6 +125,7 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 			attNameLabel.font.plain else attNameLabel.font.bold
 	}
 	
+	// TODO: Replace with Icon.forAttributeType(...)
 	private def iconForType(attributeType: AttributeType) =
 	{
 		val icon = attributeType match

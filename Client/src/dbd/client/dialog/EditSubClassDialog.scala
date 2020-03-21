@@ -1,9 +1,10 @@
 package dbd.client.dialog
 
 import utopia.reflection.localization.LocalString._
-import dbd.client.controller.ClassDisplayManager
+import dbd.client.controller.{ClassDisplayManager, Icons}
 import dbd.client.dialog.AddSubClassMode.{AdoptExistingClass, CreateNewSubClass}
 import dbd.client.model.{ChildLink, EditSubClassResult}
+import dbd.client.view.Fields
 import dbd.core.model.enumeration.LinkEndRole.{Origin, Target}
 import dbd.core.model.enumeration.LinkType
 import dbd.core.model.existing.{Attribute, Class}
@@ -11,7 +12,7 @@ import dbd.core.model.partial.{NewClassInfo, NewLinkConfiguration, NewSubClass}
 import dbd.core.model.template.ClassLike
 import utopia.flow.datastructure.mutable.PointerWithEvents
 import utopia.reflection.color.ColorScheme
-import utopia.reflection.component.swing.{DropDown, Switch, TabSelection, TextField}
+import utopia.reflection.component.swing.{Switch, TabSelection, TextField}
 import utopia.reflection.localization.{DisplayFunction, LocalizedString, Localizer}
 import utopia.reflection.shape.Margins
 import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
@@ -34,6 +35,8 @@ class EditSubClassDialog(parent: Class, editedChildLink: Option[ChildLink], clas
 	private implicit val language: String = "en"
 	private implicit val baseContext: ComponentContext = baseCB.result
 	
+	private val fieldBackground = colorScheme.gray.light
+	
 	// Used for selecting way of adding new classes (only in new class mode)
 	private val createStyleSelection = editedChildLink match
 	{
@@ -47,22 +50,25 @@ class EditSubClassDialog(parent: Class, editedChildLink: Option[ChildLink], clas
 	private val adoptedClassSelection = editedChildLink match
 	{
 		case Some(_) => None
-		case None => Some(DropDown.contextual("Select class to adopt",
-			DisplayFunction.noLocalization[ClassLike[_, _, _]] { _.name }, classManager.potentialChildrenFor(parent.id)))
+		case None => Some(Fields.searchFrom("No class with name '%s'", "Select class to adopt",
+			DisplayFunction.noLocalization[ClassLike[_, _, _]] { _.name }, fieldBackground,
+			classManager.potentialChildrenFor(parent.id)))
 	}
 	private val classNameField = TextField.contextual(initialText = editedChildLink.map { _.child.name }.getOrElse(""),
 		prompt = Some("Name of sub-class"))
 	
 	// Used for selecting parent-child relationship
-	private val linkTypeSelection = DropDown.contextual("Select class relationship", linkTypeDisplayFunction,
-		currentLinkOptions)
+	private val linkTypeSelection = Fields.searchFromWithIcons[LinkType]("No relationship matching '%s'",
+		"Select class relationship", linkTypeDisplayFunction, fieldBackground, currentLinkOptions) {
+		lType => Icons.forLinkType(lType.category) }
 	
 	// Used for selecting child class mutability
 	private val isMutableSwitch = Switch.contextual
 	
 	// Used for selecting mapping key (when applicable)
-	private val mapKeySelection = DropDown.contextual[Attribute]("Select mapping key attribute",
-		DisplayFunction.noLocalization[Attribute] { _.name })
+	private val mapKeySelection = Fields.searchFromWithIcons[Attribute]("No attribute with name '%s'",
+		"Select mapping key attribute", DisplayFunction.noLocalization[Attribute] { _.name },
+		fieldBackground) { att => Icons.forAttributeType(att.dataType) }
 	
 	private val linkNameInParentField = TextField.contextual(initialText = editedChildLink.flatMap { _.nameInOwner }.getOrElse(""),
 		prompt = Some("Link Nickname, Optional"))
@@ -98,7 +104,7 @@ class EditSubClassDialog(parent: Class, editedChildLink: Option[ChildLink], clas
 	} }
 	
 	// Inputted class name affects link type display
-	classNameField.addResultListener { _ => linkTypeSelection.updateDisplays() }
+	classNameField.addResultListener { _ => linkTypeSelection.currentDisplays.foreach { _.refreshText() } }
 	
 	// Link type selection affects whether mutability is selectable or not
 	// Mutability is allowed only on link types without deprecation or mapping
@@ -276,7 +282,7 @@ class EditSubClassDialog(parent: Class, editedChildLink: Option[ChildLink], clas
 	{
 		val newLinkOptions = currentLinkOptions
 		if (linkTypeSelection.content == newLinkOptions)
-			linkTypeSelection.updateDisplays()
+			linkTypeSelection.currentDisplays.foreach { _.refreshText() }
 		else
 			linkTypeSelection.content = newLinkOptions
 	}

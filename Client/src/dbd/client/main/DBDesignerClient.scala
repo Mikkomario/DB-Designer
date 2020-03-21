@@ -13,7 +13,7 @@ import utopia.reflection.color.{ColorScheme, ColorSet}
 import utopia.reflection.container.swing.window.Frame
 import utopia.reflection.container.swing.window.WindowResizePolicy.Program
 import utopia.reflection.localization.{Localizer, NoLocalization}
-import utopia.reflection.shape.Margins
+import utopia.reflection.shape.{Margins, StackInsets}
 import utopia.reflection.text.Font
 import utopia.reflection.util.{ComponentContextBuilder, SingleFrameSetup}
 import utopia.vault.util.ErrorHandling
@@ -46,8 +46,8 @@ object DBDesignerClient extends App
 	
 	implicit val margins: Margins = Margins(16)
 	
-	implicit val baseCB: ComponentContextBuilder = ComponentContextBuilder(actorHandler, baseFont, secondaryColors,
-		secondaryColors.light, 320, insideMargins = margins.small.any.square, stackMargin = margins.medium.downscaling,
+	implicit val baseCB: ComponentContextBuilder = ComponentContextBuilder(actorHandler, baseFont, secondaryColors.light,
+		secondaryColors.light, 320, insets = StackInsets.symmetric(margins.verySmall.any), stackMargin = margins.medium.downscaling,
 		relatedItemsStackMargin = Some(margins.small.downscaling))
 	
 	implicit val exc: ExecutionContext = ThreadPool.executionContext

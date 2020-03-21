@@ -1,10 +1,12 @@
 package dbd.client.dialog
 
+import dbd.client.controller.Icons
+import dbd.client.view.Fields
 import dbd.core.model.enumeration.AttributeType
 import dbd.core.model.partial.NewAttributeConfiguration
 import dbd.core.model.existing.Attribute
 import utopia.reflection.color.ColorScheme
-import utopia.reflection.component.swing.{DropDown, Switch, TextField}
+import utopia.reflection.component.swing.{Switch, TextField}
 import utopia.reflection.localization.{DisplayFunction, Localizer}
 import utopia.reflection.shape.Margins
 import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
@@ -27,8 +29,9 @@ class EditAttributeDialog(attributeToEdit: Option[Attribute] = None)
 	
 	private val nameField = TextField.contextual(initialText = attributeToEdit.map { _.configuration.name }.getOrElse(""),
 		prompt = Some("Name for the attribute"))
-	private val typeSelectionField = DropDown.contextual[AttributeType]("Select a data type",
-		DisplayFunction.localized(), AttributeType.values)
+	private val typeSelectionField = Fields.searchFromWithIcons[AttributeType]("No data type matching '%s'",
+		"Select a data type", DisplayFunction.localized(), colorScheme.gray.light, AttributeType.values) { t =>
+		Icons.forAttributeType(t) }
 	private val optionalSwitch = Switch.contextual
 	private val searchKeySwitch = Switch.contextual
 	

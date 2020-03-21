@@ -3,8 +3,8 @@ package dbd.client.vc
 import utopia.genesis.color.Color
 import utopia.genesis.shape.shape2D.{Bounds, Line}
 import utopia.genesis.util.Drawer
-import utopia.reflection.component.drawing.CustomDrawer
-import utopia.reflection.component.drawing.DrawLevel.Normal
+import utopia.reflection.component.drawing.template.CustomDrawer
+import utopia.reflection.component.drawing.template.DrawLevel.Normal
 import utopia.reflection.component.swing.label.EmptyLabel
 import utopia.reflection.shape.StackSize
 import utopia.reflection.util.ComponentContext

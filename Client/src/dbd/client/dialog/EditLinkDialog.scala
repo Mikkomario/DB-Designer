@@ -1,13 +1,17 @@
 package dbd.client.dialog
 
+import dbd.client.controller.Icons
+import dbd.client.view.Fields
 import utopia.reflection.localization.LocalString._
 import dbd.core.model.enumeration.LinkType
 import dbd.core.model.existing.{Attribute, Class, LinkConfiguration}
 import dbd.core.model.partial.NewLinkConfiguration
 import utopia.flow.datastructure.mutable.PointerWithEvents
 import utopia.reflection.color.ColorScheme
+import utopia.reflection.component.Focusable
 import utopia.reflection.component.swing.{DropDown, TextField}
-import utopia.reflection.localization.{DisplayFunction, Localizer}
+import utopia.reflection.container.swing.Stack.AwtStackable
+import utopia.reflection.localization.{DisplayFunction, LocalizedString, Localizer}
 import utopia.reflection.shape.Margins
 import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
 
@@ -29,14 +33,16 @@ class EditLinkDialog(linkToEdit: Option[LinkConfiguration], linkingClass: Class,
 	private implicit val baseContext: ComponentContext = baseCB.result
 	
 	private val mapKeyVisibilityPointer = new PointerWithEvents[Boolean](false)
+	private val fieldBackground = colorScheme.gray.light
 	
-	private val classSelection = DropDown.contextual[Class]("Select linked class",
-		DisplayFunction.noLocalization[Class] { _.name }, linkableClasses)
-	private val linkOriginSelection = DropDown.contextual("Select link origin",
+	private val classSelection = Fields.searchFrom[Class]("No class with name: '%s'",
+		"Select linked class", DisplayFunction.noLocalization[Class] { _.name }, fieldBackground)
+	private val linkOriginSelection = Fields.dropDown("No choices available", "Select link origin",
 		DisplayFunction.functionToDisplayFunction[Boolean] { isThisClass =>
 			if (isThisClass) linkingClass.name.noLanguageLocalizationSkipped else classSelection.value.map {
-				_.name.noLanguageLocalizationSkipped }.getOrElse("The other class") }, Vector(true, false))
-	private val linkTypeSelection = DropDown.contextual[LinkType]("Select link type",
+				_.name.noLanguageLocalizationSkipped }.getOrElse("The other class") }, fieldBackground,
+		Vector(true, false))
+	private val linkTypeSelection = Fields.searchFromWithIcons[LinkType]("No link type named '%s'", "Select link type",
 		DisplayFunction[LinkType] { _.nameWithClassSlots } { local =>
 			// Link type display depends from which class was selected as the link origin
 			val myClassName = linkingClass.name
@@ -48,14 +54,18 @@ class EditLinkDialog(linkToEdit: Option[LinkConfiguration], linkingClass: Class,
 				else
 					otherClassName -> myClassName
 			}
-			local.localized.interpolate(first, second) }, LinkType.values)
-	private val mapKeySelection = DropDown.contextual[Attribute]("Select map key",
-		DisplayFunction.noLocalization[Attribute] { a => a.name })
+			local.localized.interpolate(first, second) }, fieldBackground, LinkType.values) { lType =>
+		Icons.forLinkType(lType.category) }
+	private val mapKeySelection = Fields.searchFromWithIcons[Attribute]("No attribute matching '%s'",
+		"Select map key", DisplayFunction.noLocalization[Attribute] { a => a.name }, fieldBackground) {
+		a => Icons.forAttributeType(a.dataType) }
 	private val localNickField = TextField.contextual(prompt = Some("Link name, optional"))
 	private val otherNickField = TextField.contextual(prompt = Some("Link name, optional"))
 	
 	
 	// INITIAL CODE	-----------------------
+	
+	classSelection.content = linkableClasses
 	
 	linkOriginSelection.selectOne(true)
 	
@@ -67,7 +77,7 @@ class EditLinkDialog(linkToEdit: Option[LinkConfiguration], linkingClass: Class,
 	
 	// Whenever linked class is changed, link type selection look is updated as well
 	classSelection.addValueListener { _ =>
-		linkOriginSelection.updateDisplays()
+		linkOriginSelection.currentDisplays.foreach { _.refreshText() }
 		updateMapKeySelection()
 		updateLinkTypeSelection()
 	}
@@ -116,7 +126,7 @@ class EditLinkDialog(linkToEdit: Option[LinkConfiguration], linkingClass: Class,
 		InputRowInfo("Name in linked class", otherNickField)
 	)
 	
-	override protected def produceResult =
+	override protected def produceResult: Either[(AwtStackable with Focusable, LocalizedString), Option[NewLinkConfiguration]] =
 	{
 		classSelection.value match
 		{
@@ -127,7 +137,7 @@ class EditLinkDialog(linkToEdit: Option[LinkConfiguration], linkingClass: Class,
 						// Map key is required when link type uses mapping
 						val selectedMapKey = mapKeySelection.value
 						if (linkType.usesMapping && selectedMapKey.isEmpty)
-							Left(mapKeySelection, "Please specify which attribute should be used as the mapping key")
+							Left(mapKeySelection -> "Please specify which attribute should be used as the mapping key")
 						else
 						{
 							val actualMappingKey = if (linkType.usesMapping) selectedMapKey.map { _.id } else None
@@ -154,9 +164,9 @@ class EditLinkDialog(linkToEdit: Option[LinkConfiguration], linkingClass: Class,
 							else
 								Right(Some(newLink))
 						}
-					case None => Left(linkTypeSelection, "Please specify the link type")
+					case None => Left(linkTypeSelection -> "Please specify the link type")
 				}
-			case None => Left(classSelection, "Please select the linked class")
+			case None => Left(classSelection -> "Please select the linked class")
 		}
 	}
 	
@@ -173,7 +183,7 @@ class EditLinkDialog(linkToEdit: Option[LinkConfiguration], linkingClass: Class,
 		val newLinkTypes = if (currentTargetClass.exists { _.attributes.nonEmpty })
 			LinkType.values else LinkType.values.filterNot { _.usesMapping }
 		if (linkTypeSelection.content == newLinkTypes)
-			linkTypeSelection.updateDisplays()
+			linkTypeSelection.currentDisplays.foreach { _.refreshText() }
 		else
 			linkTypeSelection.content = newLinkTypes
 	}

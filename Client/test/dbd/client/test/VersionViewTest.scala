@@ -15,7 +15,7 @@ import utopia.reflection.container.swing.window.Frame
 import utopia.reflection.container.swing.window.WindowResizePolicy.Program
 import utopia.reflection.controller.data.ContainerContentManager
 import utopia.reflection.localization.{Localizer, NoLocalization}
-import utopia.reflection.shape.Margins
+import utopia.reflection.shape.{Margins, StackInsets}
 import utopia.reflection.text.Font
 import utopia.reflection.util.{ComponentContext, ComponentContextBuilder, SingleFrameSetup}
 import utopia.vault.util.ErrorHandling
@@ -49,7 +49,7 @@ object VersionViewTest extends App
 	implicit val margins: Margins = Margins(16)
 	
 	implicit val baseCB: ComponentContextBuilder = ComponentContextBuilder(actorHandler, baseFont, secondaryColors,
-		secondaryColors.light, 320, insideMargins = margins.small.any.square, stackMargin = margins.medium.downscaling,
+		secondaryColors.light, 320, insets = StackInsets.symmetric(margins.small.any), stackMargin = margins.medium.downscaling,
 		relatedItemsStackMargin = Some(margins.small.downscaling))
 	implicit val baseContext: ComponentContext = baseCB.result
 	

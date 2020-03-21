@@ -3,6 +3,8 @@ package dbd.client.dialog
 import java.nio.file.Path
 import java.time.format.DateTimeFormatter
 
+import dbd.client.view.Fields
+
 import scala.language.existentials
 import dbd.mysql.database
 import utopia.flow.util.CollectionExtensions._
@@ -18,7 +20,7 @@ import utopia.flow.util.FileExtensions._
 import dbd.mysql.model.existing.Release
 import utopia.flow.datastructure.mutable.PointerWithEvents
 import utopia.reflection.color.ColorScheme
-import utopia.reflection.component.swing.{DropDown, TabSelection}
+import utopia.reflection.component.swing.TabSelection
 import utopia.reflection.localization.{DisplayFunction, LocalString, LocalizedString, Localizer}
 import utopia.reflection.shape.Margins
 import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
@@ -93,6 +95,8 @@ class ExportSqlDialog(release: Release)
 	
 	// ATTRIBUTES	-----------------------
 	
+	private val fieldBackground = colorScheme.gray.light
+	
 	private val previousReleases = ConnectionPool.tryWith { implicit connection =>
 		Releases.forDatabaseWithId(release.databaseId).before(release.released, 25)
 	} match
@@ -130,17 +134,18 @@ class ExportSqlDialog(release: Release)
 	{
 		if (changeOptionIsAvailable)
 		{
-			val dd = DropDown.contextual[Release]("Select Base Version",
+			val dd = Fields.dropDown[Release]("No releases available", "Select Base Version",
 				DisplayFunction.noLocalization[Release] { r =>
-					s"${r.versionNumber.toString} (${r.released.toStringWith(dateFormatter)})" }, previousReleases)
+					s"${r.versionNumber.toString} (${r.released.toStringWith(dateFormatter)})" }, fieldBackground,
+				previousReleases)
 			dd.selectOne(previousReleases.head)
 			Some(dd)
 		}
 		else
 			None
 	}
-	private val actionDD = DropDown.contextual[FileAction]("Select Action",
-		DisplayFunction.localized[FileAction] { _.name }, FileAction.values)
+	private val actionDD = Fields.dropDown[FileAction]("No actions available", "Select Action",
+		DisplayFunction.localized[FileAction] { _.name }, fieldBackground, FileAction.values)
 	
 	
 	// INITIAL CODE	-----------------------
