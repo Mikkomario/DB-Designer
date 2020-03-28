@@ -13,6 +13,7 @@ import utopia.reflection.color.{ColorScheme, ColorSet}
 import utopia.reflection.container.swing.window.Frame
 import utopia.reflection.container.swing.window.WindowResizePolicy.Program
 import utopia.reflection.localization.{Localizer, NoLocalization}
+import utopia.reflection.shape.Alignment.Top
 import utopia.reflection.shape.{Margins, StackInsets}
 import utopia.reflection.text.Font
 import utopia.reflection.util.{ComponentContextBuilder, SingleFrameSetup}
@@ -52,10 +53,9 @@ object DBDesignerClient extends App
 	
 	implicit val exc: ExecutionContext = ThreadPool.executionContext
 	
-	
 	// Reads displayed data from DB
 	ConnectionPool.tryWith { implicit connection =>
 		val content = new MainVC
-		new SingleFrameSetup(actorHandler, Frame.windowed(content, "DB Designer", Program)).start()
+		new SingleFrameSetup(actorHandler, Frame.windowed(content, "DB Designer", Program, Top)).start()
 	}.failure.foreach { Log(_, "Failed to run DB Designer client") }
 }
