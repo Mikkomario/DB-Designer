@@ -124,7 +124,8 @@ object Fields
 		val searchPointer = new PointerWithEvents[Option[String]](None)
 		val field = SearchFrom.contextual[A, C](
 			SearchFrom.noResultsLabel(noResultsText, searchPointer).framed(context.insets, background),
-			selectionPrompt, Leading, searchFieldPointer = searchPointer, shouldDisplayPopUpOnFocusGain = false)(
+			selectionPrompt, Leading, Some(Icons.search.asImageWithColor(background.defaultTextColor)),
+			searchFieldPointer = searchPointer, shouldDisplayPopUpOnFocusGain = false)(
 			itemToDisplay) { displayFunction(_).string }
 		field.background = background
 		field.content = items

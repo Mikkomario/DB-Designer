@@ -93,6 +93,11 @@ object Icons
 	def delete = apply("delete.png")
 	
 	/**
+	  * @return A search icon
+	  */
+	def search = apply("search.png")
+	
+	/**
 	 * @return An icon for expanding collections
 	 */
 	def expandMore = apply("expand.png")
