@@ -76,7 +76,7 @@ object GenerateTableStructure
 	
 	// Converts class names to underscore style and makes sure each one is unique
 	private def classNames(classes: Vector[Class]) =
-		makeUnique(classes.toMultiMap(_.name.toUnderscore, _.id))
+		makeUnique(classes.toMultiMap { _.name.toUnderscore } { _.id })
 	
 	private def makeUnique(originalData: Map[String, Seq[Int]]) =
 	{
@@ -97,15 +97,15 @@ object GenerateTableStructure
 		val shortNames = classNames.map { case (c, name) => c -> nameParts(name, commonLetters + 1) }
 		
 		// Some shorter names may be duplicates, in which case needs to use more letters
-		val classesPerName = shortNames.toVector.map { case (id, name) => name -> id }.toMultiMap()
+		val classesPerName = shortNames.toVector.toMultiMap { case (id, name) => name -> id }
 		val uniqueIds = classesPerName.filter { _._2.size == 1 }.map { _._2.head }.toSet
 		
 		// Expects class names to be unique
-		val duplicates = classNames.filterKeys { !uniqueIds.contains(_) }
+		val duplicates = classNames.view.filterKeys { !uniqueIds.contains(_) }.toMap
 		if (duplicates.nonEmpty)
 		{
 			val handledDuplicates = uniquePrefixes(duplicates, commonLetters + 1)
-			shortNames.filterKeys(uniqueIds.contains) ++ handledDuplicates
+			shortNames.view.filterKeys(uniqueIds.contains).toMap ++ handledDuplicates
 		}
 		else
 			shortNames
@@ -126,7 +126,7 @@ object GenerateTableStructure
 	}
 	
 	private def attributeNames(attributes: Vector[Attribute]) =
-		makeUnique(attributes.toMultiMap(_.name.toUnderscore, _.id))
+		makeUnique(attributes.toMultiMap { _.name.toUnderscore}  { _.id })
 	
 	private def attributeToColumn(attribute: Attribute, attributeName: String, namePrefix: String) =
 	{
@@ -143,8 +143,8 @@ object GenerateTableStructure
 		// Tries to use given link nickname but if that is not specified, uses name of targeted table
 		// the link names are made unique
 		// Link id -> link name
-		val linkNames = makeUnique(links.toMultiMap(l => l.nameInOrigin.map { _.toUnderscore }
-			.getOrElse(linkTargets(l.id).name), _.id))
+		val linkNames = makeUnique(links.toMultiMap{ l => l.nameInOrigin.map { _.toUnderscore }
+			.getOrElse(linkTargets(l.id).name) -> l.id })
 		
 		// Generates columns and inserts the to table
 		links.map { link => linkToColumn(link, linkNames(link.id), prefix, linkTargets(link.id)) }.map {

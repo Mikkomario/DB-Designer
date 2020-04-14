@@ -176,7 +176,7 @@ class ExportSqlDialog(release: Release)
 		
 		val generatedPath = ConnectionPool.tryWith { implicit connection =>
 			val dbConfigAccess = Database(release.databaseId).configuration
-			dbConfigAccess.during(release.released).get.orElse(dbConfigAccess.get).map { dbConfiguration =>
+			dbConfigAccess.during(release.released).orElse(dbConfigAccess).map { dbConfiguration =>
 				// Generates file name & path
 				val databaseName = dbConfiguration.name.toUnderscore
 				val exportDirectoryForDB = exportDirectory/databaseName
@@ -216,10 +216,10 @@ class ExportSqlDialog(release: Release)
 			}
 		}.failure.foreach { Log(_, s"Sql export failed for release: ${release.versionNumber}") }
 		
-		Right(Unit)
+		Right(())
 	}
 	
-	override protected def defaultResult = Unit
+	override protected def defaultResult = ()
 	
 	override protected def title = ("Export %s": LocalizedString).interpolate(release.versionNumber.toString)
 }

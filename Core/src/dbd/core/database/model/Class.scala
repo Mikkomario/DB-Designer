@@ -25,7 +25,7 @@ object Class extends FromResultFactory[existing.Class] with Deprecatable
 	override def apply(result: Result) =
 	{
 		// Groups rows based on class
-		result.grouped(table, Attribute.table).tryMap { case (id, data) =>
+		result.grouped(table, Attribute.table).toVector.tryMap { case (id, data) =>
 			val (baseRow, attributeRows) = data
 			// Class must be parseable
 			table.requirementDeclaration.validate(baseRow(table)).toTry.flatMap { valid =>
@@ -33,14 +33,14 @@ object Class extends FromResultFactory[existing.Class] with Deprecatable
 				ClassInfo(baseRow).flatMap { classInfo =>
 					// Parses attribute rows
 					attributeRows.tryMap { Attribute(_) }.map { attributes =>
-						existing.Class(id.getInt, valid("databaseId").getInt, classInfo, attributes.toVector,
+						existing.Class(id.getInt, valid("databaseId").getInt, classInfo, attributes,
 							valid("deletedAfter").instant)
 					}
 				}
 			}
 		} match
 		{
-			case Success(classes) => classes.toVector
+			case Success(classes) => classes
 			case Failure(error) => ErrorHandling.modelParsePrinciple.handle(error); Vector()
 		}
 	}

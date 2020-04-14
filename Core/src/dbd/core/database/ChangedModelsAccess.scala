@@ -50,5 +50,5 @@ trait ChangedModelsAccess[+A, +Conf] extends ManyModelAccess[A]
 	  * @param connection DB Connection (implicit)
 	  * @return All models with specified ids
 	  */
-	def withIds(ids: Traversable[Int])(implicit connection: Connection) = factory.withIds(ids.map { i => i: Value })
+	def withIds(ids: IterableOnce[Int])(implicit connection: Connection) = factory.withIds(ids.iterator.map { i => i: Value })
 }

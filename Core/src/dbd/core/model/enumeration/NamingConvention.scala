@@ -200,7 +200,7 @@ object NamingConvention
 					else if (word.take(2).forall { _.isUpper })
 						word.takeWhile { c => c.isUpper && !c.isDigit }
 					else
-						word.head.toUpper + word.tail.takeWhile { c => c.isLower && !c.isDigit }
+						word.head.toUpper +: word.tail.takeWhile { c => c.isLower && !c.isDigit }
 				}
 				
 				if (start.length == word.length)

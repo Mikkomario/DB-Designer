@@ -4,12 +4,12 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Client/Client.iml" filepath="$PROJECT_DIR$/Client/Client.iml" />
       <module fileurl="file://$PROJECT_DIR$/Core/Core.iml" filepath="$PROJECT_DIR$/Core/Core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Utopia/Flow/Flow.iml" filepath="$PROJECT_DIR$/../Utopia/Flow/Flow.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Utopia/Genesis/Genesis.iml" filepath="$PROJECT_DIR$/../Utopia/Genesis/Genesis.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Utopia/Inception/Inception.iml" filepath="$PROJECT_DIR$/../Utopia/Inception/Inception.iml" />
       <module fileurl="file://$PROJECT_DIR$/MySqlConversion/MySqlConversion.iml" filepath="$PROJECT_DIR$/MySqlConversion/MySqlConversion.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../Utopia-Flow-Scala/Utopia-Flow-Scala.iml" filepath="$PROJECT_DIR$/../Utopia-Flow-Scala/Utopia-Flow-Scala.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../Utopia-Genesis-Scala/.idea/Utopia-Genesis-Scala.iml" filepath="$PROJECT_DIR$/../Utopia-Genesis-Scala/.idea/Utopia-Genesis-Scala.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../Utopia-Inception-Scala/.idea/Utopia-Inception-Scala.iml" filepath="$PROJECT_DIR$/../Utopia-Inception-Scala/.idea/Utopia-Inception-Scala.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../Utopia-Reflection/.idea/Utopia-Reflection.iml" filepath="$PROJECT_DIR$/../Utopia-Reflection/.idea/Utopia-Reflection.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../Utopia-Vault-Scala/.idea/Utopia-Vault-Scala.iml" filepath="$PROJECT_DIR$/../Utopia-Vault-Scala/.idea/Utopia-Vault-Scala.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Utopia/Reflection/Reflection.iml" filepath="$PROJECT_DIR$/../Utopia/Reflection/Reflection.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Utopia/Vault/Vault.iml" filepath="$PROJECT_DIR$/../Utopia/Vault/Vault.iml" />
     </modules>
   </component>
 </project>

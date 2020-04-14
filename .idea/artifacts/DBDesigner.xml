@@ -1,0 +1,22 @@
+<component name="ArtifactManager">
+  <artifact name="DBDesigner">
+    <output-path>$PROJECT_DIR$/out/artifacts/DBDesigner</output-path>
+    <root id="root">
+      <element id="archive" name="DBDesigner.jar">
+        <element id="directory" name="META-INF">
+          <element id="file-copy" path="$PROJECT_DIR$/Client/META-INF/MANIFEST.MF" />
+        </element>
+        <element id="module-output" name="Client" />
+        <element id="module-output" name="Core" />
+        <element id="module-output" name="Utopia-Flow-Scala" />
+        <element id="module-output" name="Utopia-Vault-Scala" />
+        <element id="module-output" name="Utopia-Genesis-Scala" />
+        <element id="module-output" name="Utopia-Inception-Scala" />
+        <element id="module-output" name="Utopia-Reflection" />
+        <element id="module-output" name="MySqlConversion" />
+        <element id="extracted-dir" path="$PROJECT_DIR$/../Utopia-Vault-Scala/lib/mariadb-java-client-1.5.9.jar" path-in-jar="/" />
+      </element>
+      <element id="library" level="application" name="scala-sdk-2.12.8" />
+    </root>
+  </artifact>
+</component>

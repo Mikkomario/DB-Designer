@@ -8,9 +8,9 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="scala-sdk-2.12.8" level="application" />
     <orderEntry type="module" module-name="Core" />
-    <orderEntry type="module" module-name="Utopia-Flow-Scala" />
-    <orderEntry type="module" module-name="Utopia-Vault-Scala" />
+    <orderEntry type="library" name="scala-sdk-2.13.1" level="application" />
+    <orderEntry type="module" module-name="Flow" />
+    <orderEntry type="module" module-name="Vault" />
   </component>
 </module>

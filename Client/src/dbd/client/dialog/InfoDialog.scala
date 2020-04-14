@@ -37,5 +37,5 @@ class InfoDialog(val title: LocalizedString, text: LocalizedString, icon: Option
 		}
 	}
 	
-	override protected def defaultResult = Unit
+	override protected def defaultResult = ()
 }
