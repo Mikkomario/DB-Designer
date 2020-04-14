@@ -102,8 +102,8 @@ class ClassVC(initialClass: ParentOrSubClass, classManager: ClassDisplayManager)
 	classContentView.isVisible = initialClass.isExpanded
 	classContentView.addCustomDrawer(new BorderDrawer(Border(Insets.symmetric(2).withoutSide(Up), colorScheme.primary)))
 	expandButton.addValueListener { e => classManager.changeClassExpand(displayedClass.classId, e.newValue) }
-	classNameLabel.addMouseButtonListener(MouseButtonStateListener.onButtonPressedInside(MouseButton.Left,
-		classNameLabel.bounds, _ => { expandButton.value = true; Some(ConsumeEvent("Class expanded")) }))
+	classNameLabel.addMouseButtonListener(MouseButtonStateListener.onButtonPressedInside(MouseButton.Left) {
+		classNameLabel.bounds } { _ => { expandButton.value = true; Some(ConsumeEvent("Class expanded")) } })
 	
 	
 	// COMPUTED	----------------------------
