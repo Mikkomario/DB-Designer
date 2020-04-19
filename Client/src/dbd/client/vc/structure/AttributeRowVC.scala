@@ -62,7 +62,7 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 			if (classManager.attributeIsUsedInOwnedLinks(attributeToDelete.id))
 				new InfoDialog("Warning",
 					"Cannot delete %s because it's used in parent-child links.\nRemove or edit the links first and then try again."
-						.autoLocalized.interpolate(attributeToDelete.name),
+						.autoLocalized.interpolated(Vector(attributeToDelete.name)),
 					Some(Icons.warning.fullSize.asImageWithColor(colorScheme.error))).display(window)
 			else
 				DeleteQuestionDialog.forAttribute(attributeToDelete.name,

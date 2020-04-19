@@ -221,5 +221,5 @@ class ExportSqlDialog(release: Release)
 	
 	override protected def defaultResult = ()
 	
-	override protected def title = ("Export %s": LocalizedString).interpolate(release.versionNumber.toString)
+	override protected def title = ("Export %s": LocalizedString).interpolated(Vector(release.versionNumber.toString))
 }

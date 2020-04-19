@@ -37,8 +37,7 @@ sealed trait LinkType
 	 */
 	def usesMapping: Boolean
 	/**
-	 * @return The english name of this link type. Contains two %s placeholders for class names where the first
-	 *         passed class is origin and second one is target.
+	 * @return The english name of this link type. Contains two placeholders for class names: ${origin} and ${target}
 	 */
 	def nameWithClassSlots: String
 	/**
@@ -101,7 +100,7 @@ object LinkType
 		override def id = 1
 		override def usesDeprecation = false
 		override def usesMapping = false
-		override def nameWithClassSlots = "Many %s to one %s"
+		override def nameWithClassSlots = "Many ${origin} for one ${target}"
 	}
 	/**
 	 * This link type allows one to link multiple targets to one origin. The targets support deprecation.
@@ -111,7 +110,7 @@ object LinkType
 		override def id = 2
 		override def usesDeprecation = true
 		override def usesMapping = false
-		override def nameWithClassSlots = "Many versioned %s to a single %s"
+		override def nameWithClassSlots = "Single ${target} with many versioned ${origin}"
 	}
 	/**
 	 * This link type allows one to link a single active item per key to one origin. Previous map values will be
@@ -123,7 +122,7 @@ object LinkType
 		override def usesDeprecation = true
 		override def usesMapping = true
 		
-		override def nameWithClassSlots = "A single %s version per key to one %s"
+		override def nameWithClassSlots = "A single version of ${origin} per key for each ${target}"
 	}
 	/**
 	 * This link type allows one to link multiple items to a single link origin. The items must be unique by a
@@ -135,7 +134,7 @@ object LinkType
 		override def usesDeprecation = false
 		override def usesMapping = true
 		
-		override def nameWithClassSlots = "A single %s per key to one %s"
+		override def nameWithClassSlots = "A single ${target} with many ${origin} mapped to unique keys"
 	}
 	
 	/**
@@ -147,7 +146,7 @@ object LinkType
 		override def isFixedLinkOrigin = false
 		override def usesDeprecation = false
 		override def fixedOwner = Origin
-		override def nameWithClassSlots = "One %s to one %s"
+		override def nameWithClassSlots = "One ${origin} with exactly one ${target}"
 		override def isOptional = false
 	}
 	/**
@@ -158,7 +157,7 @@ object LinkType
 		override def id = 8
 		override def isFixedLinkOrigin = true
 		override def usesDeprecation = false
-		override def nameWithClassSlots = "One %s to 0-1 %s"
+		override def nameWithClassSlots = "One ${origin} to 0-1 ${target}"
 		override def fixedOwner = Origin
 		override def isOptional = true
 	}
@@ -171,7 +170,7 @@ object LinkType
 		override def id = 6
 		override def isFixedLinkOrigin = true
 		override def usesDeprecation = true
-		override def nameWithClassSlots = "One %s version to one %s"
+		override def nameWithClassSlots = "One ${target} with a versioned ${origin}"
 		override def fixedOwner = Target
 		override def isOptional = false
 	}
@@ -188,7 +187,7 @@ object LinkType
 		override def usesDeprecation = false
 		override def usesMapping = false
 		override def fixedOwner = Origin
-		override def nameWithClassSlots = "Many %s to many %s"
+		override def nameWithClassSlots = "Many ${origin} to many ${target}"
 		override def isOptional = false
 	}
 	

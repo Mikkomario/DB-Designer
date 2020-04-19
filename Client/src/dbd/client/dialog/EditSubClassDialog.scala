@@ -17,7 +17,7 @@ import utopia.reflection.localization.{DisplayFunction, LocalizedString, Localiz
 import utopia.reflection.shape.Margins
 import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
 
-import scala.collection.immutable.VectorBuilder
+import scala.collection.immutable.{HashMap, VectorBuilder}
 import scala.concurrent.ExecutionContext
 
 /**
@@ -171,11 +171,12 @@ class EditSubClassDialog(parent: Class, editedChildLink: Option[ChildLink], clas
 	{
 		DisplayFunction.functionToDisplayFunction[LinkType] { linkType =>
 			val base = linkType.nameWithClassSlots.autoLocalized
-			linkType.fixedOwner match
+			val (originName, targetName) =  linkType.fixedOwner match
 			{
-				case Origin => base.interpolate(parentName, childName)
-				case Target => base.interpolate(childName, parentName)
+				case Origin => parentName -> childName
+				case Target => childName -> parentName
 			}
+			base.interpolated(HashMap("origin" -> originName, "target" -> targetName))
 		}
 	}
 	
@@ -192,7 +193,7 @@ class EditSubClassDialog(parent: Class, editedChildLink: Option[ChildLink], clas
 		builder += InputRowInfo("Relationship", linkTypeSelection)
 		builder += InputRowInfo("Mapping Key", mapKeySelection, rowVisibilityPointer = Some(mapKeySelectionVisibility))
 		builder += InputRowInfo("Is Mutable", isMutableSwitch, spansWholeRow = false)
-		builder += InputRowInfo("Link name in %s".autoLocalized.interpolate(parent.name), linkNameInParentField)
+		builder += InputRowInfo("Link name in %s".autoLocalized.interpolated(Vector(parent.name)), linkNameInParentField)
 		builder += InputRowInfo("Link name in sub-class", linkNameInChildField)
 		builder.result()
 	}

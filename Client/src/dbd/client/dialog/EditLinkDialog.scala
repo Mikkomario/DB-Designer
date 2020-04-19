@@ -9,12 +9,13 @@ import dbd.core.model.partial.NewLinkConfiguration
 import utopia.flow.datastructure.mutable.PointerWithEvents
 import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Focusable
-import utopia.reflection.component.swing.{DropDown, TextField}
+import utopia.reflection.component.swing.TextField
 import utopia.reflection.container.swing.Stack.AwtStackable
 import utopia.reflection.localization.{DisplayFunction, LocalizedString, Localizer}
 import utopia.reflection.shape.Margins
 import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
 
+import scala.collection.immutable.HashMap
 import scala.concurrent.ExecutionContext
 
 /**
@@ -47,15 +48,16 @@ class EditLinkDialog(linkToEdit: Option[LinkConfiguration], linkingClass: Class,
 			// Link type display depends from which class was selected as the link origin
 			val myClassName = linkingClass.name
 			val otherClassName = classSelection.value.map { _.name }.getOrElse("?")
-			val (first, second) =
+			val (originName, targetName) =
 			{
 				if (linkOriginSelection.value.getOrElse(true))
 					myClassName -> otherClassName
 				else
 					otherClassName -> myClassName
 			}
-			local.localized.interpolate(first, second) }, fieldBackground, LinkType.values) { lType =>
-		Icons.forLinkType(lType.category) }
+			local.localized.interpolated(HashMap("origin" -> originName, "target" -> targetName)) }, fieldBackground,
+		LinkType.values) { lType => Icons.forLinkType(lType.category) }
+	
 	private val mapKeySelection = Fields.searchFromWithIcons[Attribute]("No attribute matching '%s'",
 		"Select map key", DisplayFunction.noLocalization[Attribute] { a => a.name }, fieldBackground) {
 		a => Icons.forAttributeType(a.dataType) }

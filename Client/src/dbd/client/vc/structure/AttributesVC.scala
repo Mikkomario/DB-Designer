@@ -90,14 +90,11 @@ class AttributesVC(initialClassId: Int, initialAttributes: Vector[Attribute] = V
 		
 		override def displays = attributesStack.components
 		
-		override protected def addDisplaysFor(values: Vector[Attribute]) = attributesStack ++= values.map {
-			new AttributeRowVC(segmentGroup, _, classManager, parentBackground) }
+		override protected def addDisplaysFor(values: Vector[Attribute], index: Int) = attributesStack.insertMany(values.map {
+			new AttributeRowVC(segmentGroup, _, classManager, parentBackground) }, index)
 		
-		override protected def dropDisplays(dropped: Vector[AttributeRowVC]) =
-		{
-			dropped.foreach { _.unregister() }
-			attributesStack --= dropped
-		}
+		override protected def dropDisplaysAt(range: Range) = attributesStack.removeComponentsIn(range)
+			.foreach { _.unregister() }
 		
 		override protected def finalizeRefresh() = attributesStack.revalidate()
 		

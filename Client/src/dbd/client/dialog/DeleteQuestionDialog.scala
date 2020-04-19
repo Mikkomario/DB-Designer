@@ -8,6 +8,8 @@ import utopia.reflection.component.swing.MultiLineTextView
 import utopia.reflection.localization.{LocalizedString, Localizer}
 import utopia.reflection.util.{ComponentContext, Screen}
 
+import scala.collection.immutable.HashMap
+
 object DeleteQuestionDialog
 {
 	private implicit val language: String = "en"
@@ -26,19 +28,21 @@ object DeleteQuestionDialog
 					(implicit baseContext: ComponentContext, colorScheme: ColorScheme, localizer: Localizer) =
 	{
 		val messageBuilder = new StringBuilder
-		messageBuilder ++= "Are you sure you wish to permanently delete %s '%s'?"
+		messageBuilder ++= "Are you sure you wish to permanently delete ${type} '${item}'?"
 		if (affectedItems.nonEmpty)
 		{
 			if (affectedTypeName.isDefined)
-				messageBuilder ++= "\nThis also affects the following %s:"
+				messageBuilder ++= "\nThis also affects the following ${affectedType}:"
 			else
 				messageBuilder ++= "\nThis also affects:"
 			
 			messageBuilder ++= "\n\t- %s" * affectedItems.size
 		}
-		val question = messageBuilder.result().autoLocalized.interpolate(Vector(deletedItemType, deletedItemName) ++
-			affectedTypeName ++ affectedItems)
-		new DeleteQuestionDialog("Delete %s '%s'".autoLocalized.interpolate(deletedItemType, deletedItemName), question)
+		val namedArguments = HashMap("type" -> deletedItemType, "item" -> deletedItemName) ++ affectedTypeName.map { "affectedType" -> _ }
+		// Combines named & unnamed interpolation
+		val question = messageBuilder.result().autoLocalized.interpolated(namedArguments).interpolated(affectedItems)
+		new DeleteQuestionDialog("Delete ${type} '${item}'".autoLocalized.interpolated(
+			HashMap("type" -> deletedItemType, "item" -> deletedItemName)), question)
 	}
 	
 	/**
