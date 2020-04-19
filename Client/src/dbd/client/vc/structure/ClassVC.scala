@@ -9,11 +9,12 @@ import dbd.core.util.Log
 import utopia.flow.util.CollectionExtensions._
 import utopia.genesis.event.{ConsumeEvent, MouseButton}
 import utopia.genesis.handling.MouseButtonStateListener
+import utopia.genesis.shape.Axis.Y
 import utopia.genesis.shape.shape2D.Direction2D.Up
 import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Refreshable
 import utopia.reflection.component.drawing.immutable.BorderDrawer
-import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
+import utopia.reflection.component.swing.{AnimatedVisibility, StackableAwtComponentWrapperWrapper}
 import utopia.reflection.component.swing.button.{ImageButton, ImageCheckBox}
 import utopia.reflection.component.swing.label.ItemLabel
 import utopia.reflection.container.stack.StackLayout.Center
@@ -93,13 +94,14 @@ class ClassVC(initialClass: ParentOrSubClass, classManager: ClassDisplayManager)
 		stack += linksSection
 		stack += subClassSection
 	}.framed(margins.medium.downscaling.square, colorScheme.gray.dark)
+	private val animatedClassContent = new AnimatedVisibility(classContentView, baseContext.actorHandler, Y,
+		isShownInitially = initialClass.isExpanded)
 	
-	private val view = Stack.columnWithItems(Vector(header, classContentView), margin = 0.fixed)
+	private val view = Stack.columnWithItems(Vector(header, animatedClassContent), margin = 0.fixed)
 	
 	
 	// INITIAL CODE	------------------------
 	
-	classContentView.isVisible = initialClass.isExpanded
 	classContentView.addCustomDrawer(new BorderDrawer(Border(Insets.symmetric(2).withoutSide(Up), colorScheme.primary)))
 	expandButton.addValueListener { e => classManager.changeClassExpand(displayedClass.classId, e.newValue) }
 	classNameLabel.addMouseButtonListener(MouseButtonStateListener.onButtonPressedInside(MouseButton.Left) {
@@ -119,14 +121,22 @@ class ClassVC(initialClass: ParentOrSubClass, classManager: ClassDisplayManager)
 	
 	override def content_=(newContent: ParentOrSubClass) =
 	{
+		// If keeps same class, animates expansion changes
+		val isSameClass = _content.classId == newContent.classId
+		
 		// Content may be shrinked or expanded
 		_content = newContent
-		expandButton.value = newContent.isExpanded
-		classContentView.isVisible = newContent.isExpanded
+		
 		classNameLabel.content = newContent.displayedClass.classData
 		attributeSection.content = newContent.displayedClass.classId -> orderedAttributes(newContent)
 		linksSection.content = newContent.displayedClass
 		subClassSection.content = newContent
+		
+		expandButton.value = newContent.isExpanded
+		if (isSameClass)
+			animatedClassContent.isShown = newContent.isExpanded
+		else
+			animatedClassContent.setStateWithoutTransition(newContent.isExpanded)
 	}
 	
 	override def content = _content

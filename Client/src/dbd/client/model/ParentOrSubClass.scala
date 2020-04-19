@@ -3,6 +3,8 @@ package dbd.client.model
 import dbd.core.model.existing.{Attribute, Class, ClassInfo}
 import dbd.core.model.template.ClassLike
 
+import utopia.flow.util.CollectionExtensions._
+
 object ParentOrSubClass
 {
 	/**
@@ -54,6 +56,11 @@ case class ParentOrSubClass(data: Either[DisplayedClass, (Class, ChildLink)])
 	 * @return The sub-classes of displayed class
 	 */
 	def subClasses = ParentOrSubClass.subClasses(displayedClass)
+	
+	/**
+	  * @return Id of this class
+	  */
+	def classId = data.mapToSingle { _.classId } { _._1.id }
 	
 	
 	// IMPLEMENTED	--------------------
