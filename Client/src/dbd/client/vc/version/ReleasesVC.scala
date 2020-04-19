@@ -36,8 +36,9 @@ class ReleasesVC(initialDatabaseId: Int)
 	
 	private val backgroundColor = colorScheme.primary.light
 	private val releasesStack = Stack.column[ReleaseVC](margins.medium.downscaling)
-	private val releaseManager = new ContainerContentManager[DisplayedRelease, Stack[ReleaseVC], ReleaseVC](
-		releasesStack)(r => new ReleaseVC(r, backgroundColor)({ () => onUploadPressed() }))
+	private val releaseManager = ContainerContentManager.forImmutableStates[DisplayedRelease, ReleaseVC](releasesStack) {
+		(a, b) => a.release.map { _.id } == b.release.map { _.id } } {
+		r => new ReleaseVC(r, backgroundColor)({ () => onUploadPressed() }) }
 	
 	private val view = releasesStack.alignedToSide(Up, useLowPriorityLength = true)
 		.framed(margins.medium.any.square, backgroundColor)

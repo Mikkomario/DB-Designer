@@ -38,8 +38,8 @@ class LinksVC(initialClass: DisplayedClass, classManager: ClassDisplayManager, p
 	private var _content = initialClass
 	
 	private val buttonsStack = Stack.column[LinkRowVC](margins.small.downscaling)
-	private val manager = new ContainerContentManager[(Class, DisplayedLink), Stack[LinkRowVC], LinkRowVC](buttonsStack)({
-		case (c, link) => new LinkRowVC(c, link, classManager, parentBackground) })
+	private val manager = ContainerContentManager.forImmutableStates[(Class, DisplayedLink), LinkRowVC](buttonsStack) {
+		(a, b) => a._2.link.id == b._2.link.id } { case (c, link) => new LinkRowVC(c, link, classManager, parentBackground) }
 	
 	private val view = Stack.buildColumnWithContext(isRelated = true) { mainStack =>
 		mainStack += GroupHeader("Links")

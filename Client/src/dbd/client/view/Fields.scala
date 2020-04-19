@@ -96,14 +96,16 @@ object Fields
 	  * @param selectionPrompt Text prompting the user to select an item
 	  * @param displayFunction Function for converting items to text (default = toString)
 	  * @param background Component background (default = white)
-	  * @param checkEquals A function for checking equality between items (default = _ == _)
+	  * @param sameInstanceCheck A function for checking whether two items represent the same instance (default: _ == _)
+	  * @param contentIsStateless Whether sameInstanceCheck always checks for exact equality (default = true).
 	  * @param baseCB Component creation context builder
 	  * @tparam A Type of selected item
 	  * @return A new drop down field
 	  */
 	def dropDownWithPointer[A](contentPointer: PointerWithEvents[Vector[A]], noResultsText: LocalizedString,
 							   selectionPrompt: LocalizedString, displayFunction: DisplayFunction[A] = DisplayFunction.raw,
-							   background: ComponentColor = Color.white, checkEquals: (A, A) => Boolean = (a: A, b: A) => a == b)
+							   background: ComponentColor = Color.white, sameInstanceCheck: (A, A) => Boolean = (a: A, b: A) => a == b,
+							   contentIsStateless: Boolean = true)
 							  (implicit baseCB: ComponentContextBuilder) =
 	{
 		val textColor = background.defaultTextColor
@@ -111,7 +113,7 @@ object Fields
 		val dd = DropDown.contextualWithTextOnly[A](TextLabel.contextual(noResultsText, isHint = true).framed(context.insets),
 			Icons.expandMore.asImageWithColor(textColor), selectionPrompt, displayFunction,
 			background.defaultTextColor.timesAlpha(0.66), contentPointer = contentPointer,
-			shouldDisplayPopUpOnFocusGain = false, equalsCheck = checkEquals)
+			shouldDisplayPopUpOnFocusGain = false, sameInstanceCheck = sameInstanceCheck, contentIsStateless = contentIsStateless)
 		dd.background = background
 		dd
 	}

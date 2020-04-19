@@ -35,8 +35,8 @@ class SubClassesVC(initialParent: ParentOrSubClass, classManager: ClassDisplayMa
 	
 	private var _parent = initialParent
 	private val childStack = Stack.column[ClassVC](margin = margins.small.downscaling)
-	private val childManager = new ContainerContentManager[ParentOrSubClass, Stack[ClassVC], ClassVC](childStack)(
-		c => new ClassVC(c, classManager))
+	private val childManager = ContainerContentManager.forImmutableStates[ParentOrSubClass, ClassVC](childStack) {
+		_.classId == _.classId } { c => new ClassVC(c, classManager) }
 	
 	private val view = Stack.buildColumnWithContext(isRelated = true) { stack =>
 		stack += GroupHeader("Sub-Classes")

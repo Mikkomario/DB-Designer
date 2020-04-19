@@ -58,7 +58,7 @@ class DatabaseSelectionVC(buttonColor: Color)
 	private val selectionDD = Fields.dropDownWithPointer[Database](dataManager.contentPointer,
 		"No databases to select from", "Select Database",
 		DisplayFunction.noLocalization[Database] { _.configuration.name.toCapitalized }, colorScheme.gray.light,
-		_.id == _.id)
+		_.id == _.id, contentIsStateless = false)
 	
 	private val view = Stack.buildRowWithContext(isRelated = true) { stack =>
 		stack += selectionDD

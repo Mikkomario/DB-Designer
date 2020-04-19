@@ -88,6 +88,10 @@ class AttributesVC(initialClassId: Int, initialAttributes: Vector[Attribute] = V
 		
 		// IMPLEMENTED	-------------------
 		
+		override protected def representSameItem(a: Attribute, b: Attribute) = a.id == b.id
+		
+		override protected def contentIsStateless = false
+		
 		override def displays = attributesStack.components
 		
 		override protected def addDisplaysFor(values: Vector[Attribute], index: Int) = attributesStack.insertMany(values.map {

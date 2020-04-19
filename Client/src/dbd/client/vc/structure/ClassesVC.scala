@@ -37,8 +37,8 @@ class ClassesVC(targetHeight: Double, initialDatabaseId: Int)
 	private val addClassButton = ImageAndTextButton.contextual(Icons.addBox.forButtonWithBackground(buttonColor),
 		"Add Class") { () => addButtonPressed() }(baseCB.withColors(buttonColor).result)
 	private val classView = new CollectionView[ClassVC](Direction2D.Down, targetHeight, margins.medium.downscaling)
-	private val displayManager = new ContainerContentManager[ParentOrSubClass, CollectionView[ClassVC], ClassVC](classView)(
-		c => new ClassVC(c, dataManager))
+	private val displayManager = ContainerContentManager.forImmutableStates[ParentOrSubClass, ClassVC](classView) {
+		(a, b) => a.classId == b.classId } { c => new ClassVC(c, dataManager) }
 	private val view = Stack.buildColumnWithContext() { stack =>
 		stack += classView
 		stack += addClassButton.alignedToSide(Direction2D.Right, useLowPriorityLength = true)

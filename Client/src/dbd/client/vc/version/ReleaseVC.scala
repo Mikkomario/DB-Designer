@@ -52,10 +52,10 @@ class ReleaseVC(initialRelease: DisplayedRelease, backgroundColor: ComponentColo
 	private val releaseTimeLabel = ItemLabel.contextual(initialRelease.release.map { _.released }.getOrElse(Instant.now()),
 		DisplayFunction.ddmmyyyy)
 	private val changesStack = Stack.column[ChangeListVC](margin = 0.fixed, layout = Leading)
+	private val changeManager = ContainerContentManager.forImmutableStates[(LocalizedString, ChangedItems, Boolean),
+		ChangeListVC](changesStack) { (a, b) => a._1 == b._1 && a._2 == b._2 } { case (title, list, isExpanded) =>
+		new ChangeListVC(list, isExpanded, title, 6, backgroundColor) }
 	
-	private val changeManager = new ContainerContentManager[
-		(LocalizedString, ChangedItems, Boolean), Stack[ChangeListVC], ChangeListVC](changesStack)({
-		case (title, list, isExpanded) => new ChangeListVC(list, isExpanded, title, 6, backgroundColor) })
 	
 	private val uploadButtonColor = colorScheme.secondary.dark
 	private val uploadButton = ImageAndTextButton.contextual(Icons.upload.forButtonWithBackground(uploadButtonColor),
