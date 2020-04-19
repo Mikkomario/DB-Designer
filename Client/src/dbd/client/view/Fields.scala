@@ -110,7 +110,8 @@ object Fields
 		implicit val context: ComponentContext = baseCB.withTextColor(textColor).withBorderWidth(1).result
 		val dd = DropDown.contextualWithTextOnly[A](TextLabel.contextual(noResultsText, isHint = true).framed(context.insets),
 			Icons.expandMore.asImageWithColor(textColor), selectionPrompt, displayFunction,
-			background.defaultTextColor, contentPointer = contentPointer, shouldDisplayPopUpOnFocusGain = false, equalsCheck = checkEquals)
+			background.defaultTextColor.timesAlpha(0.66), contentPointer = contentPointer,
+			shouldDisplayPopUpOnFocusGain = false, equalsCheck = checkEquals)
 		dd.background = background
 		dd
 	}
