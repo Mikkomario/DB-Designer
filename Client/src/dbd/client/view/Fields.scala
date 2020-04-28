@@ -2,19 +2,15 @@ package dbd.client.view
 
 import dbd.client.controller.Icons
 import dbd.client.model.Icon
-import dbd.core.util.ThreadPool
 import utopia.flow.datastructure.mutable.PointerWithEvents
-import utopia.genesis.color.Color
-import utopia.reflection.color.ComponentColor
 import utopia.reflection.component.Refreshable
+import utopia.reflection.component.context.{ButtonContext, ButtonContextLike}
 import utopia.reflection.component.swing.{DropDown, SearchFrom}
 import utopia.reflection.component.swing.label.{ImageAndTextLabel, ItemLabel, TextLabel}
 import utopia.reflection.container.stack.StackLayout.Leading
 import utopia.reflection.container.swing.Stack.AwtStackable
 import utopia.reflection.localization.{DisplayFunction, LocalizedString}
-import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
-
-import scala.concurrent.ExecutionContext
+import utopia.reflection.shape.LengthExtensions._
 
 /**
   * Used for creating view components
@@ -23,30 +19,27 @@ import scala.concurrent.ExecutionContext
   */
 object Fields
 {
-	private implicit def exc: ExecutionContext = ThreadPool.executionContext
+	import DefaultContext._
 	
 	/**
 	  * Creates a search from field that displays icons and text
 	  * @param noResultsText Text displayed when no results can be found
 	  * @param selectionPrompt Prompt displayed when no selection has been made
 	  * @param displayFunction Function for converting items to displayable strings
-	  * @param background Component background color
 	  * @param items Items to select from
 	  * @param itemToIcon Function for converting items to icons
-	  * @param baseCB Component creation context builder
+	  * @param context Context used for creating this field (determines background etc.)
 	  * @tparam A Type of selected item
 	  * @return A new field
 	  */
 	def searchFromWithIcons[A](noResultsText: LocalizedString, selectionPrompt: LocalizedString,
 							   displayFunction: DisplayFunction[A] = DisplayFunction.raw,
-							   background: ComponentColor = Color.white, items: Vector[A] = Vector())(itemToIcon: A => Icon)
-							  (implicit baseCB: ComponentContextBuilder) =
+							   items: Vector[A] = Vector())(itemToIcon: A => Icon)
+							  (implicit context: ButtonContextLike) =
 	{
-		val textColor = background.defaultTextColor
-		implicit val context: ComponentContext = baseCB.withTextColor(textColor).result
-		customSearchFrom[A, ImageAndTextLabel[A]](noResultsText, selectionPrompt, displayFunction, background, items) {
+		customSearchFrom[A, ImageAndTextLabel[A]](noResultsText, selectionPrompt, displayFunction, items) {
 			item => ImageAndTextLabel.contextual(item, displayFunction) { item =>
-				itemToIcon(item).asImageWithColor(background.defaultTextColor) } }
+				itemToIcon(item).singleColorImage } }
 	}
 	
 	/**
@@ -54,19 +47,16 @@ object Fields
 	  * @param noResultsText Text displayed when no results can be found
 	  * @param selectionPrompt Prompt displayed when no selection has been made
 	  * @param displayFunction Function for converting items to displayable strings
-	  * @param background Component background color
 	  * @param items Items to select from
-	  * @param baseCB Component creation context builder
+	  * @param context Component creation context
 	  * @tparam A Type of selected item
 	  * @return A new field
 	  */
 	def searchFrom[A](noResultsText: LocalizedString, selectionPrompt: LocalizedString,
-					  displayFunction: DisplayFunction[A] = DisplayFunction.raw,
-					  background: ComponentColor = Color.white, items: Vector[A] = Vector())(implicit baseCB: ComponentContextBuilder) =
+					  displayFunction: DisplayFunction[A] = DisplayFunction.raw, items: Vector[A] = Vector())
+					 (implicit context: ButtonContextLike) =
 	{
-		val textColor = background.defaultTextColor
-		implicit val context: ComponentContext = baseCB.withTextColor(textColor).result
-		customSearchFrom[A, ItemLabel[A]](noResultsText, selectionPrompt, displayFunction, background, items) {
+		customSearchFrom[A, ItemLabel[A]](noResultsText, selectionPrompt, displayFunction, items) {
 			item => ItemLabel.contextual(item, displayFunction) }
 	}
 	
@@ -75,18 +65,16 @@ object Fields
 	  * @param noResultsText Text displayed when no results are available
 	  * @param selectionPrompt Text prompting the user to select an item
 	  * @param displayFunction Function for converting items to text (default = toString)
-	  * @param background Component background (default = white)
 	  * @param items Items to select from (default = empty vector)
 	  * @param baseCB Component creation context builder
 	  * @tparam A Type of selected item
 	  * @return A new drop down field
 	  */
 	def dropDown[A](noResultsText: LocalizedString, selectionPrompt: LocalizedString,
-					displayFunction: DisplayFunction[A] = DisplayFunction.raw, background: ComponentColor = Color.white,
-					items: Vector[A] = Vector())
-				   (implicit baseCB: ComponentContextBuilder) =
+					displayFunction: DisplayFunction[A] = DisplayFunction.raw, items: Vector[A] = Vector())
+				   (implicit baseCB: ButtonContext) =
 	{
-		dropDownWithPointer[A](new PointerWithEvents(items), noResultsText, selectionPrompt, displayFunction, background)
+		dropDownWithPointer[A](new PointerWithEvents(items), noResultsText, selectionPrompt, displayFunction)
 	}
 	
 	/**
@@ -95,42 +83,36 @@ object Fields
 	  * @param noResultsText Text displayed when no results are available
 	  * @param selectionPrompt Text prompting the user to select an item
 	  * @param displayFunction Function for converting items to text (default = toString)
-	  * @param background Component background (default = white)
 	  * @param sameInstanceCheck A function for checking whether two items represent the same instance (default: _ == _)
 	  * @param contentIsStateless Whether sameInstanceCheck always checks for exact equality (default = true).
-	  * @param baseCB Component creation context builder
+	  * @param context Component creation context
 	  * @tparam A Type of selected item
 	  * @return A new drop down field
 	  */
 	def dropDownWithPointer[A](contentPointer: PointerWithEvents[Vector[A]], noResultsText: LocalizedString,
 							   selectionPrompt: LocalizedString, displayFunction: DisplayFunction[A] = DisplayFunction.raw,
-							   background: ComponentColor = Color.white, sameInstanceCheck: (A, A) => Boolean = (a: A, b: A) => a == b,
-							   contentIsStateless: Boolean = true)
-							  (implicit baseCB: ComponentContextBuilder) =
+							   sameInstanceCheck: (A, A) => Boolean = (a: A, b: A) => a == b,
+							   contentIsStateless: Boolean = true)(implicit context: ButtonContext) =
 	{
-		val textColor = background.defaultTextColor
-		implicit val context: ComponentContext = baseCB.withTextColor(textColor).withBorderWidth(1).result
-		val dd = DropDown.contextualWithTextOnly[A](TextLabel.contextual(noResultsText, isHint = true).framed(context.insets),
-			Icons.expandMore.asImageWithColor(textColor), selectionPrompt, displayFunction,
-			background.defaultTextColor.timesAlpha(0.66), contentPointer = contentPointer,
-			shouldDisplayPopUpOnFocusGain = false, sameInstanceCheck = sameInstanceCheck, contentIsStateless = contentIsStateless)
-		dd.background = background
+		val noResultsView = TextLabel.contextual(noResultsText, isHint = true).framed(context.margins.small.any, context.buttonColor)
+		val dd = DropDown.contextualWithTextOnly[A](noResultsView, Icons.expandMore.singleColorImage, selectionPrompt,
+			displayFunction, contentPointer = contentPointer, shouldDisplayPopUpOnFocusGain = false,
+			sameInstanceCheck = sameInstanceCheck, contentIsStateless = contentIsStateless)(
+			context.withBorderWidth(1), exc)
 		dd
 	}
 	
 	private def customSearchFrom[A, C <: AwtStackable with Refreshable[A]]
 	(noResultsText: LocalizedString, selectionPrompt: LocalizedString,
-	 displayFunction: DisplayFunction[A] = DisplayFunction.raw,
-	 background: ComponentColor = Color.white, items: Vector[A] = Vector())(itemToDisplay: A => C)
-	(implicit context: ComponentContext) =
+	 displayFunction: DisplayFunction[A] = DisplayFunction.raw, items: Vector[A] = Vector())(itemToDisplay: A => C)
+	(implicit context: ButtonContextLike) =
 	{
+		val background = context.buttonColor
 		val searchPointer = new PointerWithEvents[Option[String]](None)
-		val field = SearchFrom.contextual[A, C](
-			SearchFrom.noResultsLabel(noResultsText, searchPointer).framed(context.insets, background),
-			selectionPrompt, Leading, searchIcon = Some(Icons.search.asImageWithColor(background.defaultTextColor)),
-			searchFieldPointer = searchPointer, shouldDisplayPopUpOnFocusGain = false)(
-			itemToDisplay) { displayFunction(_).string }
-		field.background = background
+		val noResultsView = SearchFrom.noResultsLabel(noResultsText, searchPointer).framed(context.margins.small.any, background)
+		val field = SearchFrom.contextual[A, C](noResultsView, selectionPrompt, standardInputWidth.any, Leading,
+			searchIcon = Some(Icons.search.singleColorImage), searchFieldPointer = searchPointer,
+			shouldDisplayPopUpOnFocusGain = false)(itemToDisplay) { displayFunction(_).string }
 		field.content = items
 		field
 	}

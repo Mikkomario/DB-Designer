@@ -11,14 +11,12 @@ import dbd.core.model.existing.{Attribute, Class}
 import dbd.core.model.partial.{NewClassInfo, NewLinkConfiguration, NewSubClass}
 import dbd.core.model.template.ClassLike
 import utopia.flow.datastructure.mutable.PointerWithEvents
-import utopia.reflection.color.ColorScheme
+import utopia.reflection.component.context.ButtonContext
 import utopia.reflection.component.swing.{Switch, TabSelection, TextField}
 import utopia.reflection.localization.{DisplayFunction, LocalizedString, Localizer}
-import utopia.reflection.shape.Margins
-import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
+import utopia.reflection.shape.LengthExtensions._
 
 import scala.collection.immutable.{HashMap, VectorBuilder}
-import scala.concurrent.ExecutionContext
 
 /**
  * Used for adding and editing sub-classes
@@ -26,16 +24,17 @@ import scala.concurrent.ExecutionContext
  * @since 26.1.2020, v0.1
  */
 class EditSubClassDialog(parent: Class, editedChildLink: Option[ChildLink], classManager: ClassDisplayManager)
-						(implicit baseCB: ComponentContextBuilder, colorScheme: ColorScheme, localizer: Localizer,
-						 margins: Margins, exc: ExecutionContext)
 	extends InputDialog[Option[Either[EditSubClassResult, Either[NewLinkConfiguration, NewSubClass]]]]
 {
 	// ATTRIBUTES	--------------------------
 	
-	private implicit val language: String = "en"
-	private implicit val baseContext: ComponentContext = baseCB.result
+	import dbd.client.view.DefaultContext._
 	
-	private val fieldBackground = colorScheme.gray.light
+	private implicit val language: String = "en"
+	private val textContext = baseContext.inContextWithBackground(dialogBackground)
+		.forTextComponents()
+	private implicit val context: ButtonContext = baseContext.inContextWithBackground(dialogBackground)
+		.forTextComponents().forGrayFields
 	
 	// Used for selecting way of adding new classes (only in new class mode)
 	private val createStyleSelection = editedChildLink match
@@ -43,7 +42,7 @@ class EditSubClassDialog(parent: Class, editedChildLink: Option[ChildLink], clas
 		case Some(_) => None
 		case None =>
 			Some(TabSelection.contextual(DisplayFunction.functionToDisplayFunction[AddSubClassMode] { _.localizedName },
-				AddSubClassMode.values)(baseCB.withColors(colorScheme.primary).result))
+				AddSubClassMode.values)(textContext.forPrimaryColorButtons))
 	}
 	
 	// Adopt class selection is displayed only in adopt-mode, otherwise class name field is displayed
@@ -51,29 +50,30 @@ class EditSubClassDialog(parent: Class, editedChildLink: Option[ChildLink], clas
 	{
 		case Some(_) => None
 		case None => Some(Fields.searchFrom("No class with name '%s'", "Select class to adopt",
-			DisplayFunction.noLocalization[ClassLike[_, _, _]] { _.name }, fieldBackground,
+			DisplayFunction.noLocalization[ClassLike[_, _, _]] { _.name },
 			classManager.potentialChildrenFor(parent.id)))
 	}
-	private val classNameField = TextField.contextual(initialText = editedChildLink.map { _.child.name }.getOrElse(""),
-		prompt = Some("Name of sub-class"))
+	private val classNameField = TextField.contextual(standardInputWidth.any,
+		initialText = editedChildLink.map { _.child.name }.getOrElse(""), prompt = Some("Name of sub-class"))
 	
 	// Used for selecting parent-child relationship
 	private val linkTypeSelection = Fields.searchFromWithIcons[LinkType]("No relationship matching '%s'",
-		"Select class relationship", linkTypeDisplayFunction, fieldBackground, currentLinkOptions) {
+		"Select class relationship", linkTypeDisplayFunction, currentLinkOptions) {
 		lType => Icons.forLinkType(lType.category) }
 	
 	// Used for selecting child class mutability
-	private val isMutableSwitch = Switch.contextual
+	private val isMutableSwitch = Switch.contextual(switchWidth)
 	
 	// Used for selecting mapping key (when applicable)
 	private val mapKeySelection = Fields.searchFromWithIcons[Attribute]("No attribute with name '%s'",
-		"Select mapping key attribute", DisplayFunction.noLocalization[Attribute] { _.name },
-		fieldBackground) { att => Icons.forAttributeType(att.dataType) }
+		"Select mapping key attribute", DisplayFunction.noLocalization[Attribute] { _.name }) { att =>
+		Icons.forAttributeType(att.dataType) }
 	
-	private val linkNameInParentField = TextField.contextual(initialText = editedChildLink.flatMap { _.nameInOwner }.getOrElse(""),
+	private val linkNameInParentField = TextField.contextual(standardInputWidth.any,
+		initialText = editedChildLink.flatMap { _.nameInOwner }.getOrElse(""),
 		prompt = Some("Link Nickname, Optional"))
-	private val linkNameInChildField = TextField.contextual(initialText = editedChildLink.flatMap { _.nameInChild }.getOrElse(""),
-		prompt = Some("Link Nickname, Optional"))
+	private val linkNameInChildField = TextField.contextual(standardInputWidth.any,
+		initialText = editedChildLink.flatMap { _.nameInChild }.getOrElse(""), prompt = Some("Link Nickname, Optional"))
 	
 	private val adoptSelectionVisibility = if (adoptedClassSelection.isDefined) Some(new PointerWithEvents(false)) else None
 	private val classNameFieldVisibility = if (adoptedClassSelection.isDefined) Some(new PointerWithEvents(true)) else None

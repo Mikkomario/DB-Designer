@@ -1,5 +1,6 @@
 package dbd.client.vc
 
+import utopia.reflection.component.context.TextContextLike
 import utopia.reflection.component.swing.label.TextLabel
 import utopia.reflection.container.swing.Stack
 import utopia.reflection.localization.LocalizedString
@@ -18,7 +19,7 @@ object GroupHeader
 	 * @param context Component creation context
 	 * @return A new header component
 	 */
-	def apply(headerName: LocalizedString)(implicit context: ComponentContext) =
+	def apply(headerName: LocalizedString)(implicit context: TextContextLike) =
 		Stack.buildRowWithContext(isRelated = true) { row =>
 			row += TextLabel.contextual(headerName, isHint = true)
 			row += SeparatorLine()

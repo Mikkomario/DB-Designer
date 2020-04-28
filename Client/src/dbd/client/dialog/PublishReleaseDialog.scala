@@ -2,15 +2,10 @@ package dbd.client.dialog
 
 import utopia.reflection.localization.LocalString._
 import dbd.mysql.model.VersionNumber
-import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.swing.label.TextLabel
 import utopia.reflection.component.swing.{FilterDocument, TextField}
-import utopia.reflection.localization.Localizer
-import utopia.reflection.shape.Margins
 import utopia.reflection.text.Regex
-import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
-
-import scala.concurrent.ExecutionContext
+import utopia.reflection.shape.LengthExtensions._
 
 object PublishReleaseDialog
 {
@@ -26,20 +21,20 @@ object PublishReleaseDialog
   * @author Mikko Hilpinen
   * @since 20.2.2020, v0.1
   */
-class PublishReleaseDialog(latestVersionNumber: Option[VersionNumber])
-						  (implicit colorScheme: ColorScheme, baseCB: ComponentContextBuilder, margins: Margins,
-						   exc: ExecutionContext, localizer: Localizer) extends InputDialog[Option[VersionNumber]]
+class PublishReleaseDialog(latestVersionNumber: Option[VersionNumber]) extends InputDialog[Option[VersionNumber]]
 {
 	import PublishReleaseDialog._
+	import dbd.client.view.DefaultContext._
 	
 	// ATTRIBUTES	----------------------------
 	
-	private implicit val baseContext: ComponentContext = baseCB.result
+	private val textContext = baseContext.inContextWithBackground(dialogBackground).forTextComponents()
 	
-	private val numberField = TextField.contextual(FilterDocument(versionNumberFilter),
-		latestVersionNumber.map { _.next(1).toString }.getOrElse("v1"),
-		Some("Eg. v1.2.3"), Some(versionNumberRegex))
-	
+	private val numberField = textContext.forGrayFields.use { implicit c =>
+		TextField.contextual(standardInputWidth.downscaling, FilterDocument(versionNumberFilter),
+			latestVersionNumber.map { _.next(1).toString }.getOrElse("v1"), Some("Eg. v1.2.3"),
+			Some(versionNumberRegex))
+	}
 	
 	// IMPLEMENTED	----------------------------
 	
@@ -48,8 +43,9 @@ class PublishReleaseDialog(latestVersionNumber: Option[VersionNumber])
 		val inputRow = InputRowInfo("Version Number", numberField)
 		latestVersionNumber match
 		{
-			case Some(latest) => Vector(inputRow, InputRowInfo("Latest",
-				TextLabel.contextual(latest.toString.noLanguageLocalizationSkipped)))
+			case Some(latest) =>
+				val latestLabel = textContext.use { implicit c => TextLabel.contextual(latest.toString.noLanguageLocalizationSkipped) }
+				Vector(inputRow, InputRowInfo("Latest", latestLabel))
 			case None => Vector(inputRow)
 		}
 	}

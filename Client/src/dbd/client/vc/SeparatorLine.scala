@@ -3,11 +3,11 @@ package dbd.client.vc
 import utopia.genesis.color.Color
 import utopia.genesis.shape.shape2D.{Bounds, Line}
 import utopia.genesis.util.Drawer
+import utopia.reflection.component.context.TextContextLike
 import utopia.reflection.component.drawing.template.CustomDrawer
 import utopia.reflection.component.drawing.template.DrawLevel.Normal
 import utopia.reflection.component.swing.label.EmptyLabel
 import utopia.reflection.shape.StackSize
-import utopia.reflection.util.ComponentContext
 
 /**
   * Used for creating components that separate items with a line
@@ -20,7 +20,7 @@ object SeparatorLine
 	  * Creates a new separator line
 	  * @param context Component creation context
 	  */
-	def apply()(implicit context: ComponentContext) =
+	def apply()(implicit context: TextContextLike) =
 	{
 		val emptyLabel = new EmptyLabel
 		val sizedLabel = emptyLabel.withStackSize(StackSize.any.withLowPriority)

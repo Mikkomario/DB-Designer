@@ -6,22 +6,16 @@ import dbd.client.vc.GroupHeader
 import dbd.core.model.existing.Attribute
 import dbd.core.model.partial.NewAttribute
 import utopia.flow.datastructure.mutable.PointerWithEvents
-import utopia.genesis.color.Color
 import utopia.genesis.shape.Axis.X
 import utopia.genesis.shape.shape2D.Direction2D
-import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Refreshable
+import utopia.reflection.component.context.ColorContext
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
 import utopia.reflection.component.swing.button.ImageAndTextButton
 import utopia.reflection.container.stack.segmented.SegmentedGroup
 import utopia.reflection.container.swing.Stack
 import utopia.reflection.controller.data.ContentManager
-import utopia.reflection.localization.Localizer
 import utopia.reflection.shape.LengthExtensions._
-import utopia.reflection.shape.Margins
-import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
-
-import scala.concurrent.ExecutionContext
 
 /**
  * Displays a number of class attributes
@@ -29,33 +23,39 @@ import scala.concurrent.ExecutionContext
  * @since 11.1.2020, v0.1
  */
 class AttributesVC(initialClassId: Int, initialAttributes: Vector[Attribute] = Vector(),
-				   classManager: ClassDisplayManager, parentBackground: Color)
-				  (implicit baseCB: ComponentContextBuilder, margins: Margins, colorScheme: ColorScheme,
-				   defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
+				   classManager: ClassDisplayManager)(implicit context: ColorContext)
 	extends StackableAwtComponentWrapperWrapper with Refreshable[(Int, Vector[Attribute])]
 {
 	// ATTRIBUTES	-----------------------
 	
-	private var classId = initialClassId
+	import dbd.client.view.DefaultContext._
 	
-	private implicit val baseContext: ComponentContext = baseCB.result
+	private implicit val languageCode: String = "en"
+	
+	private var classId = initialClassId
 	
 	private val segmentGroup = new SegmentedGroup(X)
 	private val attributesStack = Stack.column[AttributeRowVC](margin = margins.small.downscaling)
 	
 	private val view = Stack.buildColumnWithContext(isRelated = true) { mainStack =>
-		mainStack += GroupHeader("Attributes")
-		mainStack += attributesStack
-		mainStack += ImageAndTextButton.contextual(Icons.addBox.forLightButtons, "Add Attribute")(() =>
-		{
-			parentWindow.foreach { window =>
-				// Remembers the class for which the attribute is being added
-				val editedClassId = classId
-				new EditAttributeDialog().display(window).foreach { _.foreach { added =>
-					classManager.addNewAttribute(editedClassId, NewAttribute(added))
-				} }
+		context.forTextComponents().use { implicit txtC =>
+			mainStack += GroupHeader("Attributes")
+			mainStack += attributesStack
+			val addButton = txtC.forSecondaryColorButtons.use { implicit btnC =>
+				ImageAndTextButton.contextual(Icons.addBox.inButton, "Add Attribute")
+				{
+					parentWindow.foreach { window =>
+						// Remembers the class for which the attribute is being added
+						val editedClassId = classId
+						new EditAttributeDialog().display(window).foreach { _.foreach { added =>
+								classManager.addNewAttribute(editedClassId, NewAttribute(added))
+							}
+						}
+					}
+				}.alignedToSide(Direction2D.Right, useLowPriorityLength = true)
 			}
-		}).alignedToSide(Direction2D.Right, useLowPriorityLength = true)
+			mainStack += addButton
+		}
 	}
 	
 	
@@ -95,7 +95,7 @@ class AttributesVC(initialClassId: Int, initialAttributes: Vector[Attribute] = V
 		override def displays = attributesStack.components
 		
 		override protected def addDisplaysFor(values: Vector[Attribute], index: Int) = attributesStack.insertMany(values.map {
-			new AttributeRowVC(segmentGroup, _, classManager, parentBackground) }, index)
+			new AttributeRowVC(segmentGroup, _, classManager) }, index)
 		
 		override protected def dropDisplaysAt(range: Range) = attributesStack.removeComponentsIn(range)
 			.foreach { _.unregister() }

@@ -5,13 +5,10 @@ import dbd.client.view.Fields
 import dbd.core.model.enumeration.AttributeType
 import dbd.core.model.partial.NewAttributeConfiguration
 import dbd.core.model.existing.Attribute
-import utopia.reflection.color.ColorScheme
+import utopia.reflection.component.context.ButtonContext
 import utopia.reflection.component.swing.{Switch, TextField}
-import utopia.reflection.localization.{DisplayFunction, Localizer}
-import utopia.reflection.shape.Margins
-import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
-
-import scala.concurrent.ExecutionContext
+import utopia.reflection.localization.DisplayFunction
+import utopia.reflection.shape.LengthExtensions._
 
 /**
  * Used for editing and adding new attributes
@@ -19,21 +16,23 @@ import scala.concurrent.ExecutionContext
  * @since 12.1.2020, v0.1
  */
 class EditAttributeDialog(attributeToEdit: Option[Attribute] = None)
-						 (implicit baseCB: ComponentContextBuilder, defaultLanguageCode: String, localizer: Localizer,
-						  margins: Margins, colorScheme: ColorScheme, exc: ExecutionContext)
 	extends InputDialog[Option[NewAttributeConfiguration]]
 {
+	import dbd.client.view.DefaultContext._
+	
 	// ATTRIBUTES	-----------------------
 	
-	private implicit val baseContext: ComponentContext = baseCB.result
+	private implicit val languageCode: String = "en"
+	private implicit val context: ButtonContext = baseContext.inContextWithBackground(dialogBackground)
+		.forTextComponents().forGrayFields
 	
-	private val nameField = TextField.contextual(initialText = attributeToEdit.map { _.configuration.name }.getOrElse(""),
+	private val nameField = TextField.contextual(standardInputWidth.any, initialText = attributeToEdit.map { _.configuration.name }.getOrElse(""),
 		prompt = Some("Name for the attribute"))
 	private val typeSelectionField = Fields.searchFromWithIcons[AttributeType]("No data type matching '%s'",
-		"Select a data type", DisplayFunction.localized(), colorScheme.gray.light, AttributeType.values) { t =>
+		"Select a data type", DisplayFunction.localized(), AttributeType.values) { t =>
 		Icons.forAttributeType(t) }
-	private val optionalSwitch = Switch.contextual
-	private val searchKeySwitch = Switch.contextual
+	private val optionalSwitch = Switch.contextual(switchWidth)
+	private val searchKeySwitch = Switch.contextual(switchWidth)
 	
 	
 	// INITIAL CODE	-----------------------

@@ -1,45 +1,44 @@
 package dbd.client.vc
 
 import utopia.reflection.shape.LengthExtensions._
-import dbd.client.model.Fonts
 import dbd.client.vc.MainView.ClassStructure
 import dbd.client.vc.structure.ClassesVC
 import dbd.client.vc.version.ReleasesVC
 import utopia.genesis.shape.Axis.X
 import utopia.genesis.shape.shape2D.Direction2D
-import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Refreshable
 import utopia.reflection.component.swing.{StackableAwtComponentWrapperWrapper, TabSelection}
 import utopia.reflection.container.swing.Stack.AwtStackable
 import utopia.reflection.container.swing.{AwtContainerRelated, Stack, SwitchPanel}
-import utopia.reflection.localization.{DisplayFunction, LocalString, Localizer}
-import utopia.reflection.shape.{Margins, StackLength}
-import utopia.reflection.util.{ComponentContextBuilder, Screen}
-
-import scala.concurrent.ExecutionContext
+import utopia.reflection.localization.{DisplayFunction, LocalString}
+import utopia.reflection.shape.StackLength
+import utopia.reflection.util.Screen
 
 /**
   * This VC controls the main view
   * @author Mikko Hilpinen
   * @since 1.2.2020, v0.1
   */
-class MainVC(implicit baseCB: ComponentContextBuilder, exc: ExecutionContext, localizer: Localizer, margins: Margins,
-			 fonts: Fonts, colorScheme: ColorScheme)
-	extends StackableAwtComponentWrapperWrapper with AwtContainerRelated
+class MainVC extends StackableAwtComponentWrapperWrapper with AwtContainerRelated
 {
+	import dbd.client.view.DefaultContext._
+	
 	// ATTRIBUTES	-----------------------
 	
-	private val dbVC = new DatabaseSelectionVC(colorScheme.primary.dark.defaultTextColor)
+	private val headersContext = baseContext.inContextWithBackground(colorScheme.primary.dark)
 	
-	private val mainTab = TabSelection.contextual[MainView](DisplayFunction.localized[MainView] { _.name }, MainView.values,
-		margins.small)(baseCB.withColors(colorScheme.primary).withHighlightColor(colorScheme.secondary.light).mapInsets {
-		_.mapAxis(X) { _.expanding } }.result)
+	private val dbVC = new DatabaseSelectionVC()(headersContext)
+	
+	private val mainTab = headersContext.forTextComponents().mapInsets { _.mapAxis(X) { _.expanding } }
+		.forCustomColorButtons(colorScheme.primary).use { implicit tabC =>
+			TabSelection.contextual[MainView](DisplayFunction.localized[MainView] { _.name }, MainView.values)
+	}
 	private val mainContentPanel = new SwitchPanel[AwtStackable with Refreshable[Int]]
 	
 	private val view = Stack.buildColumn(margin = 0.fixed) { stack =>
 		// Adds header that contains the database selection
 		stack += dbVC.alignedToSide(Direction2D.Left, useLowPriorityLength = true).framed(
-			margins.medium.downscaling x StackLength(margins.small, margins.medium), colorScheme.primary.dark)
+			margins.medium.downscaling x StackLength(margins.small, margins.medium), headersContext.containerBackground)
 		// Adds the main content
 		stack += mainTab
 		stack += mainContentPanel
@@ -71,9 +70,7 @@ private sealed trait MainView
 {
 	val name: LocalString
 	
-	def constructView(currentDatabaseId: Int)
-					 (implicit margins: Margins, baseCB: ComponentContextBuilder, colorScheme: ColorScheme,
-					  localizer: Localizer, exc: ExecutionContext): AwtStackable with Refreshable[Int]
+	def constructView(currentDatabaseId: Int): AwtStackable with Refreshable[Int]
 }
 
 private object MainView
@@ -84,19 +81,14 @@ private object MainView
 	{
 		override val name = "Classes"
 		
-		override def constructView(currentDatabaseId: Int)
-								  (implicit margins: Margins, baseCB: ComponentContextBuilder, colorScheme: ColorScheme,
-								   localizer: Localizer, exc: ExecutionContext) =
-			new ClassesVC(Screen.height * 0.7, currentDatabaseId)
+		override def constructView(currentDatabaseId: Int) = new ClassesVC(Screen.height * 0.7, currentDatabaseId)
 	}
 	
 	case object Releases extends MainView
 	{
 		override val name = "Releases"
 		
-		override def constructView(currentDatabaseId: Int)
-								  (implicit margins: Margins, baseCB: ComponentContextBuilder, colorScheme: ColorScheme,
-								   localizer: Localizer, exc: ExecutionContext) = new ReleasesVC(currentDatabaseId)
+		override def constructView(currentDatabaseId: Int) = new ReleasesVC(currentDatabaseId)
 	}
 	
 	val values = Vector(ClassStructure, Releases)

@@ -8,8 +8,8 @@ import dbd.core.model.existing.Attribute
 import utopia.genesis.color.Color
 import utopia.genesis.image.Image
 import utopia.genesis.shape.shape2D.Line
-import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Refreshable
+import utopia.reflection.component.context.ColorContext
 import utopia.reflection.component.drawing.template.{CustomDrawer, DrawLevel}
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
 import utopia.reflection.component.swing.button.ImageButton
@@ -18,35 +18,30 @@ import utopia.reflection.container.stack.StackLayout.Center
 import utopia.reflection.container.stack.segmented.SegmentedGroup
 import utopia.reflection.container.swing.SegmentedRow
 import utopia.reflection.localization.LocalString._
-import utopia.reflection.localization.Localizer
 import utopia.reflection.shape.LengthExtensions._
-import utopia.reflection.shape.Margins
-import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
-
-import scala.concurrent.ExecutionContext
 
 /**
  * Displays attribute's information on a row
  * @author Mikko Hilpinen
  * @since 11.1.2020, v0.1
  */
-class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attribute, classManager: ClassDisplayManager,
-					 parentBackground: Color)
-					(implicit baseCB: ComponentContextBuilder, margins: Margins, colorScheme: ColorScheme,
-					 defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
+class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attribute, classManager: ClassDisplayManager)
+					(implicit context: ColorContext)
 	extends StackableAwtComponentWrapperWrapper with Refreshable[Attribute]
 {
 	// ATTRIBUTES	----------------------
 	
+	import dbd.client.view.DefaultContext._
+	
+	private implicit val languageCode: String = "en"
+	
 	private var _content = initialAttribute
 	
-	private implicit val baseContext: ComponentContext = baseCB.result
-	
 	private val imageLabel = ImageLabel.contextual(iconForType(initialAttribute.configuration.dataType))
-	private val attNameLabel = TextLabel.contextual(initialAttribute.configuration.name.noLanguageLocalizationSkipped)(
-		baseCB.mapInsets { _.mapRight { _.expanding } }.result)
-	private val buttonColor = colorScheme.secondary.forBackground(parentBackground)
-	private val editAttributeButton = ImageButton.contextual(Icons.edit.forButtonWithoutText(buttonColor)) { () =>
+	private val attNameLabel = context.forTextComponents().mapInsets { _.mapRight { _.expanding } }.use { implicit labelC =>
+		TextLabel.contextual(initialAttribute.configuration.name.noLanguageLocalizationSkipped)
+	}
+	private val editAttributeButton = ImageButton.contextual(Icons.edit.asIndividualButton) {
 		parentWindow.foreach { window =>
 			val attributeToEdit = content
 			new EditAttributeDialog(Some(attributeToEdit)).display(window).foreach { _.foreach { edited =>
@@ -55,7 +50,7 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 		}
 	}
 	// TODO: WET WET
-	private val deleteAttributeButton = ImageButton.contextual(Icons.close.forButtonWithoutText(buttonColor)) { () =>
+	private val deleteAttributeButton = ImageButton.contextual(Icons.close.asIndividualButton) {
 		parentWindow.foreach { window =>
 			val attributeToDelete = content
 			// Will not delete the attribute if it's used in an owned link

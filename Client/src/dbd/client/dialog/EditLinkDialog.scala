@@ -7,16 +7,14 @@ import dbd.core.model.enumeration.LinkType
 import dbd.core.model.existing.{Attribute, Class, LinkConfiguration}
 import dbd.core.model.partial.NewLinkConfiguration
 import utopia.flow.datastructure.mutable.PointerWithEvents
-import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Focusable
+import utopia.reflection.component.context.ButtonContext
 import utopia.reflection.component.swing.TextField
 import utopia.reflection.container.swing.Stack.AwtStackable
-import utopia.reflection.localization.{DisplayFunction, LocalizedString, Localizer}
-import utopia.reflection.shape.Margins
-import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
+import utopia.reflection.localization.{DisplayFunction, LocalizedString}
+import utopia.reflection.shape.LengthExtensions._
 
 import scala.collection.immutable.HashMap
-import scala.concurrent.ExecutionContext
 
 /**
  * Used for adding & editing links
@@ -24,25 +22,24 @@ import scala.concurrent.ExecutionContext
  * @since 21.1.2020, v0.1
  */
 class EditLinkDialog(linkToEdit: Option[LinkConfiguration], linkingClass: Class, linkableClasses: Vector[Class])
-					(implicit baseCB: ComponentContextBuilder, colorScheme: ColorScheme, margins: Margins,
-					 exc: ExecutionContext, localizer: Localizer)
 	extends InputDialog[Option[NewLinkConfiguration]]
 {
 	// ATTRIBUTES	-----------------------
 	
+	import dbd.client.view.DefaultContext._
+	
 	private implicit val language: String = "en"
-	private implicit val baseContext: ComponentContext = baseCB.result
+	private implicit val context: ButtonContext = baseContext.inContextWithBackground(dialogBackground)
+		.forTextComponents().forGrayFields
 	
 	private val mapKeyVisibilityPointer = new PointerWithEvents[Boolean](false)
-	private val fieldBackground = colorScheme.gray.light
 	
 	private val classSelection = Fields.searchFrom[Class]("No class with name: '%s'",
-		"Select linked class", DisplayFunction.noLocalization[Class] { _.name }, fieldBackground)
+		"Select linked class", DisplayFunction.noLocalization[Class] { _.name })
 	private val linkOriginSelection = Fields.dropDown("No choices available", "Select link origin",
 		DisplayFunction.functionToDisplayFunction[Boolean] { isThisClass =>
 			if (isThisClass) linkingClass.name.noLanguageLocalizationSkipped else classSelection.value.map {
-				_.name.noLanguageLocalizationSkipped }.getOrElse("The other class") }, fieldBackground,
-		Vector(true, false))
+				_.name.noLanguageLocalizationSkipped }.getOrElse("The other class") }, Vector(true, false))
 	private val linkTypeSelection = Fields.searchFromWithIcons[LinkType]("No link type named '%s'", "Select link type",
 		DisplayFunction[LinkType] { _.nameWithClassSlots } { local =>
 			// Link type display depends from which class was selected as the link origin
@@ -55,14 +52,14 @@ class EditLinkDialog(linkToEdit: Option[LinkConfiguration], linkingClass: Class,
 				else
 					otherClassName -> myClassName
 			}
-			local.localized.interpolated(HashMap("origin" -> originName, "target" -> targetName)) }, fieldBackground,
+			local.localized.interpolated(HashMap("origin" -> originName, "target" -> targetName)) },
 		LinkType.values) { lType => Icons.forLinkType(lType.category) }
 	
 	private val mapKeySelection = Fields.searchFromWithIcons[Attribute]("No attribute matching '%s'",
-		"Select map key", DisplayFunction.noLocalization[Attribute] { a => a.name }, fieldBackground) {
+		"Select map key", DisplayFunction.noLocalization[Attribute] { a => a.name }) {
 		a => Icons.forAttributeType(a.dataType) }
-	private val localNickField = TextField.contextual(prompt = Some("Link name, optional"))
-	private val otherNickField = TextField.contextual(prompt = Some("Link name, optional"))
+	private val localNickField = TextField.contextual(standardInputWidth.any, prompt = Some("Link name, optional"))
+	private val otherNickField = TextField.contextual(standardInputWidth.any, prompt = Some("Link name, optional"))
 	
 	
 	// INITIAL CODE	-----------------------

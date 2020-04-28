@@ -19,14 +19,10 @@ import utopia.flow.util.TimeExtensions._
 import utopia.flow.util.FileExtensions._
 import dbd.mysql.model.existing.Release
 import utopia.flow.datastructure.mutable.PointerWithEvents
-import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.swing.TabSelection
-import utopia.reflection.localization.{DisplayFunction, LocalString, LocalizedString, Localizer}
-import utopia.reflection.shape.Margins
-import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
+import utopia.reflection.localization.{DisplayFunction, LocalString, LocalizedString}
 
 import scala.collection.immutable.VectorBuilder
-import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
 object ExportSqlDialog
@@ -85,17 +81,14 @@ object ExportSqlDialog
   * @author Mikko Hilpinen
   * @since 23.2.2020, v0.1
   */
-class ExportSqlDialog(release: Release)
-					 (implicit baseCB: ComponentContextBuilder, colorScheme: ColorScheme, margins: Margins,
-					  localizer: Localizer, exc: ExecutionContext) extends InputDialog[Unit]
+class ExportSqlDialog(release: Release) extends InputDialog[Unit]
 {
 	import ExportSqlDialog._
 	import ExportSqlDialog.ExportMode._
 	import ExportSqlDialog.FileAction._
+	import dbd.client.view.DefaultContext._
 	
 	// ATTRIBUTES	-----------------------
-	
-	private val fieldBackground = colorScheme.gray.light
 	
 	private val previousReleases = ConnectionPool.tryWith { implicit connection =>
 		Releases.forDatabaseWithId(release.databaseId).before(release.released, 25)
@@ -107,7 +100,6 @@ class ExportSqlDialog(release: Release)
 			Vector()
 	}
 	
-	private implicit val baseContext: ComponentContext = baseCB.result
 	private val changeOptionIsAvailable = previousReleases.nonEmpty
 	private val changeVisibilityPointer =
 	{
@@ -117,35 +109,40 @@ class ExportSqlDialog(release: Release)
 			None
 	}
 	
+	private val textContext = baseContext.inContextWithBackground(dialogBackground).forTextComponents()
+	
 	private val selectModeTab =
 	{
 		if (changeOptionIsAvailable)
 		{
-			val tab = TabSelection.contextual[ExportMode](DisplayFunction.localized[ExportMode] { _.name }, ExportMode.values,
-				margins.small)(baseCB.withColors(colorScheme.primary).withHighlightColor(
-				colorScheme.secondary.forBackground(colorScheme.primary)).result)
+			val tab = textContext.forPrimaryColorButtons.use { implicit c =>
+				TabSelection.contextual[ExportMode](DisplayFunction.localized[ExportMode] { _.name }, ExportMode.values)
+			}
 			tab.selectOne(Changes)
 			Some(tab)
 		}
 		else
 			None
 	}
-	private val baseVersionSelectDD =
-	{
-		if (changeOptionIsAvailable)
+	private val (baseVersionSelectDD, actionDD) = textContext.forGrayFields.use { implicit ddContext =>
+		val baseVersionSelectDD =
 		{
-			val dd = Fields.dropDown[Release]("No releases available", "Select Base Version",
-				DisplayFunction.noLocalization[Release] { r =>
-					s"${r.versionNumber.toString} (${r.released.toStringWith(dateFormatter)})" }, fieldBackground,
-				previousReleases)
-			dd.selectOne(previousReleases.head)
-			Some(dd)
+			if (changeOptionIsAvailable)
+			{
+				val dd = Fields.dropDown[Release]("No releases available", "Select Base Version",
+					DisplayFunction.noLocalization[Release] { r =>
+						s"${r.versionNumber.toString} (${r.released.toStringWith(dateFormatter)})" }, previousReleases)
+				dd.selectOne(previousReleases.head)
+				Some(dd)
+			}
+			else
+				None
 		}
-		else
-			None
+		val actionDD = Fields.dropDown[FileAction]("No actions available", "Select Action",
+			DisplayFunction.localized[FileAction] { _.name }, FileAction.values)
+		
+		baseVersionSelectDD -> actionDD
 	}
-	private val actionDD = Fields.dropDown[FileAction]("No actions available", "Select Action",
-		DisplayFunction.localized[FileAction] { _.name }, fieldBackground, FileAction.values)
 	
 	
 	// INITIAL CODE	-----------------------

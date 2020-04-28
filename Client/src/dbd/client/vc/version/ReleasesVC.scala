@@ -9,39 +9,32 @@ import dbd.core.database.ConnectionPool
 import dbd.core.util.Log
 import dbd.mysql.controller.GenerateTableStructure
 import utopia.genesis.shape.shape2D.Direction2D.Up
-import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Refreshable
+import utopia.reflection.component.context.ColorContext
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
 import utopia.reflection.container.swing.Stack
 import utopia.reflection.controller.data.ContainerContentManager
-import utopia.reflection.localization.Localizer
-import utopia.reflection.shape.Margins
-import utopia.reflection.util.ComponentContextBuilder
-
-import scala.concurrent.ExecutionContext
 
 /**
   * Used for interacting with database releases
   * @author Mikko Hilpinen
   * @since 22.2.2020, v0.1
   */
-class ReleasesVC(initialDatabaseId: Int)
-				(implicit baseCB: ComponentContextBuilder, margins: Margins, colorScheme: ColorScheme,
-				 localizer: Localizer, exc: ExecutionContext)
-	extends StackableAwtComponentWrapperWrapper with Refreshable[Int]
+class ReleasesVC(initialDatabaseId: Int) extends StackableAwtComponentWrapperWrapper with Refreshable[Int]
 {
+	import dbd.client.view.DefaultContext._
+	
 	// ATTRIBUTES	-------------------------
 	
 	private var databaseId = initialDatabaseId
 	
-	private val backgroundColor = colorScheme.primary.light
+	private implicit val context: ColorContext = baseContext.inContextWithBackground(colorScheme.primary.light)
 	private val releasesStack = Stack.column[ReleaseVC](margins.medium.downscaling)
 	private val releaseManager = ContainerContentManager.forImmutableStates[DisplayedRelease, ReleaseVC](releasesStack) {
-		(a, b) => a.release.map { _.id } == b.release.map { _.id } } {
-		r => new ReleaseVC(r, backgroundColor)({ () => onUploadPressed() }) }
+		(a, b) => a.release.map { _.id } == b.release.map { _.id } } { r => new ReleaseVC(r)({ onUploadPressed() }) }
 	
 	private val view = releasesStack.alignedToSide(Up, useLowPriorityLength = true)
-		.framed(margins.medium.any.square, backgroundColor)
+		.framed(margins.medium.any.square, context.containerBackground)
 	
 	
 	// INITIAL CODE	-------------------------

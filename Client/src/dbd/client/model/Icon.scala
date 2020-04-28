@@ -4,6 +4,7 @@ import utopia.genesis.color.Color
 import utopia.genesis.image.Image
 import utopia.reflection.color.ComponentColor
 import utopia.reflection.color.TextColorStandard.{Dark, Light}
+import utopia.reflection.component.context.{ButtonContextLike, ColorContextLike, TextContextLike}
 import utopia.reflection.component.swing.button.ButtonImageSet
 
 /**
@@ -45,6 +46,32 @@ case class Icon(private val original: Image)
 			this
 		else
 			copy(original = newIcon)
+	}
+	
+	/**
+	  * @param context Component creation context
+	  * @return A copy of this icon as an image with a single color. The color matches contextual text color.
+	  */
+	def singleColorImage(implicit context: TextContextLike) = asImageWithColor(context.textColor)
+	
+	/**
+	  * @param context Button creation context
+	  * @return A version of this icon suitable for this button's background
+	  */
+	def inButton(implicit context: ButtonContextLike) = context.buttonColor.textColorStandard match
+	{
+		case Dark => forLightButtons
+		case Light => forDarkButtons
+	}
+	
+	/**
+	  * @param context Context for the button
+	  * @return An button image set suitable for that background, based on this icon
+	  */
+	def asIndividualButton(implicit context: ColorContextLike) = context.containerBackground.textColorStandard match
+	{
+		case Dark => forLightButtons
+		case Light => forDarkButtons
 	}
 	
 	

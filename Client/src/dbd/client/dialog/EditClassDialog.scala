@@ -2,31 +2,28 @@ package dbd.client.dialog
 
 import dbd.core.model.existing.ClassInfo
 import dbd.core.model.partial.NewClassInfo
-import utopia.reflection.color.ColorScheme
+import utopia.reflection.component.context.ButtonContext
 import utopia.reflection.component.swing.{Switch, TextField}
-import utopia.reflection.localization.Localizer
-import utopia.reflection.shape.Margins
-import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
-
-import scala.concurrent.ExecutionContext
+import utopia.reflection.shape.LengthExtensions._
 
 /**
  * Used for editing class info
  * @author Mikko Hilpinen
  * @since 15.1.2020, v0.1
  */
-class EditClassDialog(classToEdit: Option[ClassInfo] = None)
-					 (implicit baseCB: ComponentContextBuilder, margins: Margins, colorScheme: ColorScheme,
-					  exc: ExecutionContext, defaultLanguageCode: String, localizer: Localizer)
-	extends InputDialog[Option[NewClassInfo]]
+class EditClassDialog(classToEdit: Option[ClassInfo] = None) extends InputDialog[Option[NewClassInfo]]
 {
 	// ATTRIBUTES	---------------------
 	
-	private implicit val componentContext: ComponentContext = baseCB.result
+	import dbd.client.view.DefaultContext._
 	
-	private val classNameField = TextField.contextual(initialText = classToEdit.map { _.name }.getOrElse(""),
+	private implicit val languageCode: String = "en"
+	private implicit val context: ButtonContext = baseContext.inContextWithBackground(dialogBackground)
+		.forTextComponents().forGrayFields
+	
+	private val classNameField = TextField.contextual(standardInputWidth.any, initialText = classToEdit.map { _.name }.getOrElse(""),
 		prompt = Some("Name for the class"))
-	private val isMutableSwitch = Switch.contextual
+	private val isMutableSwitch = Switch.contextual(switchWidth)
 	
 	
 	// INITIAL CODE	---------------------

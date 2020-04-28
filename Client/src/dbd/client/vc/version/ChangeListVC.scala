@@ -2,8 +2,8 @@ package dbd.client.vc.version
 
 import dbd.client.controller.Icons
 import dbd.client.model.ChangedItems
-import utopia.reflection.color.ComponentColor
 import utopia.reflection.component.Refreshable
+import utopia.reflection.component.context.ColorContext
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
 import utopia.reflection.component.swing.button.ImageButton
 import utopia.reflection.component.swing.label.TextLabel
@@ -13,8 +13,6 @@ import utopia.reflection.container.swing.{Stack, SwitchPanel}
 import utopia.reflection.localization.LocalString._
 import utopia.reflection.localization.LocalizedString
 import utopia.reflection.shape.LengthExtensions._
-import utopia.reflection.shape.Margins
-import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
 
 import scala.collection.immutable.VectorBuilder
 
@@ -24,22 +22,22 @@ import scala.collection.immutable.VectorBuilder
   * @since 2.2.2020, v0.1
   */
 class ChangeListVC(initialList: ChangedItems, initialIsExpanded: Boolean, initialTitle: LocalizedString,
-				   maxItemsPerRow: Int, backgroundUsed: ComponentColor)
-				  (implicit baseCB: ComponentContextBuilder, margins: Margins)
+				   maxItemsPerRow: Int)(implicit context: ColorContext)
 	extends StackableAwtComponentWrapperWrapper with Refreshable[(LocalizedString, ChangedItems, Boolean)]
 {
+	import dbd.client.view.DefaultContext._
+	
 	// ATTRIBUTES	-----------------------
 	
-	private implicit val baseContext: ComponentContext = baseCB.copy(textColor = backgroundUsed.defaultTextColor).result
-	
 	private val betweenItemsMargin = margins.small.downscaling
+	private val textContext = context.forTextComponents()
 	
 	private var _content = initialList
 	private var _isExpanded = initialIsExpanded
 	
-	private val titleLabel = TextLabel.contextual(initialTitle)
+	private val titleLabel = textContext.use { implicit c => TextLabel.contextual(initialTitle) }
 	private val rowsSwitch = new SwitchPanel[AwtStackable]
-	private val view = Stack.buildRowWithContext(Leading) { stack =>
+	private val view = Stack.buildRowWithContext(layout = Leading) { stack =>
 		stack += titleLabel
 		stack += rowsSwitch
 	}
@@ -103,12 +101,13 @@ class ChangeListVC(initialList: ChangedItems, initialIsExpanded: Boolean, initia
 		val canBeExtended = finalTexts.size < allTexts.size
 		
 		// Creates the row
-		val textLabels = finalTexts.map { t => TextLabel.contextual(t.noLanguageLocalizationSkipped) }
-		val finalItems =
-		{
+		val finalItems = {
+			val textLabels = textContext.use { implicit txtC => finalTexts.map { t =>
+				TextLabel.contextual(t.noLanguageLocalizationSkipped) } }
+			
 			if (canBeExtended)
 			{
-				val expandButton = ImageButton.contextual(Icons.more.forButtonWithoutText(baseContext.textColor)) { () =>
+				val expandButton = ImageButton.contextual(Icons.more.asIndividualButton) {
 					_isExpanded = true
 					updateView()
 				}.alignedToCenter
@@ -145,7 +144,7 @@ class ChangeListVC(initialList: ChangedItems, initialIsExpanded: Boolean, initia
 		
 		// Creates text labels and stacks
 		val rowStacks = rowsBuilder.result().map { rowTexts => Stack.rowWithItems(rowTexts.map {
-			t => TextLabel.contextual(t.noLanguageLocalizationSkipped) }, margin = betweenItemsMargin) }
+			t => TextLabel.contextual(t.noLanguageLocalizationSkipped)(textContext) }, margin = betweenItemsMargin) }
 		
 		// Returns final stack
 		Stack.columnWithItems(rowStacks, margin = margins.small.downscaling)

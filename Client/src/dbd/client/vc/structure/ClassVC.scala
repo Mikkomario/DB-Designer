@@ -11,90 +11,92 @@ import utopia.genesis.event.{ConsumeEvent, MouseButton}
 import utopia.genesis.handling.MouseButtonStateListener
 import utopia.genesis.shape.Axis.Y
 import utopia.genesis.shape.shape2D.Direction2D.Up
-import utopia.reflection.color.ColorScheme
 import utopia.reflection.component.Refreshable
+import utopia.reflection.component.context.ColorContext
 import utopia.reflection.component.drawing.immutable.BorderDrawer
 import utopia.reflection.component.swing.{AnimatedVisibility, StackableAwtComponentWrapperWrapper}
 import utopia.reflection.component.swing.button.{ImageButton, ImageCheckBox}
 import utopia.reflection.component.swing.label.ItemLabel
 import utopia.reflection.container.stack.StackLayout.Center
 import utopia.reflection.container.swing.Stack
-import utopia.reflection.localization.{DisplayFunction, Localizer}
+import utopia.reflection.localization.DisplayFunction
 import utopia.reflection.shape.LengthExtensions._
-import utopia.reflection.shape.{Border, Insets, Margins}
-import utopia.reflection.util.{ComponentContext, ComponentContextBuilder}
-
-import scala.concurrent.ExecutionContext
+import utopia.reflection.shape.{Border, Insets}
 
 /**
  * Displays interactive UI for a class
  * @author Mikko Hilpinen
  * @since 11.1.2020, v0.1
  */
-class ClassVC(initialClass: ParentOrSubClass, classManager: ClassDisplayManager)
-			 (implicit baseCB: ComponentContextBuilder, margins: Margins, colorScheme: ColorScheme,
-			  defaultLanguageCode: String, localizer: Localizer, exc: ExecutionContext)
+class ClassVC(initialClass: ParentOrSubClass, classManager: ClassDisplayManager, parentContext: ColorContext)
 	extends StackableAwtComponentWrapperWrapper with Refreshable[ParentOrSubClass]
 {
 	// ATTRIBUTES	------------------------
 	
-	private implicit val baseContext: ComponentContext = baseCB.result
+	import dbd.client.view.DefaultContext._
 	
 	private var _content = initialClass
 	
-	private val headerBackground = colorScheme.primary.default
-	private val headerButtonColor = colorScheme.secondary.forBackground(headerBackground)
-	private val expandButton = new ImageCheckBox(Icons.expandMore.forButtonWithoutText(headerButtonColor),
-		Icons.expandLess.forButtonWithoutText(headerButtonColor), initialClass.isExpanded)
+	private implicit val languageCode: String = "en"
+	private val headerContext = parentContext.inContextWithBackground(colorScheme.primary.forBackground(
+		parentContext.containerBackground))
+	private val contentContext = parentContext.inContextWithBackground(colorScheme.gray.forBackground(
+		parentContext.containerBackground))
 	
-	private val classNameLabel = ItemLabel.contextual(initialClass.displayedClass.classData,
-		DisplayFunction.noLocalization[Class] { _.info.name })(baseCB.copy(textColor = headerBackground.defaultTextColor).result)
+	private val expandButton = headerContext.use { implicit c => new ImageCheckBox(Icons.expandMore.asIndividualButton,
+		Icons.expandLess.asIndividualButton, initialClass.isExpanded) }
 	
-	private val header = Stack.buildRowWithContext(layout = Center) { headerRow =>
-		headerRow += expandButton
-		headerRow += classNameLabel
-		// Adds edit class button
-		headerRow += ImageButton.contextual(Icons.edit.forButtonWithoutText(headerButtonColor)) { () =>
-			parentWindow.foreach { window =>
-				// Presents different dialog for top-level and sub-level classes
-				_content.data match
-				{
-					case Right(subLevel) =>
-						val (parent, link) = subLevel
-						new EditSubClassDialog(parent, Some(link), classManager).display(window).foreach { _.foreach {
-							case Right(_) => Log.warning("Somehow received add class response from edit sub-class dialog")
-							case Left(editResult) => classManager.editSubClass(link, editResult)
-						} }
-					case Left(topLevel) =>
-						val classToEdit = topLevel
-						new EditClassDialog(Some(classToEdit.info)).display(window).foreach { _.foreach { editedInfo =>
-							classManager.editClass(classToEdit.classData, editedInfo)
-						} }
+	private val classNameLabel = headerContext.forTextComponents().use { implicit c => ItemLabel.contextual(
+		initialClass.displayedClass.classData, DisplayFunction.noLocalization[Class] { _.info.name }) }
+	
+	private val header = headerContext.use { implicit hc =>
+		Stack.buildRowWithContext(layout = Center) { headerRow =>
+			headerRow += expandButton
+			headerRow += classNameLabel
+			// Adds edit class button
+			headerRow += ImageButton.contextual(Icons.edit.asIndividualButton) {
+				parentWindow.foreach { window =>
+					// Presents different dialog for top-level and sub-level classes
+					_content.data match
+					{
+						case Right(subLevel) =>
+							val (parent, link) = subLevel
+							new EditSubClassDialog(parent, Some(link), classManager).display(window).foreach { _.foreach {
+								case Right(_) => Log.warning("Somehow received add class response from edit sub-class dialog")
+								case Left(editResult) => classManager.editSubClass(link, editResult)
+							} }
+						case Left(topLevel) =>
+							val classToEdit = topLevel
+							new EditClassDialog(Some(classToEdit.info)).display(window).foreach { _.foreach { editedInfo =>
+								classManager.editClass(classToEdit.classData, editedInfo)
+							} }
+					}
 				}
 			}
-		}
-		// Adds delete class button
-		headerRow += ImageButton.contextual(Icons.close.forButtonWithoutText(headerButtonColor)) { () =>
-			parentWindow.foreach { window =>
-				val classToDelete = displayedClass
-				DeleteQuestionDialog.forClass(classToDelete.name,
-					classManager.classesAffectedByClassDeletion(classToDelete.classId).toVector).display(window).foreach {
-					if (_) classManager.deleteClass(classToDelete) }
+			// Adds delete class button
+			headerRow += ImageButton.contextual(Icons.close.asIndividualButton) {
+				parentWindow.foreach { window =>
+					val classToDelete = displayedClass
+					DeleteQuestionDialog.forClass(classToDelete.name,
+						classManager.classesAffectedByClassDeletion(classToDelete.classId).toVector).display(window).foreach {
+						if (_) classManager.deleteClass(classToDelete) }
+				}
 			}
-		}
-	}.framed(margins.small.downscaling x margins.small.any, headerBackground)
+		}.framed(margins.small.downscaling x margins.small.any, hc.containerBackground)
+	}
 	
-	private val contentAreaBackground = colorScheme.gray.dark
 	private val attributeSection = new AttributesVC(initialClass.displayedClass.classId,
-		orderedAttributes(initialClass), classManager, contentAreaBackground)
-	private val linksSection = new LinksVC(initialClass.displayedClass, classManager, contentAreaBackground)
-	private val subClassSection = new SubClassesVC(initialClass, classManager)
-	private val classContentView = Stack.buildColumnWithContext() { stack =>
-		stack += attributeSection
-		stack += linksSection
-		stack += subClassSection
-	}.framed(margins.medium.downscaling.square, colorScheme.gray.dark)
-	private val animatedClassContent = new AnimatedVisibility(classContentView, baseContext.actorHandler, Y,
+		orderedAttributes(initialClass), classManager)(contentContext)
+	private val linksSection = new LinksVC(initialClass.displayedClass, classManager)(contentContext)
+	private val subClassSection = new SubClassesVC(initialClass, classManager)(contentContext)
+	private val classContentView = contentContext.use { implicit c =>
+		Stack.buildColumnWithContext() { stack =>
+			stack += attributeSection
+			stack += linksSection
+			stack += subClassSection
+		}.framed(margins.medium.downscaling.square, c.containerBackground)
+	}
+	private val animatedClassContent = AnimatedVisibility.contextual(classContentView, Y,
 		isShownInitially = initialClass.isExpanded)
 	
 	private val view = Stack.columnWithItems(Vector(header, animatedClassContent), margin = 0.fixed)
