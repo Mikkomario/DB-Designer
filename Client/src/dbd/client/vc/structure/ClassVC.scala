@@ -46,8 +46,8 @@ class ClassVC(initialClass: ParentOrSubClass, classManager: ClassDisplayManager,
 	private val expandButton = headerContext.use { implicit c => new ImageCheckBox(Icons.expandMore.asIndividualButton,
 		Icons.expandLess.asIndividualButton, initialClass.isExpanded) }
 	
-	private val classNameLabel = headerContext.forTextComponents().use { implicit c => ItemLabel.contextual(
-		initialClass.displayedClass.classData, DisplayFunction.noLocalization[Class] { _.info.name }) }
+	private val classNameLabel = headerContext.forTextComponents().mapInsets { _.mapRight { _.expanding } }.use {
+		implicit c => ItemLabel.contextual(initialClass.displayedClass.classData, DisplayFunction.noLocalization[Class] { _.info.name }) }
 	
 	private val header = headerContext.use { implicit hc =>
 		Stack.buildRowWithContext(layout = Center) { headerRow =>

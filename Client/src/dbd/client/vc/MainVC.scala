@@ -29,10 +29,11 @@ class MainVC extends StackableAwtComponentWrapperWrapper with AwtContainerRelate
 	
 	private val dbVC = new DatabaseSelectionVC()(headersContext)
 	
-	private val mainTab = headersContext.forTextComponents().mapInsets { _.mapAxis(X) { _.expanding } }
-		.forCustomColorButtons(colorScheme.primary).use { implicit tabC =>
-			TabSelection.contextual[MainView](DisplayFunction.localized[MainView] { _.name }, MainView.values)
+	private val mainTab = headersContext.forTextComponents().mapInsets { _.mapAxis(X) { _.expanding } }.use { implicit txtC =>
+		TabSelection.contextualWithBackground[MainView](colorScheme.primary,
+			DisplayFunction.localized[MainView] { _.name }, MainView.values)
 	}
+	
 	private val mainContentPanel = new SwitchPanel[AwtStackable with Refreshable[Int]]
 	
 	private val view = Stack.buildColumn(margin = 0.fixed) { stack =>

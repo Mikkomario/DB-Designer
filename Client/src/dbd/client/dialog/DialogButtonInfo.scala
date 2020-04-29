@@ -35,11 +35,11 @@ class DialogButtonInfo[+A](val text: LocalizedString, val icon: Icon, val color:
 	  * @param context Component creation context
 	  * @return Background color that should be used for the button
 	  */
-	def backgroundColor(implicit context: ColorContextLike) = color match
+	def backgroundColor(implicit context: ColorContextLike) = (color match
 	{
 		case Right(isPrimary) => if (isPrimary) context.colorScheme.primary else context.colorScheme.secondary
 		case Left(custom) => custom
-	}
+	}).forBackground(context.containerBackground)
 	
 	/**
 	 * @return Images used with the button
