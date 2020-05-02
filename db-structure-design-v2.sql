@@ -34,7 +34,9 @@ CREATE TABLE user_settings
     created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deprecated_after DATETIME,
 
-    INDEX us_current_user_settings (deprecated_after, user_id),
+    INDEX (name),
+    INDEX (email),
+    INDEX (deprecated_after),
 
     FOREIGN KEY us_u_described_user (user_id)
         REFERENCES `user`(id) ON DELETE CASCADE

@@ -7,4 +7,4 @@ import dbd.core.model.partial.UserSettingsData
   * @author Mikko Hilpinen
   * @since 2.5.2020, v2
   */
-case class UserSettings(id: Int, data: UserSettingsData) extends Stored[UserSettingsData]
+case class UserSettings(id: Int, userId: Int, data: UserSettingsData) extends Stored[UserSettingsData]
