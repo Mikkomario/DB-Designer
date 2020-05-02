@@ -7,6 +7,7 @@ import utopia.flow.generic.ValueConversions._
 import dbd.core.model.existing
 import dbd.core.model.partial.UserSettingsData
 import utopia.flow.datastructure.immutable.{Constant, Model}
+import utopia.vault.database.Connection
 import utopia.vault.model.immutable.StorableWithFactory
 import utopia.vault.nosql.factory.{Deprecatable, StorableFactoryWithValidation}
 
@@ -43,6 +44,19 @@ object UserSettings extends StorableFactoryWithValidation[existing.UserSettings]
 	  * @return A model with only email set
 	  */
 	def withEmail(email: String) = apply(email = Some(email))
+	
+	/**
+	  * Inserts a new set of user settings to the DB (please deprecate old version first)
+	  * @param userId Id of the described user
+	  * @param data New user settings data
+	  * @param connection DB Connection (implicit)
+	  * @return Newly inserted data
+	  */
+	def insert(userId: Int, data: UserSettingsData)(implicit connection: Connection) =
+	{
+		val newId = apply(None, Some(userId), Some(data.name), Some(data.email)).insert().getInt
+		existing.UserSettings(newId, userId, data)
+	}
 }
 
 /**

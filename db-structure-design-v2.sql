@@ -319,7 +319,11 @@ CREATE TABLE invitation_response
 CREATE TABLE client_device
 (
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    creator_id INT,
+
+    FOREIGN KEY cd_u_first_device_user (creator_id)
+        REFERENCES `user`(id) ON DELETE SET NULL
 
 )Engine=InnoDB DEFAULT CHARSET=latin1;
 

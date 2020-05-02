@@ -10,6 +10,16 @@ object Tables
 	// COMPUTED	--------------------------------
 	
 	/**
+	  * @return Table that contains registered languages
+	  */
+	def language = apply("language")
+	
+	/**
+	  * @return Table that contains users
+	  */
+	def user = apply("user")
+	
+	/**
 	  * @return Table for user authentication
 	  */
 	def userAuth = apply("user_authentication")
@@ -18,6 +28,16 @@ object Tables
 	  * @return Table for user settings
 	  */
 	def userSettings = apply("user_settings")
+	
+	/**
+	  * @return Table that links users with languages
+	  */
+	def userLanguage = apply("user_language")
+	
+	/**
+	  * @return Table that registers the devices the clients use
+	  */
+	def clientDevice = apply("client_device")
 	
 	
 	// OTHER	-------------------------------
