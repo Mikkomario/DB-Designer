@@ -39,6 +39,16 @@ object Tables
 	  */
 	def clientDevice = apply("client_device")
 	
+	/**
+	  * @return Table that contains descriptions of various things
+	  */
+	def description = apply("description")
+	
+	/**
+	  * @return A table that contains links between devices and their descriptions
+	  */
+	def deviceDescription = apply("device_description")
+	
 	
 	// OTHER	-------------------------------
 	

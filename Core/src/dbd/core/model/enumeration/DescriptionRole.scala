@@ -1,5 +1,8 @@
 package dbd.core.model.enumeration
 
+import dbd.core.model.error.NoSuchTypeException
+import utopia.flow.util.CollectionExtensions._
+
 /**
   * A common trait for description role values
   * @author Mikko Hilpinen
@@ -32,5 +35,6 @@ object DescriptionRole
 	  * @param id Description role id
 	  * @return a role matching specified id
 	  */
-	def forId(id: Int) = values.find { _.id == id }
+	def forId(id: Int) = values.find { _.id == id }.toTry(
+		new NoSuchTypeException(s"No description role with id $id"))
 }

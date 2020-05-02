@@ -1,9 +1,13 @@
-package dbd.api.database.access
+package dbd.api.database.access.single
 
+import dbd.api.database
 import dbd.api.database.access.id.UserId
 import dbd.api.database.model.UserAuth
 import dbd.api.util.PasswordHash
+import dbd.core.model.existing
+import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
+import utopia.vault.nosql.access.{SingleIdModelAccess, SingleModelAccess}
 import utopia.vault.sql.{Select, Where}
 
 /**
@@ -11,8 +15,15 @@ import utopia.vault.sql.{Select, Where}
   * @author Mikko Hilpinen
   * @since 2.5.2020, v2
   */
-object User
+object User extends SingleModelAccess[existing.User]
 {
+	// IMPLEMENTED	---------------------
+	
+	override def factory = database.model.User
+	
+	override def globalCondition = Some(factory.nonDeprecatedCondition)
+	
+	
 	// OTHER	-------------------------
 	
 	/**
@@ -41,7 +52,7 @@ object User
 	
 	// NESTED	-------------------------
 	
-	class SingleUser(userId: Int)
+	class SingleUser(userId: Int) extends SingleIdModelAccess[existing.User](userId, User.factory)
 	{
 		/**
 		  * @param connection DB Connection (implicit)
