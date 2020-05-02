@@ -18,15 +18,17 @@ object NewUser extends FromModelFactory[NewUser]
 		UserSettingsData(valid("settings").getModel).flatMap { settings =>
 			// Either device id or device name must be provided
 			val deviceId = valid("device_id").int
-			val deviceName = valid("device_name").string.filterNot { _.isEmpty }
-			if (deviceId.isEmpty && deviceName.isEmpty)
-				Failure(new ModelValidationFailedException("Either device_id or device_name must be provided"))
+			val deviceData = valid("device").getModel
+			val deviceName = deviceData("name").string.filterNot { _.isEmpty }
+			val languageId = deviceData("language_id").int
+			if (deviceId.isEmpty && (deviceName.isEmpty || languageId.isEmpty))
+				Failure(new ModelValidationFailedException("Either device_id or device with name and language_id must be provided"))
 			else
 			{
 				val deviceIdOrName = deviceId match
 				{
 					case Some(id) => Right(id)
-					case None => Left(deviceName.get)
+					case None => Left(deviceName.get -> languageId.get)
 				}
 				Success(NewUser(settings, valid("password").getString,
 					valid("language_ids").getVector.flatMap { _.int }, deviceIdOrName))
@@ -42,9 +44,9 @@ object NewUser extends FromModelFactory[NewUser]
   * @param settings Initial user settings
   * @param password Initial user password
   * @param languageIds List of ids of the languages known by the user
-  * @param device Either Right: Existing device id or Left: Device name
+  * @param device Either Right: Existing device id or Left: Device name + language id
   */
-case class NewUser(settings: UserSettingsData, password: String, languageIds: Vector[Int], device: Either[String, Int])
+case class NewUser(settings: UserSettingsData, password: String, languageIds: Vector[Int], device: Either[(String, Int), Int])
 	extends ModelConvertible
 {
 	override def toModel =
@@ -52,7 +54,9 @@ case class NewUser(settings: UserSettingsData, password: String, languageIds: Ve
 		val deviceData: (String, Value) = device match
 		{
 			case Right(deviceId) => "device_id" -> deviceId
-			case Left(deviceName) => "device_name" -> deviceName
+			case Left(deviceNameData) =>
+				val deviceModel = Model(Vector("name" -> deviceNameData._1, "language_id" -> deviceNameData._2))
+				"device" -> deviceModel
 		}
 		Model(Vector("settings" -> settings.toModel, "password" -> password, "language_ids" -> languageIds, deviceData))
 	}

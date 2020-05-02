@@ -346,6 +346,25 @@ CREATE TABLE client_device_description
 
 )Engine=InnoDB DEFAULT CHARSET=latin1;
 
+-- Links users with the devices they have used
+CREATE TABLE client_device_user
+(
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    device_id INT NOT NULL,
+    user_id INT NOT NULL,
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deprecated_after DATETIME,
+
+    INDEX (deprecated_after),
+
+    FOREIGN KEY cdu_cd_used_client_device (device_id)
+        REFERENCES client_device(id) ON DELETE CASCADE,
+
+    FOREIGN KEY cdu_u_device_user (user_id)
+        REFERENCES `user`(id) ON DELETE CASCADE
+
+)Engine=InnoDB DEFAULT CHARSET=latin1;
+
 -- Registers temporary password reset requests, along with their reset codes (these are sent via email)
 CREATE TABLE password_reset_request
 (

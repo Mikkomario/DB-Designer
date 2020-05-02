@@ -28,6 +28,12 @@ object Description extends StorableFactory[existing.Description]
 	// OTHER	-------------------------------------
 	
 	/**
+	  * @param role Description role
+	  * @return A model with only description role set
+	  */
+	def withRole(role: DescriptionRole) = apply(role = Some(role))
+	
+	/**
 	  * Inserts a new description to the DB
 	  * @param data Data to insert
 	  * @param connection DB Connection (implicit)
@@ -49,8 +55,19 @@ case class Description(id: Option[Int] = None, role: Option[DescriptionRole] = N
 					   text: Option[String] = None, authorId: Option[Int] = None)
 	extends StorableWithFactory[existing.Description]
 {
+	// IMPLEMENTED	--------------------------------
+	
 	override def factory = Description
 	
 	override def valueProperties = Vector("id" -> id, "roleId" -> role.map { _.id }, "languageId" -> languageId,
 		"text" -> text, "authorId" -> authorId)
+	
+	
+	// OTHER	------------------------------------
+	
+	/**
+	  * @param languageId Id of description language
+	  * @return A copy of this model with specified language
+	  */
+	def withLanguageId(languageId: Int) = copy(languageId = Some(languageId))
 }

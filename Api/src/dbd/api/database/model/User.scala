@@ -2,17 +2,16 @@ package dbd.api.database.model
 
 import dbd.api.database.Tables
 import dbd.core.model.existing
+import dbd.core.model.existing.UserWithLinks
 import dbd.core.model.partial.UserSettingsData
-import utopia.flow.datastructure.template.{Model, Property}
+import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
-import utopia.vault.model.immutable.{Result, Storable, StorableWithFactory}
-import utopia.vault.nosql.factory.{Deprecatable, FromResultFactory, StorableFactory}
-import utopia.vault.util.ErrorHandling
+import utopia.vault.model.immutable.Storable
+import utopia.vault.nosql.factory.{Deprecatable, LinkedStorableFactory}
+import utopia.vault.sql.{Select, Where}
 
-import scala.util.{Failure, Success}
-
-object User extends FromResultFactory[existing.User] with Deprecatable
+object User extends LinkedStorableFactory[existing.User, existing.UserSettings] with Deprecatable
 {
 	// IMPLEMENTED	-----------------------------------
 	
@@ -20,27 +19,12 @@ object User extends FromResultFactory[existing.User] with Deprecatable
 	
 	override def table = Tables.user
 	
-	override def joinedTables = UserSettings.tables :+ UserLanguage.table
+	override def childFactory = UserSettings
 	
-	override def apply(result: Result) =
-	{
-		// Groups rows by user id and parses each user
-		result.grouped(table, UserLanguage.table).flatMap { case (userId, userData) =>
-			val (userRow, languageLinkRows) = userData
-			// Parses current settings
-			UserSettings(userRow).map { settings =>
-				// Parses language links
-				val languageIds = languageLinkRows.flatMap { _(UserLanguage.languageIdAttName).int }
-				existing.User(userId.getInt, settings, languageIds)
-			} match
-			{
-				case Success(user) => Some(user)
-				case Failure(error) =>
-					ErrorHandling.modelParsePrinciple.handle(error)
-					None
-			}
-		}.toVector
-	}
+	override def apply(model: Model[Constant], child: existing.UserSettings) =
+		table.requirementDeclaration.validate(model).toTry.map { valid =>
+			existing.User(valid("id").getInt, child)
+		}
 	
 	
 	// OTHER	-------------------------------------
@@ -48,17 +32,36 @@ object User extends FromResultFactory[existing.User] with Deprecatable
 	/**
 	  * Inserts a new user to the database
 	  * @param settings User settings
-	  * @param languageIds Ids of languages known by the user
+	  * @param password Password for this user (not hashed yet)
 	  * @param connection DB Connection (implicit)
 	  * @return Newly inserted user
 	  */
-	def insert(settings: UserSettingsData, languageIds: Vector[Int])(implicit connection: Connection) =
+	def insert(settings: UserSettingsData, password: String)(implicit connection: Connection) =
 	{
 		// Inserts the user first, then links new data
 		val userId = apply().insert().getInt
 		val newSettings = UserSettings.insert(userId, settings)
-		languageIds.foreach { languageId => UserLanguage.insert(userId, languageId) }
-		existing.User(userId, newSettings, languageIds)
+		UserAuth.insert(userId, password)
+		existing.User(userId, newSettings)
+	}
+	
+	/**
+	  * Completes a normal user's data to include linked language and device ids
+	  * @param user User to complete
+	  * @param connection DB Connection
+	  * @return User with associated data added
+	  */
+	def complete(user: existing.User)(implicit connection: Connection) =
+	{
+		// Reads language links
+		val languageIds = connection(Select(UserLanguage.table, UserLanguage.languageIdAttName) +
+			Where(UserLanguage.withUserId(user.id).toCondition)).rowIntValues
+		// Reads device links
+		val deviceIds = connection(Select(UserDevice.table, UserDevice.deviceIdAttName) +
+			Where(UserDevice.withUserId(user.id).toCondition && UserDevice.nonDeprecatedCondition)).rowIntValues
+		
+		// Combines data
+		UserWithLinks(user, languageIds, deviceIds)
 	}
 }
 

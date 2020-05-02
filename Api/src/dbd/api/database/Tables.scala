@@ -40,6 +40,11 @@ object Tables
 	def clientDevice = apply("client_device")
 	
 	/**
+	  * @return Table that links users with the devices they are using
+	  */
+	def userDevice = apply("client_device_user")
+	
+	/**
 	  * @return Table that contains descriptions of various things
 	  */
 	def description = apply("description")

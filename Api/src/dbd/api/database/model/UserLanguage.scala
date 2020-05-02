@@ -23,6 +23,12 @@ object UserLanguage
 	// OTHER	-----------------------------
 	
 	/**
+	  * @param userId Id of the described user
+	  * @return Model with only user id set
+	  */
+	def withUserId(userId: Int) = apply(userId = Some(userId))
+	
+	/**
 	  * Inserts a new connection between a user and a language
 	  * @param userId Id of the user
 	  * @param languageId Id of the language

@@ -1,13 +1,16 @@
 package dbd.api.database.access.many
 
 import dbd.api.database
+import dbd.api.database.access.single.{Device, Language}
+import dbd.api.database.model.{UserDevice, UserLanguage}
 import dbd.core.model.error.{AlreadyUsedException, IllegalPostModelException}
 import dbd.core.model.existing
+import dbd.core.model.existing.UserWithLinks
 import dbd.core.model.post.NewUser
 import utopia.vault.database.Connection
 import utopia.vault.nosql.access.ManyModelAccess
 
-import scala.util.Failure
+import scala.util.{Failure, Success}
 
 /**
   * Used for accessing multiple user's data at once
@@ -52,6 +55,13 @@ object Users extends ManyModelAccess[existing.User]
 		settingsFactory.exists(settingsFactory.withEmail(email).toCondition && settingsFactory.nonDeprecatedCondition)
 	}
 	
+	/**
+	  * Inserts a new user to the DB
+	  * @param newUser New user data to insert
+	  * @param connection DB Connection (implicit)
+	  * @return Newly inserted data. Failure with IllegalPostModelException if posted data was invalid. Failure with
+	  *         AlreadyUsedException if user name or email was already in use.
+	  */
 	def tryInsert(newUser: NewUser)(implicit connection: Connection) =
 	{
 		// Checks whether the proposed username or email already exist
@@ -68,8 +78,30 @@ object Users extends ManyModelAccess[existing.User]
 			Failure(new AlreadyUsedException("User name is already in use"))
 		else
 		{
-			// Inserts new user data
-			???
+			// Makes sure provided device id or language id matches data in the DB
+			val idsAreValid = newUser.device match
+			{
+				case Right(deviceId) => Device(deviceId).isDefined
+				case Left(nameAndLanguage) => Language(nameAndLanguage._2).isDefined
+			}
+			
+			if (idsAreValid)
+			{
+				// Inserts new user data
+				val user = factory.insert(newUser.settings, newUser.password)
+				newUser.languageIds.foreach { languageId => UserLanguage.insert(user.id, languageId) }
+				// Links user with device (uses existing or a new device)
+				val deviceId = newUser.device match
+				{
+					case Right(deviceId) => deviceId
+					case Left(deviceData) => Devices.insert(deviceData._1, deviceData._2, user.id).deviceId
+				}
+				UserDevice.insert(user.id, deviceId)
+				// Returns inserted user
+				Success(UserWithLinks(user, newUser.languageIds, Vector(deviceId)))
+			}
+			else
+				Failure(new IllegalPostModelException("device_id and language_id must point to existing data"))
 		}
 	}
 }

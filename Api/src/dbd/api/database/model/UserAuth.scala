@@ -1,7 +1,9 @@
 package dbd.api.database.model
 
 import dbd.api.database.Tables
+import dbd.api.util.PasswordHash
 import utopia.flow.generic.ValueConversions._
+import utopia.vault.database.Connection
 import utopia.vault.model.immutable.Storable
 
 object UserAuth
@@ -26,6 +28,19 @@ object UserAuth
 	  * @return A model with only user id set
 	  */
 	def withUserId(userId: Int) = apply(userId = Some(userId))
+	
+	/**
+	  * Inserts a new password to the DB
+	  * @param userId Id of the user for which the password is inserted
+	  * @param password Password for the user (not hashed)
+	  * @param connection DB Connection (implicit)
+	  */
+	def insert(userId: Int, password: String)(implicit connection: Connection): Unit =
+	{
+		// Hashes the password, then inserts it to DB
+		val hash = PasswordHash.createHash(password)
+		apply(None, Some(userId), Some(hash)).insert()
+	}
 }
 
 /**

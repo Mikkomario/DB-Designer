@@ -27,6 +27,14 @@ object DeviceDescription extends LinkedStorableFactory[existing.DeviceDescriptio
 	override def table = Tables.deviceDescription
 	
 	
+	// COMPUTED	-----------------------------------
+	
+	/**
+	  * @return A model that has just been marked as deprecated
+	  */
+	def nowDeprecated = apply(deprecatedAfter = Some(Instant.now()))
+	
+	
 	// OTHER	-----------------------------------
 	
 	/**
