@@ -11,5 +11,7 @@
     <orderEntry type="module" module-name="Core" />
     <orderEntry type="module" module-name="Flow" />
     <orderEntry type="module" module-name="Vault" />
+    <orderEntry type="module" module-name="Nexus" />
+    <orderEntry type="module" module-name="Access" />
   </component>
 </module>
