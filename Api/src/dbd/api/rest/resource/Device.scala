@@ -5,7 +5,7 @@ import utopia.access.http.Status.NotImplemented
 import utopia.flow.util.StringExtensions._
 import utopia.nexus.http.Path
 import utopia.nexus.rest.ResourceSearchResult.{Error, Follow}
-import utopia.nexus.rest.{Context, Resource}
+import utopia.nexus.rest.Resource
 import utopia.nexus.result.Result
 
 /**
@@ -27,7 +27,10 @@ case class Device(deviceId: Int) extends Resource[AuthorizedContext]
 		// Contains 'device-key' child node which allows access to long-term device specific authorization keys
 		if (path.head ~== "device-key")
 			Follow(DeviceKey(deviceId), path.tail)
+		// 'session-key' child node, on the other hand, provides access to short-term device specific user session keys
+		else if (path.head ~== "session-key")
+			Follow(SessionKey(deviceId), path.tail)
 		else
-			Error(message = Some("Device only contains 'device-key' child node"))
+			Error(message = Some("Device only contains 'device-key' and 'session-key' child nodes"))
 	}
 }

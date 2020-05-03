@@ -38,6 +38,18 @@ object UserSession extends StorableFactoryWithValidation[existing.UserSession] w
 	// OTHER	-----------------------------------
 	
 	/**
+	  * @param userId Id of the targeted user
+	  * @return A model with only user id set
+	  */
+	def withUserId(userId: Int) = apply(userId = Some(userId))
+	
+	/**
+	  * @param deviceId Id of the targeted device
+	  * @return A model with only device id set
+	  */
+	def withDeviceId(deviceId: Int) = apply(deviceId = Some(deviceId))
+	
+	/**
 	  * @param key Session key
 	  * @return A model with only key set
 	  */
@@ -71,8 +83,19 @@ case class UserSession(id: Option[Int] = None, userId: Option[Int] = None, devic
 					   key: Option[String] = None, expires: Option[Instant] = None, logoutTime: Option[Instant] = None)
 	extends StorableWithFactory[existing.UserSession]
 {
+	// IMPLEMENTED	-------------------------------
+	
 	override def factory = UserSession
 	
 	override def valueProperties = Vector("id" -> id, "userId" -> userId, "deviceId" -> deviceId, "key" -> key,
 		"expiresIn" -> expires, "logoutTime" -> logoutTime)
+	
+	
+	// OTHER	------------------------------------
+	
+	/**
+	  * @param deviceId Id of targeted device
+	  * @return A copy of this model with specified device id
+	  */
+	def withDeviceId(deviceId: Int) = copy(deviceId = Some(deviceId))
 }

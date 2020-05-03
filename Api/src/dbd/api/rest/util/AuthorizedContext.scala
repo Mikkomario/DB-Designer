@@ -8,6 +8,7 @@ import dbd.core.util.Log
 import dbd.core.util.ThreadPool.executionContext
 import utopia.access.http.Status.{InternalServerError, Unauthorized}
 import utopia.flow.util.CollectionExtensions._
+import utopia.flow.util.StringExtensions._
 import utopia.nexus.http.{Request, ServerSettings}
 import utopia.nexus.rest.BaseContext
 import utopia.nexus.result.Result
@@ -70,6 +71,43 @@ class AuthorizedContext(request: Request)(implicit serverSettings: ServerSetting
 	{
 		tokenAuthorized("session key", f) { (token, connection) =>
 			access.single.UserSession.matching(token)(connection)
+		}
+	}
+	
+	/**
+	  * Performs the specified function if the request can be authorized using either basic authorization or a
+	  * device auth key. Used device auth key will have to match the specified device id. If not, it will be invalidated
+	  * as a safety measure.
+	  * @param requiredDeviceId Device id that the specified key must be connected to, if present
+	  * @param f Function called when request is authorized. Accepts userId + database connection. Produces an http result.
+	  * @return Function result or a result indicating that the request was unauthorized. Wrapped as a response.
+	  */
+	def basicOrDeviceKeyAuthorized(requiredDeviceId: Int)(f: (Int, Connection) => Result) =
+	{
+		// Checks whether basic or device authorization should be used
+		request.headers.authorization match
+		{
+			case Some(authHeader) =>
+				val authType = authHeader.untilFirst(" ")
+				if (authType ~== "basic")
+					basicAuthorized(f)
+				else if (authType ~== "bearer")
+					deviceKeyAuthorized { (key, connection) =>
+						// Makes sure the device id in the key matches the required device id. If not, invalidates the
+						// key because it may have become compromised
+						if (key.deviceId == requiredDeviceId)
+							f(key.userId, connection)
+						else
+						{
+							access.single.DeviceKey(key.id).invalidate()(connection)
+							Result.Failure(Unauthorized,
+								"The key you specified cannot be used for this resource. " +
+									"Also, your key has now been invalidated and can no longer be used.")
+						}
+					}
+				else
+					Result.Failure(Unauthorized, "Only basic and bearer authorizations are supported").toResponse(this)
+			case None => Result.Failure(Unauthorized, "Authorization header is required").toResponse(this)
 		}
 	}
 	
