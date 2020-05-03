@@ -13,5 +13,7 @@
     <orderEntry type="module" module-name="Vault" />
     <orderEntry type="module" module-name="Nexus" />
     <orderEntry type="module" module-name="Access" />
+    <orderEntry type="library" name="servlet-api" level="project" />
+    <orderEntry type="module" module-name="NexusForTomcat" />
   </component>
 </module>

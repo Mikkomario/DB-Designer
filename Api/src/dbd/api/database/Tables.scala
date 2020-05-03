@@ -52,7 +52,7 @@ object Tables
 	/**
 	  * @return A table that contains links between devices and their descriptions
 	  */
-	def deviceDescription = apply("device_description")
+	def deviceDescription = apply("client_device_description")
 	
 	
 	// OTHER	-------------------------------

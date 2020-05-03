@@ -16,6 +16,9 @@ CREATE TABLE `language`
 
 )Engine=InnoDB DEFAULT CHARSET=latin1;
 
+-- 1 = English
+INSERT INTO `language` (id, iso_code) VALUES (1, 'en');
+
 -- Describes individual users
 CREATE TABLE `user`
 (
@@ -47,7 +50,7 @@ CREATE TABLE user_settings
 -- TODO: Set correct hash length
 CREATE TABLE user_authentication
 (
-    id INT NOT NULL,
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
     hash VARCHAR(255) NOT NULL,
     created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -83,12 +86,15 @@ CREATE TABLE description_role
 
 )Engine=InnoDB DEFAULT CHARSET=latin1;
 
+-- 1 = Name
+INSERT INTO description_role (id) VALUES (1);
+
 -- Descriptions describe various things.
 -- Descriptions can be overwritten and are written in a specific language.
 -- Usually there is only up to one description available for each item, per language.
 CREATE TABLE description
 (
-    id INT NOT NUL PRIMARY KEY AUTO_INCREMENT,
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     role_id INT NOT NULL,
     language_id INT NOT NULL,
     `text` VARCHAR(255) NOT NULL,
@@ -265,7 +271,7 @@ CREATE TABLE organization_member_role
         REFERENCES organization_user_role(id) ON DELETE CASCADE,
 
     FOREIGN KEY omr_u_role_adder (creator_id)
-        REFERENCES `user`(id) ON DELETE SET NULL,
+        REFERENCES `user`(id) ON DELETE SET NULL
 
 )Engine=InnoDB DEFAULT CHARSET=latin1;
 
@@ -433,7 +439,7 @@ CREATE TABLE `database`
 	owner_id INT NOT NULL,
 	created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	deleted_after DATETIME,
-	creator_id INT NOT NULL,
+	creator_id INT,
 
 	INDEX (deleted_after),
 
