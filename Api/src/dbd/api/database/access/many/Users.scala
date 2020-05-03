@@ -10,7 +10,7 @@ import dbd.core.model.post.NewUser
 import utopia.vault.database.Connection
 import utopia.vault.nosql.access.ManyModelAccess
 
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 /**
   * Used for accessing multiple user's data at once
@@ -62,7 +62,7 @@ object Users extends ManyModelAccess[existing.User]
 	  * @return Newly inserted data. Failure with IllegalPostModelException if posted data was invalid. Failure with
 	  *         AlreadyUsedException if user name or email was already in use.
 	  */
-	def tryInsert(newUser: NewUser)(implicit connection: Connection) =
+	def tryInsert(newUser: NewUser)(implicit connection: Connection): Try[UserWithLinks] =
 	{
 		// Checks whether the proposed username or email already exist
 		val email = newUser.settings.email.trim
