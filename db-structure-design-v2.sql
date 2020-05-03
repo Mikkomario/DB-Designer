@@ -52,7 +52,7 @@ CREATE TABLE user_authentication
 (
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
-    hash VARCHAR(255) NOT NULL,
+    hash VARCHAR(128) NOT NULL,
     created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     INDEX ua_user_password_idx (hash, user_id),
@@ -397,7 +397,7 @@ CREATE TABLE device_authentication_key
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
     device_id INT NOT NULL,
-    `key` VARCHAR(34) NOT NULL,
+    `key` VARCHAR(36) NOT NULL,
     created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deprecated_after DATETIME,
 
@@ -417,7 +417,7 @@ CREATE TABLE user_session
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
     device_id INT NOT NULL,
-    `key` VARCHAR(34) NOT NULL,
+    `key` VARCHAR(36) NOT NULL,
     created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     expires_in DATETIME NOT NULL,
     logout_time DATETIME,

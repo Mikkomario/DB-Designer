@@ -1,6 +1,8 @@
 package dbd.api.database.access.single
 
+import dbd.api
 import dbd.api.database
+import dbd.api.model.partial.DeviceKeyData
 import dbd.core.model.enumeration.DescriptionRole
 import dbd.core.model.enumeration.DescriptionRole.Name
 import dbd.core.model.existing
@@ -8,6 +10,8 @@ import dbd.core.model.partial.{DescriptionData, DeviceDescriptionData}
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.nosql.access.{SingleModelAccess, UniqueAccess}
+
+import java.util.UUID.randomUUID
 
 /**
   * Used for accessing and modifying individual devices
@@ -41,6 +45,11 @@ object Device
 		  * @return Whether a device with this id exists in the database
 		  */
 		def isDefined(implicit connection: Connection) = factory.table.containsIndex(deviceId)
+		
+		/**
+		  * @return An access point to this device's authentication key
+		  */
+		def authenticationKey = DeviceAuthKey
 		
 		
 		// OTHER	-----------------------------
@@ -83,6 +92,36 @@ object Device
 				factory.insert(DeviceDescriptionData(deviceId, DescriptionData(descriptionType, languageId,
 					newDescription, authorId)))
 			}
+		}
+		
+		object DeviceAuthKey extends UniqueAccess[api.model.existing.DeviceKey] with SingleModelAccess[api.model.existing.DeviceKey]
+		{
+			// IMPLEMENTED	-----------------------
+			
+			override def condition = factory.withDeviceId(deviceId).toCondition && factory.nonDeprecatedCondition
+			
+			override def factory = database.model.DeviceKey
+			
+			
+			// OTHER	---------------------------
+			
+			/**
+			  * Updates this device authentication key
+			  * @param userId The user that owns this new key
+			  * @param key Key assigned to the user
+			  * @param connection DB Connection (implicit)
+			  * @return Newly inserted authentication key
+			  */
+			def update(userId: Int, key: String)(implicit connection: Connection) =
+			{
+				// Deprecates the old key
+				factory.nowDeprecated.updateWhere(condition)
+				// Inserts a new key
+				factory.insert(DeviceKeyData(userId, deviceId, key))
+			}
+			
+			def assignToUserWithId(userId: Int)(implicit connection: Connection) = update(userId,
+				randomUUID().toString)
 		}
 	}
 }

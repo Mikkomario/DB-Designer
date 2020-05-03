@@ -4,9 +4,9 @@ import scala.language.implicitConversions
 
 object Extender
 {
-	// implicit def autoAccess[A](e: Extender[A]): A = e.wrapped
+	implicit def autoAccess[A](e: Extender[A]): A = e.wrapped
 	
-	implicit def deepAutoAccess[Deep, Surface](e: Extender[Surface])(implicit f: Surface => Deep): Deep = f(e.wrapped)
+	// implicit def deepAutoAccess[Deep, Surface](e: Extender[Surface])(implicit f: Surface => Deep): Deep = f(e.wrapped)
 }
 
 /**

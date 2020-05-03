@@ -25,6 +25,11 @@ object Tables
 	def userAuth = apply("user_authentication")
 	
 	/**
+	  * @return Table that contains device-specific authentication keys
+	  */
+	def deviceAuthKey = apply("device_authentication_key")
+	
+	/**
 	  * @return Table for user settings
 	  */
 	def userSettings = apply("user_settings")

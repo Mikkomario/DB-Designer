@@ -34,17 +34,15 @@ object User extends SingleModelAccess[existing.User]
 	
 	/**
 	  * Tries to authenticate a user with user name (or email) + password
-	  * @param nameOrEmail User name or user email
+	  * @param email User email
 	  * @param password Password
 	  * @param connection Database connection
 	  * @return User id if authenticated, None otherwise.
 	  */
-	def tryAuthenticate(nameOrEmail: String, password: String)(implicit connection: Connection) =
+	def tryAuthenticate(email: String, password: String)(implicit connection: Connection) =
 	{
-		// Finds user id
-		val userId = if (nameOrEmail.contains("@")) UserId.forEmail(nameOrEmail) else UserId.forName(nameOrEmail)
-		// Checks the password
-		userId.filter { id =>
+		// Finds user id and checks the password
+		UserId.forEmail(email).filter { id =>
 			apply(id).passwordHash.exists { correctHash => PasswordHash.validatePassword(password, correctHash) }
 		}
 	}
