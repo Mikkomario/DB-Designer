@@ -79,10 +79,11 @@ class AuthorizedContext(request: Request)(implicit serverSettings: ServerSetting
 	  * device auth key. Used device auth key will have to match the specified device id. If not, it will be invalidated
 	  * as a safety measure.
 	  * @param requiredDeviceId Device id that the specified key must be connected to, if present
-	  * @param f Function called when request is authorized. Accepts userId + database connection. Produces an http result.
+	  * @param f Function called when request is authorized. Accepts userId + whether device key was used +
+	  *          database connection. Produces an http result.
 	  * @return Function result or a result indicating that the request was unauthorized. Wrapped as a response.
 	  */
-	def basicOrDeviceKeyAuthorized(requiredDeviceId: Int)(f: (Int, Connection) => Result) =
+	def basicOrDeviceKeyAuthorized(requiredDeviceId: Int)(f: (Int, Boolean, Connection) => Result) =
 	{
 		// Checks whether basic or device authorization should be used
 		request.headers.authorization match
@@ -90,13 +91,13 @@ class AuthorizedContext(request: Request)(implicit serverSettings: ServerSetting
 			case Some(authHeader) =>
 				val authType = authHeader.untilFirst(" ")
 				if (authType ~== "basic")
-					basicAuthorized(f)
+					basicAuthorized { (userId, connection) => f(userId, false, connection) }
 				else if (authType ~== "bearer")
 					deviceKeyAuthorized { (key, connection) =>
 						// Makes sure the device id in the key matches the required device id. If not, invalidates the
 						// key because it may have become compromised
 						if (key.deviceId == requiredDeviceId)
-							f(key.userId, connection)
+							f(key.userId, true, connection)
 						else
 						{
 							access.single.DeviceKey(key.id).invalidate()(connection)

@@ -2,7 +2,7 @@ package dbd.api.database.access.single
 
 import dbd.api.database
 import dbd.api.database.access.id.UserId
-import dbd.api.database.model.UserAuth
+import dbd.api.database.model.{UserAuth, UserDevice}
 import dbd.api.util.PasswordHash
 import dbd.core.model.existing
 import utopia.flow.generic.ValueConversions._
@@ -52,6 +52,8 @@ object User extends SingleModelAccess[existing.User]
 	
 	class SingleUser(userId: Int) extends SingleIdModelAccess[existing.User](userId, User.factory)
 	{
+		// COMPUTED	---------------------
+		
 		/**
 		  * @param connection DB Connection (implicit)
 		  * @return Password hash for this user. None if no hash was found.
@@ -60,6 +62,28 @@ object User extends SingleModelAccess[existing.User]
 		{
 			connection(Select(UserAuth.table, UserAuth.hashAttName) + Where(UserAuth.withUserId(userId).toCondition))
 				.firstValue.string
+		}
+		
+		
+		// OTHER	----------------------
+		
+		/**
+		  * Links this user with the specified device
+		  * @param deviceId Id of targeted device (must be valid)
+		  * @param connection DB Connection (implicit)
+		  * @return Whether a new link was created (false if there already existed a link between this user and the device)
+		  */
+		def linkWithDeviceWithId(deviceId: Int)(implicit connection: Connection) =
+		{
+			// Checks whether there already exists a connection between this user and specified device
+			if (UserDevice.exists(UserDevice.withUserId(userId).withDeviceId(deviceId).toCondition &&
+				UserDevice.nonDeprecatedCondition))
+				false
+			else
+			{
+				UserDevice.insert(userId, deviceId)
+				true
+			}
 		}
 	}
 }

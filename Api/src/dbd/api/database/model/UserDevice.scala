@@ -7,6 +7,7 @@ import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.Storable
 import utopia.vault.nosql.factory.Deprecatable
+import utopia.vault.sql.{Condition, Exists}
 
 object UserDevice extends Deprecatable
 {
@@ -45,6 +46,14 @@ object UserDevice extends Deprecatable
 	  */
 	def insert(userId: Int, deviceId: Int)(implicit connection: Connection) =
 		apply(None, Some(userId), Some(deviceId)).insert().getInt
+	
+	/**
+	  * Checks whether there exists a user device connection with specified condition
+	  * @param condition A condition
+	  * @param connection DB Connection (implicit)
+	  * @return Whether any row fulfills the specified condition
+	  */
+	def exists(condition: Condition)(implicit connection: Connection) = Exists(table, condition)
 }
 
 /**
@@ -55,8 +64,19 @@ object UserDevice extends Deprecatable
 case class UserDevice(id: Option[Int] = None, userId: Option[Int] = None, deviceId: Option[Int] = None,
 					  deprecatedAfter: Option[Instant] = None) extends Storable
 {
+	// IMPLEMENTED	---------------------------------
+	
 	override def table = UserDevice.table
 	
 	override def valueProperties = Vector("id" -> id, "userId" -> userId, "deviceId" -> deviceId,
 		"deprecatedAfter" -> deprecatedAfter)
+	
+	
+	// OTHER	-------------------------------------
+	
+	/**
+	  * @param deviceId Id of linked device
+	  * @return A copy of this model with specified device id
+	  */
+	def withDeviceId(deviceId: Int) = copy(deviceId = Some(deviceId))
 }

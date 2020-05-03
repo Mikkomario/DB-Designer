@@ -36,6 +36,8 @@ case class DeviceKey(deviceId: Int) extends Resource[AuthorizedContext]
 				// Makes sure this device exists
 				if (single.Device(deviceId).isDefined)
 				{
+					// Registers a new connection between the user and this device, if there wasn't one already
+					single.User(userId).linkWithDeviceWithId(deviceId)
 					// Gets and returns the new device authentication key
 					val key = single.Device(deviceId).authenticationKey.assignToUserWithId(userId).key
 					Result.Success(key)
