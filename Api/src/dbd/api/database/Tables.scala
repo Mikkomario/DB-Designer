@@ -30,6 +30,11 @@ object Tables
 	def deviceAuthKey = apply("device_authentication_key")
 	
 	/**
+	  * @return Table that contains temporary user session keys
+	  */
+	def userSession = apply("user_session")
+	
+	/**
 	  * @return Table for user settings
 	  */
 	def userSettings = apply("user_settings")

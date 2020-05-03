@@ -34,6 +34,12 @@ object DeviceKey extends StorableFactoryWithValidation[existing.DeviceKey] with 
 	// OTHER	----------------------------------
 	
 	/**
+	  * @param userId Id of the linked user
+	  * @return A model with only user id set
+	  */
+	def withUserId(userId: Int) = apply(userId = Some(userId))
+	
+	/**
 	  * @param deviceId Id of targeted device
 	  * @return A model with only device id set
 	  */

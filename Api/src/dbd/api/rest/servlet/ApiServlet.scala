@@ -1,12 +1,13 @@
 package dbd.api.rest.servlet
 
-import dbd.api.rest.resource.Users
+import dbd.api.rest.resource.{Devices, Users}
+import dbd.api.rest.util.AuthorizedContext
 import javax.servlet.annotation.MultipartConfig
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 import utopia.access.http.Status.BadRequest
 import utopia.flow.generic.DataType
 import utopia.nexus.http.{Path, ServerSettings}
-import utopia.nexus.rest.{BaseContext, RequestHandler}
+import utopia.nexus.rest.RequestHandler
 import utopia.nexus.servlet.HttpExtensions._
 import utopia.vault.database.Connection
 import utopia.vault.util.ErrorHandling
@@ -37,8 +38,8 @@ class ApiServlet extends HttpServlet
 	// TODO: When going to production, read these from settings and maybe use parameter encoding
 	private implicit val serverSettings: ServerSettings = ServerSettings("http://localhost:9999")
 	
-	// TODO: Use authorized context once one is available
-	private val handler = new RequestHandler(Vector(Users), Some(Path("db-designer", "api", "v1")), r => new BaseContext(r))
+	private val handler = new RequestHandler(Vector(Users, Devices), Some(Path("db-designer", "api", "v1")),
+		r => new AuthorizedContext(r))
 	
 	
 	// IMPLEMENTED	----------------------------

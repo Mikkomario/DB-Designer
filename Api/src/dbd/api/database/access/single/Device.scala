@@ -120,8 +120,26 @@ object Device
 				factory.insert(DeviceKeyData(userId, deviceId, key))
 			}
 			
+			/**
+			  * Assings this device key to the specified user, invalidating previous users' keys
+			  * @param userId If of the user receiving this device key
+			  * @param connection DB Connection (implicit)
+			  * @return This device key, now belonging to the specified user
+			  */
 			def assignToUserWithId(userId: Int)(implicit connection: Connection) = update(userId,
 				randomUUID().toString)
+			
+			/**
+			  * Releases this device authentication key from the specified user, if that user is currently holding this key
+			  * @param userId Id of the user this key is released from
+			  * @param connection DB Connection (implicit)
+			  * @return Whether the user was holding this key (= whether any change was made)
+			  */
+			def releaseFromUserWithId(userId: Int)(implicit connection: Connection) =
+			{
+				// Deprecates the device key row (if not already deprecated)
+				factory.nowDeprecated.updateWhere(mergeCondition(factory.withUserId(userId).toCondition)) > 0
+			}
 		}
 	}
 }

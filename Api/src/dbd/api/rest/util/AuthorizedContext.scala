@@ -56,22 +56,42 @@ class AuthorizedContext(request: Request)(implicit serverSettings: ServerSetting
 	  */
 	def deviceKeyAuthorized(f: (existing.DeviceKey, Connection) => Result) =
 	{
-		// Checks device key from token
+		tokenAuthorized("device authentication key", f) { (token, connection) =>
+			access.single.DeviceKey.matching(token)(connection)
+		}
+	}
+	
+	/**
+	  * Perform the specified function if the request can be authorized using a session key
+	  * @param f A function called when request is authorized. Accepts user session + database connection. Produces an http result.
+	  * @return Function result or a result indicating that the request was unauthorized. Wrapped as a response.
+	  */
+	def sessionKeyAuthorized(f: (existing.UserSession, Connection) => Result) =
+	{
+		tokenAuthorized("session key", f) { (token, connection) =>
+			access.single.UserSession.matching(token)(connection)
+		}
+	}
+	
+	private def tokenAuthorized[K](keyTypeName: => String, f: (K, Connection) => Result)(
+		testKey: (String, Connection) => Option[K]) =
+	{
+		// Checks the key from token
 		val result = request.headers.bearerAuthorization match
 		{
-			case Some(deviceKey) =>
+			case Some(key) =>
 				// Validates the device key against database
-				ConnectionPool.tryWith { implicit connection =>
-					access.single.DeviceKey.matching(deviceKey) match
+				ConnectionPool.tryWith { connection =>
+					testKey(key, connection) match
 					{
 						case Some(authorizedKey) => f(authorizedKey, connection)
-						case None => Result.Failure(Unauthorized, "Invalid or expired device key")
+						case None => Result.Failure(Unauthorized, s"Invalid or expired $keyTypeName")
 					}
 				}.getOrMap { e =>
 					Log(e, s"Failed to handle request $request")
 					Result.Failure(InternalServerError, e.getMessage)
 				}
-			case None => Result.Failure(Unauthorized, "Please provided a bearer auth hearer with a device authentication key")
+			case None => Result.Failure(Unauthorized, s"Please provided a bearer auth hearer with a $keyTypeName")
 		}
 		result.toResponse(this)
 	}
