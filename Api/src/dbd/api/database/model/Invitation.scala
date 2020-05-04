@@ -43,6 +43,18 @@ object Invitation extends StorableFactory[existing.Invitation]
 	// OTHER	--------------------------------
 	
 	/**
+	  * @param organizationId Id of targeted organization
+	  * @return A model with only organization id set
+	  */
+	def withOrganizationId(organizationId: Int) = apply(organizationId = Some(organizationId))
+	
+	/**
+	  * @param expireTime Time when invitation expires
+	  * @return A model with only expire time set
+	  */
+	def withExpireTime(expireTime: Instant) = apply(expireTime = Some(expireTime))
+	
+	/**
 	  * Inserts a new invitation to the database
 	  * @param data Invitation data to insert
 	  * @param connection DB Connection (implicit)
