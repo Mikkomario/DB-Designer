@@ -69,6 +69,21 @@ object Tables
 	  */
 	def organization = apply("organization")
 	
+	/**
+	  * @return Table that contains links between organizations and their descriptions
+	  */
+	def organizationDescription = apply("organization_description")
+	
+	/**
+	  * @return Table that contains organization user memberships
+	  */
+	def organizationMembership = apply("organization_membership")
+	
+	/**
+	  * @return Table that contains role links for organization memberships
+	  */
+	def organizationMemberRole = apply("organization_member_role")
+	
 	
 	// OTHER	-------------------------------
 	

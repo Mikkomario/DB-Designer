@@ -200,6 +200,9 @@ CREATE TABLE organization_user_role
 
 )Engine=InnoDB DEFAULT CHARSET=latin1;
 
+-- 1 = Owner
+INSERT INTO organization_user_role (id) VALUES (1);
+
 -- Links to descriptions of user roles
 CREATE TABLE user_role_description
 (

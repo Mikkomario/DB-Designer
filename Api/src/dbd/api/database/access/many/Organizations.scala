@@ -1,6 +1,9 @@
 package dbd.api.database.access.many
 
-import dbd.api.database.model.Organization
+import dbd.api.database.model.{Organization, OrganizationDescription, OrganizationMemberRole, OrganizationMembership}
+import dbd.core.model.enumeration.DescriptionRole.Name
+import dbd.core.model.enumeration.UserRole.Owner
+import dbd.core.model.partial.{DescriptionData, MembershipData, OrganizationDescriptionData}
 import utopia.vault.database.Connection
 
 /**
@@ -23,5 +26,15 @@ object Organizations
 	  * @param connection DB Connection (implicit)
 	  * @return Id of the newly inserted organization
 	  */
-	def insert(founderId: Int)(implicit connection: Connection) = factory.insert(founderId)
+	def insert(organizationName: String, languageId: Int, founderId: Int)(implicit connection: Connection) =
+	{
+		// Inserts a new organization
+		val organizationId = factory.insert(founderId)
+		// Adds the user to the organization (as owner)
+		val membership = OrganizationMembership.insert(MembershipData(organizationId, founderId, Some(founderId)))
+		OrganizationMemberRole.insert(membership.id, Owner, founderId)
+		// Inserts a name for that organization
+		OrganizationDescription.insert(OrganizationDescriptionData(organizationId, DescriptionData(Name,
+			languageId, organizationName, Some(founderId))))
+	}
 }
