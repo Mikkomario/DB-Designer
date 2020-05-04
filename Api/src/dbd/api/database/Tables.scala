@@ -80,9 +80,29 @@ object Tables
 	def organizationMembership = apply("organization_membership")
 	
 	/**
+	  * @return Table that lists all user roles
+	  */
+	def userRole = apply("organization_user_role")
+	
+	/**
 	  * @return Table that contains role links for organization memberships
 	  */
 	def organizationMemberRole = apply("organization_member_role")
+	
+	/**
+	  * @return Table that contains links between user roles and the tasks they have access to
+	  */
+	def roleRight = apply("user_role_right")
+	
+	/**
+	  * @return Table that contains sent organization join invitations
+	  */
+	def organizationInvitation = apply("organization_invitation")
+	
+	/**
+	  * @return Table that contains responses to organization join invitations
+	  */
+	def invitationResponse = apply("invitation_response")
 	
 	
 	// OTHER	-------------------------------

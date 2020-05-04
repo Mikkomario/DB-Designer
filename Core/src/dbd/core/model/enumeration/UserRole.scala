@@ -27,9 +27,18 @@ object UserRole
 	}
 	
 	/**
+	  * Admins have most of the same rights as the owners, except that they can't change ownership or delete
+	  * an organization
+	  */
+	case object Admin extends UserRole
+	{
+		override val id = 2
+	}
+	
+	/**
 	  * All registered user roles
 	  */
-	val values = Vector[UserRole](Owner)
+	val values = Vector[UserRole](Owner, Admin)
 	
 	/**
 	  * @param id Role id
