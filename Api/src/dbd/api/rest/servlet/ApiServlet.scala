@@ -1,6 +1,6 @@
 package dbd.api.rest.servlet
 
-import dbd.api.rest.resource.{Devices, Users}
+import dbd.api.rest.resource.{Devices, Organizations, Users}
 import dbd.api.rest.util.AuthorizedContext
 import javax.servlet.annotation.MultipartConfig
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
@@ -38,7 +38,7 @@ class ApiServlet extends HttpServlet
 	// TODO: When going to production, read these from settings and maybe use parameter encoding
 	private implicit val serverSettings: ServerSettings = ServerSettings("http://localhost:9999")
 	
-	private val handler = new RequestHandler(Vector(Users, Devices), Some(Path("db-designer", "api", "v1")),
+	private val handler = new RequestHandler(Vector(Users, Devices, Organizations), Some(Path("db-designer", "api", "v1")),
 		r => new AuthorizedContext(r))
 	
 	

@@ -6,13 +6,16 @@ import dbd.api.model.existing
 import dbd.core.database.ConnectionPool
 import dbd.core.util.Log
 import dbd.core.util.ThreadPool.executionContext
-import utopia.access.http.Status.{InternalServerError, Unauthorized}
+import utopia.access.http.Status.{BadRequest, InternalServerError, Unauthorized}
+import utopia.flow.generic.FromModelFactory
 import utopia.flow.util.CollectionExtensions._
 import utopia.flow.util.StringExtensions._
 import utopia.nexus.http.{Request, ServerSettings}
 import utopia.nexus.rest.BaseContext
 import utopia.nexus.result.Result
 import utopia.vault.database.Connection
+
+import scala.util.{Failure, Success}
 
 /**
   * This context variation checks user authorization (when required)
@@ -109,6 +112,34 @@ class AuthorizedContext(request: Request)(implicit serverSettings: ServerSetting
 				else
 					Result.Failure(Unauthorized, "Only basic and bearer authorizations are supported").toResponse(this)
 			case None => Result.Failure(Unauthorized, "Authorization header is required").toResponse(this)
+		}
+	}
+	
+	/**
+	  * Parses a model from the request body and uses it to produce a response
+	  * @param parser Model parser
+	  * @param f Function that will be called if the model was successfully parsed. Returns an http result.
+	  * @tparam A Type of parsed model
+	  * @return Function result or a failure result if no model could be parsed.
+	  */
+	def handlePost[A](parser: FromModelFactory[A])(f: A => Result) =
+	{
+		// Parses the post model first
+		request.body.headOption match
+		{
+			case Some(body) =>
+				body.bufferedJSONModel.contents match
+				{
+					case Success(model) =>
+						parser(model) match
+						{
+							// Gives the parsed model to specified function
+							case Success(parsed) => f(parsed)
+							case Failure(error) => Result.Failure(BadRequest, error.getMessage)
+						}
+					case Failure(error) => Result.Failure(BadRequest, error.getMessage)
+				}
+			case None => Result.Failure(BadRequest, "Please provide a json-body with the response")
 		}
 	}
 	

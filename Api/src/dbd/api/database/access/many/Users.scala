@@ -64,7 +64,7 @@ object Users extends ManyModelAccess[existing.User]
 	  */
 	def tryInsert(newUser: NewUser)(implicit connection: Connection): Try[UserWithLinks] =
 	{
-		// Checks whether the proposed username or email already exist
+		// Checks whether the proposed email already exist
 		val email = newUser.settings.email.trim
 		val userName = newUser.settings.name.trim
 		
@@ -74,8 +74,6 @@ object Users extends ManyModelAccess[existing.User]
 			Failure(new IllegalPostModelException("User name must not be empty"))
 		else if (existsUserWithEmail(email))
 			Failure(new AlreadyUsedException("Email is already in use"))
-		else if (existsUserWithName(userName))
-			Failure(new AlreadyUsedException("User name is already in use"))
 		else
 		{
 			// Makes sure provided device id or language id matches data in the DB
