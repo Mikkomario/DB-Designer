@@ -16,7 +16,7 @@ object Organization extends Deprecatable
 	
 	// IMPLEMENTED	--------------------------
 	
-	override val nonDeprecatedCondition = table("deprecatedAfter").isNull
+	override val nonDeprecatedCondition = table("deletedAfter").isNull
 	
 	
 	// OTHER	------------------------------
