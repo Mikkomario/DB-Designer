@@ -64,6 +64,11 @@ object Tables
 	  */
 	def deviceDescription = apply("client_device_description")
 	
+	/**
+	  * @return Table that contains organizations
+	  */
+	def organization = apply("organization")
+	
 	
 	// OTHER	-------------------------------
 	

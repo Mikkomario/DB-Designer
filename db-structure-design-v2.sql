@@ -135,7 +135,14 @@ CREATE TABLE language_description
 CREATE TABLE organization
 (
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_after DATETIME,
+    creator_id INT,
+
+    INDEX (deleted_after),
+
+    FOREIGN KEY o_u_organization_founder (creator_id)
+        REFERENCES `user`(id) ON DELETE SET NULL
 
 )Engine=InnoDB DEFAULT CHARSET=latin1;
 
