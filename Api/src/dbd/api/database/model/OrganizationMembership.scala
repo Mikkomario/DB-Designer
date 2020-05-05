@@ -27,6 +27,12 @@ object OrganizationMembership extends StorableFactoryWithValidation[existing.Mem
 	// OTHER	-------------------------------
 	
 	/**
+	  * @param userId Targeted user's id
+	  * @return A model with only user id set
+	  */
+	def withUserId(userId: Int) = apply(userId = Some(userId))
+	
+	/**
 	  * Inserts a new membership to DB
 	  * @param data Membership data to insert
 	  * @param connection DB Connection (implicit)
@@ -49,8 +55,19 @@ case class OrganizationMembership(id: Option[Int] = None, organizationId: Option
 								  userId: Option[Int] = None, creatorId: Option[Int] = None, started: Option[Instant] = None,
 								  ended: Option[Instant] = None) extends StorableWithFactory[existing.Membership]
 {
+	// IMPLEMENTED	---------------------------
+	
 	override def factory = OrganizationMembership
 	
 	override def valueProperties = Vector("id" -> id, "organizationId" -> organizationId, "userId" -> userId,
 		"creatorId" -> creatorId, "started" -> started, "ended" -> ended)
+	
+	
+	// OTHER	-------------------------------
+	
+	/**
+	  * @param organizationId Id of target organization
+	  * @return A copy of this model with specified organization id
+	  */
+	def withOrganizationId(organizationId: Int) = copy(organizationId = Some(organizationId))
 }

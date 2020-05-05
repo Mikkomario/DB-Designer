@@ -3,6 +3,10 @@ package dbd.core.model.partial
 import java.time.Instant
 
 import dbd.core.model.enumeration.UserRole
+import utopia.flow.datastructure.immutable.Model
+import utopia.flow.generic.ModelConvertible
+import utopia.flow.generic.ValueConversions._
+import utopia.flow.util.CollectionExtensions._
 
 /**
   * Contains basic information about an invitation to join an organization
@@ -15,4 +19,27 @@ import dbd.core.model.enumeration.UserRole
   * @param creatorId Id of the user who created this invitation (optional)
   */
 case class InvitationData(organizationId: Int, recipient: Either[String, Int], startingRole: UserRole,
-						  expireTime: Instant, creatorId: Option[Int] = None)
+						  expireTime: Instant, creatorId: Option[Int] = None) extends ModelConvertible
+{
+	// COMPUTED	----------------------------
+	
+	/**
+	  * @return Recipient user id (None if defined by email)
+	  */
+	def recipientId = recipient.rightOption
+	
+	/**
+	  * @return Recipient email address (None if defined by user id)
+	  */
+	def recipientEmail = recipient.leftOption
+	
+	
+	// IMPLEMENTED	------------------------
+	
+	override def toModel =
+	{
+		val recipientModel = Model(Vector("id" -> recipientId, "email" -> recipientEmail))
+		Model(Vector("organization_id" -> organizationId, "recipient" -> recipientModel, "role_id" -> startingRole.id,
+			"expires" -> expireTime, "sender_id" -> creatorId))
+	}
+}

@@ -45,7 +45,7 @@ object TaskType
 	/**
 	  * All task values
 	  */
-	val values = Vector(DeleteOrganization, ChangeRoles, InviteMembers)
+	val values = Vector[TaskType](DeleteOrganization, ChangeRoles, InviteMembers)
 	
 	/**
 	  * @param taskId A task id

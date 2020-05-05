@@ -5,9 +5,10 @@ import dbd.api.database.access.id.UserId
 import dbd.api.database.model.{UserAuth, UserDevice}
 import dbd.api.util.PasswordHash
 import dbd.core.model.existing
+import utopia.flow.datastructure.immutable.Value
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
-import utopia.vault.nosql.access.{SingleIdModelAccess, SingleModelAccess}
+import utopia.vault.nosql.access.{SingleIdAccess, SingleIdModelAccess, SingleModelAccess, UniqueAccess}
 import utopia.vault.sql.{Select, Where}
 
 /**
@@ -68,6 +69,20 @@ object User extends SingleModelAccess[existing.User]
 		// OTHER	----------------------
 		
 		/**
+		  * @param organizationId Id of the targeted organization
+		  * @param connection DB Connection (implicit)
+		  * @return Whether this user is a member of the specified organization
+		  */
+		def isMemberInOrganizationWithId(organizationId: Int)(implicit connection: Connection) =
+			membershipIdInOrganizationWithId(organizationId).isDefined
+		
+		/**
+		  * @param organizationId Id of targeted organization
+		  * @return An access point to this user's membership id in that organization
+		  */
+		def membershipIdInOrganizationWithId(organizationId: Int) = new MembershipId(organizationId)
+		
+		/**
 		  * Links this user with the specified device
 		  * @param deviceId Id of targeted device (must be valid)
 		  * @param connection DB Connection (implicit)
@@ -84,6 +99,28 @@ object User extends SingleModelAccess[existing.User]
 				UserDevice.insert(userId, deviceId)
 				true
 			}
+		}
+		
+		
+		// NESTED	-----------------------
+		
+		class MembershipId(organizationId: Int) extends SingleIdAccess[Int] with UniqueAccess[Int]
+		{
+			// ATTRIBUTES	------------------------
+			
+			private val factory = database.model.OrganizationMembership
+			
+			
+			// IMPLEMENTED	------------------------
+			
+			override val condition = factory.withUserId(userId).withOrganizationId(organizationId).toCondition &&
+				factory.nonDeprecatedCondition
+			
+			override def target = factory.target
+			
+			override def valueToId(value: Value) = value.int
+			
+			override def table = factory.table
 		}
 	}
 }

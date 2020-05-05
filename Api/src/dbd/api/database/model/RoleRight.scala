@@ -53,6 +53,12 @@ object RoleRight extends StorableFactory[existing.RoleRight]
 	  * @return A model with only that role set
 	  */
 	def withRole(role: UserRole) = apply(role = Some(role))
+	
+	/**
+	  * @param task A task type
+	  * @return A model with only task type set
+	  */
+	def withTask(task: TaskType) = apply(task = Some(task))
 }
 
 /**

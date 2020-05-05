@@ -9,6 +9,14 @@ import dbd.core.model.template.Extender
   */
 case class InvitationWithResponse(invitation: Invitation, response: InvitationResponse) extends Extender[Invitation]
 {
+	// COMPUTED	----------------------------------
+	
+	/**
+	  * @return Id of the user who received this invitation
+	  */
+	def recipientId = response.creatorId
+	
+	
 	// IMPLEMENTED	------------------------------
 	
 	override def wrapped = invitation
