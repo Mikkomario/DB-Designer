@@ -5,11 +5,11 @@ import dbd.api.database.access.single.Language
 import dbd.api.rest.util.AuthorizedContext
 import dbd.core.model.post.NewOrganization
 import utopia.access.http.Method.Post
-import utopia.access.http.Status.{Created, NotFound, NotImplemented}
+import utopia.access.http.Status.{Created, NotFound}
 import utopia.flow.generic.ValueConversions._
 import utopia.nexus.http.Path
 import utopia.nexus.rest.Resource
-import utopia.nexus.rest.ResourceSearchResult.Error
+import utopia.nexus.rest.ResourceSearchResult.{Error, Follow}
 import utopia.nexus.result.Result
 import utopia.vault.database.Connection
 
@@ -43,6 +43,13 @@ object Organizations extends Resource[AuthorizedContext]
 		}
 	}
 	
-	override def follow(path: Path)(implicit context: AuthorizedContext) = Error(NotImplemented,
-		Some("Individual organization data access hasn't been implemented yet"))
+	override def follow(path: Path)(implicit context: AuthorizedContext) =
+	{
+		// Allows access to individual organization access points based on organization id
+		path.head.int match
+		{
+			case Some(id) => Follow(Organization(id), path.tail)
+			case None => Error(message = Some(s"${path.head} is not a valid organization id"))
+		}
+	}
 }
