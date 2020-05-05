@@ -1,6 +1,7 @@
 package dbd.api.database.access.single
 
 import dbd.api.database
+import dbd.api.database.Tables
 import dbd.api.database.access.many.TaskTypes
 import dbd.core.model.enumeration.{TaskType, UserRole}
 import dbd.core.model.existing
@@ -38,11 +39,11 @@ object Membership extends SingleModelAccess[existing.Membership]
 	{
 		// COMPUTED	--------------------------
 		
-		private def roleFactory = database.model.OrganizationMemberRole
+		private def memberRoleFactory = database.model.OrganizationMemberRole
 		
 		private def rightsFactory = database.model.RoleRight
 		
-		private def rightsTarget = roleFactory.table join rightsFactory.table
+		private def rightsTarget = memberRoleFactory.table join Tables.userRole join rightsFactory.table
 		
 		/**
 		  * @param connection DB Connection (implicit)
@@ -50,7 +51,7 @@ object Membership extends SingleModelAccess[existing.Membership]
 		  */
 		def roles(implicit connection: Connection) =
 		{
-			connection(Select.index(roleFactory.table) + Where(rolesCondition)).rowIntValues.flatMap { roleId =>
+			connection(Select.index(memberRoleFactory.table) + Where(rolesCondition)).rowIntValues.flatMap { roleId =>
 				UserRole.forId(roleId).toOption }
 		}
 		
@@ -65,8 +66,8 @@ object Membership extends SingleModelAccess[existing.Membership]
 				.flatMap { taskId => TaskType.forId(taskId).toOption }
 		}
 		
-		private def rolesCondition = roleFactory.withMembershipId(membershipId).toCondition &&
-			roleFactory.nonDeprecatedCondition
+		private def rolesCondition = memberRoleFactory.withMembershipId(membershipId).toCondition &&
+			memberRoleFactory.nonDeprecatedCondition
 		
 		
 		// OTHER	---------------------------
