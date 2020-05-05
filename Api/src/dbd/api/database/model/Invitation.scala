@@ -55,6 +55,12 @@ object Invitation extends StorableFactory[existing.Invitation]
 	def withExpireTime(expireTime: Instant) = apply(expireTime = Some(expireTime))
 	
 	/**
+	  * @param recipientId Id of recipient user
+	  * @return A model with only recipient id set
+	  */
+	def withRecipientId(recipientId: Int) = apply(recipientId = Some(recipientId))
+	
+	/**
 	  * Inserts a new invitation to the database
 	  * @param data Invitation data to insert
 	  * @param connection DB Connection (implicit)
@@ -78,9 +84,20 @@ case class Invitation(id: Option[Int] = None, organizationId: Option[Int] = None
 					  expireTime: Option[Instant] = None, creatorId: Option[Int] = None)
 	extends StorableWithFactory[existing.Invitation]
 {
+	// IMPLEMENTED	------------------------------
+	
 	override def factory = Invitation
 	
 	override def valueProperties = Vector("id" -> id, "organizationId" -> organizationId, "recipientId" -> recipientId,
 		"recipientEmail" -> recipientEmail, "startingRoleId" -> startingRole.map { _.id }, "expiresIn" -> expireTime,
 		"creatorId" -> creatorId)
+	
+	
+	// OTHER	----------------------------------
+	
+	/**
+	  * @param email Recipient user's email address
+	  * @return A copy of this model with specified email address
+	  */
+	def withRecipientEmail(email: String) = copy(recipientEmail = Some(email))
 }

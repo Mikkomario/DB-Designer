@@ -2,12 +2,14 @@ package dbd.api.database.access.single
 
 import dbd.api.database
 import dbd.api.database.access.id.UserId
+import dbd.api.database.access.many.InvitationsAccess
 import dbd.api.database.model.{UserAuth, UserDevice}
 import dbd.api.util.PasswordHash
 import dbd.core.model.existing
 import utopia.flow.datastructure.immutable.Value
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
+import utopia.vault.model.enumeration.BasicCombineOperator.Or
 import utopia.vault.nosql.access.{SingleIdAccess, SingleIdModelAccess, SingleModelAccess, UniqueAccess}
 import utopia.vault.sql.{Select, Where}
 
@@ -65,6 +67,24 @@ object User extends SingleModelAccess[existing.User]
 				.firstValue.string
 		}
 		
+		/**
+		  * @param connection DB Connection (implicit)
+		  * @return Current settings for this user
+		  */
+		def settings(implicit connection: Connection) =
+		{
+			val settingsFactory = database.model.UserSettings
+			settingsFactory.get(settingsFactory.withUserId(userId).toCondition && settingsFactory.nonDeprecatedCondition)
+		}
+		
+		
+		/**
+		  * @param connection DB Connection (implicit), used for reading user email address
+		  * @return An access point to invitations for this user
+		  */
+		// Will need to read settings for accessing since joining logic would get rather complex otherwise
+		def receivedInvitations(implicit connection: Connection) = new InvitationsForUser(settings.map { _.email })
+		
 		
 		// OTHER	----------------------
 		
@@ -121,6 +141,20 @@ object User extends SingleModelAccess[existing.User]
 			override def valueToId(value: Value) = value.int
 			
 			override def table = factory.table
+		}
+		
+		// If email is empty, it is not searched
+		class InvitationsForUser(email: Option[String]) extends InvitationsAccess
+		{
+			override val globalCondition =
+			{
+				email match
+				{
+					case Some(email) => Some(factory.withRecipientId(userId)
+						.withRecipientEmail(email).toConditionWithOperator(combineOperator = Or))
+					case None => Some(factory.withRecipientId(userId).toCondition)
+				}
+			}
 		}
 	}
 }

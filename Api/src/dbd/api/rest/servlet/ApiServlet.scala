@@ -1,6 +1,8 @@
 package dbd.api.rest.servlet
 
-import dbd.api.rest.resource.{Devices, Organizations, Users}
+import dbd.api.rest.resource.device.Devices
+import dbd.api.rest.resource.organization.Organizations
+import dbd.api.rest.resource.user.Users
 import dbd.api.rest.util.AuthorizedContext
 import javax.servlet.annotation.MultipartConfig
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}

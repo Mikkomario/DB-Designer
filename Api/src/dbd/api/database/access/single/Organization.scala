@@ -2,15 +2,11 @@ package dbd.api.database.access.single
 
 import java.time.{Instant, Period}
 
-import dbd.api.database.model.{Invitation, InvitationResponse, InvitationWithResponse}
+import dbd.api.database.access.many.InvitationsAccess
 import dbd.core.model.enumeration.UserRole
-import dbd.core.model.existing
 import dbd.core.model.partial.InvitationData
 import utopia.flow.util.TimeExtensions._
 import utopia.vault.database.Connection
-import utopia.vault.model.enumeration.ComparisonOperator.Larger
-import utopia.vault.nosql.access.ManyModelAccess
-import utopia.vault.sql.{JoinType, Select, Where}
 
 /**
   * Used for accessing individual organizations
@@ -42,40 +38,11 @@ object Organization
 		
 		// NESTED	-------------------------------
 		
-		object Invitations extends ManyModelAccess[existing.Invitation]
+		object Invitations extends InvitationsAccess
 		{
 			// IMPLEMENTED	------------------------
 			
-			override def factory = Invitation
-			
 			override val globalCondition = Some(factory.withOrganizationId(organizationId).toCondition)
-			
-			
-			// COMPUTED	-----------------------------
-			
-			/**
-			  * @param connection DB Connection (implicit)
-			  * @return Invitations that have been blocked
-			  */
-			def blocked(implicit connection: Connection) =
-			{
-				val additionalCondition = InvitationResponse.blocked.toCondition
-				InvitationWithResponse.getMany(mergeCondition(additionalCondition))
-			}
-			
-			/**
-			  * @param connection DB Connection (implicit)
-			  * @return Invitations that are currently without response
-			  */
-			def pending(implicit connection: Connection) =
-			{
-				// Pending invitations must not be joined to a response and not be expired
-				val noResponseCondition = InvitationResponse.table.primaryColumn.get.isNull
-				val pendingCondition = Invitation.withExpireTime(Instant.now()).toConditionWithOperator(Larger)
-				// Has to join invitation response table for the condition to work
-				connection(Select(Invitation.target.join(InvitationResponse.table, JoinType.Left), Invitation.table) +
-					Where(mergeCondition(noResponseCondition && pendingCondition))).parse(factory)
-			}
 			
 			
 			// OTHER	---------------------------

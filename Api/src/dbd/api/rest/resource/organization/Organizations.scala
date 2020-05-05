@@ -1,4 +1,4 @@
-package dbd.api.rest.resource
+package dbd.api.rest.resource.organization
 
 import dbd.api.database.access.many
 import dbd.api.database.access.single.Language

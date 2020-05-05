@@ -1,4 +1,4 @@
-package dbd.api.rest.resource
+package dbd.api.rest.resource.device
 
 import dbd.api.rest.util.AuthorizedContext
 import utopia.access.http.Status.NotImplemented

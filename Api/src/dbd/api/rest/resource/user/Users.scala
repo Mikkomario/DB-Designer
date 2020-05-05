@@ -1,4 +1,4 @@
-package dbd.api.rest.resource
+package dbd.api.rest.resource.user
 
 import dbd.api.database.access.many
 import dbd.api.rest.util.AuthorizedContext
@@ -7,11 +7,12 @@ import dbd.core.model.error.AlreadyUsedException
 import dbd.core.model.post.NewUser
 import dbd.core.util.{Log, ThreadPool}
 import utopia.access.http.Method.Post
-import utopia.access.http.Status.{BadRequest, Created, Forbidden, InternalServerError, NotImplemented}
+import utopia.access.http.Status._
 import utopia.flow.generic.ValueConversions._
+import utopia.flow.util.StringExtensions._
 import utopia.nexus.http.Path
-import utopia.nexus.rest.ResourceSearchResult.Error
 import utopia.nexus.rest.Resource
+import utopia.nexus.rest.ResourceSearchResult.{Error, Follow}
 import utopia.nexus.result.Result
 
 import scala.concurrent.ExecutionContext
@@ -57,6 +58,11 @@ object Users extends Resource[AuthorizedContext]
 		}.toResponse
 	}
 	
-	override def follow(path: Path)(implicit context: AuthorizedContext) = Error(NotImplemented,
-		Some("Access to user data hasn't been implemented yet"))
+	override def follow(path: Path)(implicit context: AuthorizedContext) =
+	{
+		if (path.head ~== "me")
+			Follow(Me, path.tail)
+		else
+			Error(message = Some(s"Currently only 'me' is available under $name"))
+	}
 }

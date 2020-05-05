@@ -1,11 +1,11 @@
-package dbd.api.rest.resource
+package dbd.api.rest.resource.device
 
 import dbd.api.rest.util.AuthorizedContext
 import utopia.access.http.Status.NotImplemented
 import utopia.flow.util.StringExtensions._
 import utopia.nexus.http.Path
-import utopia.nexus.rest.ResourceSearchResult.{Error, Follow}
 import utopia.nexus.rest.Resource
+import utopia.nexus.rest.ResourceSearchResult.{Error, Follow}
 import utopia.nexus.result.Result
 
 /**

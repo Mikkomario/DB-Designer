@@ -1,4 +1,4 @@
-package dbd.api.rest.resource
+package dbd.api.rest.resource.device
 
 import dbd.api.database.access.single
 import dbd.api.rest.util.AuthorizedContext
@@ -6,8 +6,8 @@ import utopia.access.http.Method.{Delete, Get}
 import utopia.access.http.Status.NotFound
 import utopia.flow.generic.ValueConversions._
 import utopia.nexus.http.Path
-import utopia.nexus.rest.ResourceSearchResult.Error
 import utopia.nexus.rest.Resource
+import utopia.nexus.rest.ResourceSearchResult.Error
 import utopia.nexus.result.Result
 import utopia.nexus.result.Result.Empty
 import utopia.vault.database.Connection

@@ -1,4 +1,4 @@
-package dbd.api.rest.resource
+package dbd.api.rest.resource.device
 
 import dbd.api.database.access.single
 import dbd.api.database.access.single.UserSession

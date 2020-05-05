@@ -34,6 +34,12 @@ object UserSettings extends StorableFactoryWithValidation[existing.UserSettings]
 	// OTHER	--------------------------------------
 	
 	/**
+	  * @param userId Id of the described user
+	  * @return A model with only user id set
+	  */
+	def withUserId(userId: Int) = apply(userId = Some(userId))
+	
+	/**
 	  * @param userName User name
 	  * @return a model with only user name set
 	  */
