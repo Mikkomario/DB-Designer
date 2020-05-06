@@ -34,8 +34,8 @@ object Organizations extends Resource[AuthorizedContext]
 				// Checks that language id is valid, then inserts the new organization
 				if (Language(newOrganization.languageId).isDefined)
 				{
-					val inserted = many.Organizations.insert(newOrganization.name, newOrganization.languageId, session.userId)
-					Result.Success(inserted.organizationId, Created)
+					val organizationId = many.Organizations.insert(newOrganization.name, newOrganization.languageId, session.userId)
+					Result.Success(organizationId, Created)
 				}
 				else
 					Result.Failure(NotFound, s"There doesn't exist a language with id ${newOrganization.languageId}")

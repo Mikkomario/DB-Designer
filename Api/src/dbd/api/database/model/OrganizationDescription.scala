@@ -6,13 +6,15 @@ import java.time.Instant
 import dbd.api.database.Tables
 import dbd.core.model.partial.{DescriptionData, OrganizationDescriptionData}
 
+import scala.util.Success
+
 object OrganizationDescription extends DescriptionLinkFactory[existing.OrganizationDescription,
 	OrganizationDescription, OrganizationDescriptionData[DescriptionData]]
 {
 	override def targetIdAttName = "organizationId"
 	
 	override protected def apply(id: Int, targetId: Int, description: existing.Description) =
-		existing.OrganizationDescription(id, OrganizationDescriptionData(targetId, description))
+		Success(existing.OrganizationDescription(id, OrganizationDescriptionData(targetId, description)))
 	
 	override def table = Tables.organizationDescription
 }

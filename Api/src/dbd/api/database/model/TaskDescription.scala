@@ -12,9 +12,8 @@ object TaskDescription extends DescriptionLinkFactory[existing.TaskDescription, 
 {
 	override def targetIdAttName = "taskId"
 	
-	// FIXME: Currently has to unsafely unwrap the parsed task type. Fix
 	override protected def apply(id: Int, targetId: Int, description: existing.Description) =
-		existing.TaskDescription(id, TaskDescriptionData(TaskType.forId(targetId).get, description))
+		TaskType.forId(targetId).map { task => existing.TaskDescription(id, TaskDescriptionData(task, description)) }
 	
 	override def table = Tables.taskDescription
 }

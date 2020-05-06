@@ -41,6 +41,11 @@ object RoleRight extends StorableFactory[existing.RoleRight]
 	// COMPUTED	------------------------------
 	
 	/**
+	  * @return Column that holds the role id
+	  */
+	def roleIdColumn = table(roleIdAttName)
+	
+	/**
 	  * @return Column that holds the task id
 	  */
 	def taskIdColumn = table(taskIdAttName)

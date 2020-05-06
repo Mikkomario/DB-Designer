@@ -6,6 +6,8 @@ import dbd.api.database.Tables
 import dbd.core.model.existing
 import dbd.core.model.partial.{DescriptionData, DeviceDescriptionData}
 
+import scala.util.Success
+
 object DeviceDescription extends DescriptionLinkFactory[existing.DeviceDescription, DeviceDescription,
 	DeviceDescriptionData[DescriptionData]]
 {
@@ -14,7 +16,7 @@ object DeviceDescription extends DescriptionLinkFactory[existing.DeviceDescripti
 	override def targetIdAttName = "deviceId"
 	
 	override protected def apply(id: Int, targetId: Int, description: existing.Description) =
-		existing.DeviceDescription(id, DeviceDescriptionData(targetId, description))
+		Success(existing.DeviceDescription(id, DeviceDescriptionData(targetId, description)))
 	
 	override def table = Tables.deviceDescription
 }

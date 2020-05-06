@@ -11,6 +11,14 @@ import utopia.vault.nosql.factory.Deprecatable
 
 object OrganizationMemberRole extends Deprecatable
 {
+	// ATTRIBUTES	------------------------
+	
+	/**
+	  * Name of the attribute that contains linked role's id
+	  */
+	val roleIdAttName = "roleId"
+	
+	
 	// COMPUTED	----------------------------
 	
 	def table = Tables.organizationMemberRole
@@ -50,8 +58,10 @@ case class OrganizationMemberRole(id: Option[Int] = None, membershipId: Option[I
 								  role: Option[UserRole] = None, creatorId: Option[Int] = None,
 								  deprecatedAfter: Option[Instant] = None) extends Storable
 {
+	import OrganizationMemberRole._
+	
 	override def table = OrganizationMemberRole.table
 	
-	override def valueProperties = Vector("id" -> id, "membershipId" -> membershipId, "roleId" -> role.map { _.id },
+	override def valueProperties = Vector("id" -> id, "membershipId" -> membershipId, roleIdAttName -> role.map { _.id },
 		"creatorId" -> creatorId, "deprecatedAfter" -> deprecatedAfter)
 }

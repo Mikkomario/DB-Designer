@@ -10,6 +10,8 @@ import utopia.vault.database.Connection
 import utopia.vault.model.immutable.Storable
 import utopia.vault.nosql.factory.{Deprecatable, LinkedStorableFactory}
 
+import scala.util.Try
+
 /**
   * A common trait for factories of description links
   * @author Mikko Hilpinen
@@ -43,7 +45,7 @@ trait DescriptionLinkFactory[+E, +M <: Storable, -P <: DescriptionLinkLike[Descr
 	  * @param description Description from DB
 	  * @return A new existing desription link model
 	  */
-	protected def apply(id: Int, targetId: Int, description: existing.Description): E
+	protected def apply(id: Int, targetId: Int, description: existing.Description): Try[E]
 	
 	
 	// IMPLEMENTED	------------------------------
@@ -53,12 +55,17 @@ trait DescriptionLinkFactory[+E, +M <: Storable, -P <: DescriptionLinkLike[Descr
 	override def childFactory = Description
 	
 	override def apply(model: Model[Constant], child: existing.Description) =
-		table.requirementDeclaration.validate(model).toTry.map { valid =>
+		table.requirementDeclaration.validate(model).toTry.flatMap { valid =>
 			apply(valid("id").getInt, valid(targetIdAttName).getInt, child)
 		}
 	
 	
 	// COMPUTED	-----------------------------------
+	
+	/**
+	  * @return Column that refers to described items/targets
+	  */
+	def targetIdColumn = table(targetIdAttName)
 	
 	/**
 	  * @return A model that has just been marked as deprecated
@@ -78,7 +85,7 @@ trait DescriptionLinkFactory[+E, +M <: Storable, -P <: DescriptionLinkLike[Descr
 	  * Inserts a new description link to DB
 	  * @param data Data to insert
 	  * @param connection DB Connection (implicit)
-	  * @return Newly inserted description link
+	  * @return Newly inserted description link's id + newly inserted description model
 	  */
 	def insert(data: P)(implicit connection: Connection) =
 	{
@@ -86,6 +93,6 @@ trait DescriptionLinkFactory[+E, +M <: Storable, -P <: DescriptionLinkLike[Descr
 		val newDescription = Description.insert(data.description)
 		// Inserts the link between description and device
 		val linkId = apply(None, Some(data.targetId), Some(newDescription.id)).insert().getInt
-		apply(linkId, data.targetId, newDescription)
+		linkId -> newDescription
 	}
 }

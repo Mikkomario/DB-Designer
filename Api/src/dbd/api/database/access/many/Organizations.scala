@@ -34,7 +34,8 @@ object Organizations
 		val membership = OrganizationMembership.insert(MembershipData(organizationId, founderId, Some(founderId)))
 		OrganizationMemberRole.insert(membership.id, Owner, founderId)
 		// Inserts a name for that organization
-		OrganizationDescription.insert(OrganizationDescriptionData(organizationId, DescriptionData(Name,
-			languageId, organizationName, Some(founderId))))
+		OrganizationDescription.insert(OrganizationDescriptionData(organizationId,
+			DescriptionData(Name, languageId, organizationName, Some(founderId))))
+		organizationId
 	}
 }

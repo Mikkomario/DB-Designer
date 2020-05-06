@@ -3,15 +3,18 @@ package dbd.api.database.access.single
 import dbd.api.database
 import dbd.api.database.access.id.UserId
 import dbd.api.database.access.many.InvitationsAccess
-import dbd.api.database.model.{UserAuth, UserDevice}
+import dbd.api.database.model.{MembershipWithRoles, OrganizationDescription, RoleDescription, RoleRight, TaskDescription, UserAuth, UserDevice}
 import dbd.api.util.PasswordHash
+import dbd.core.model.combined.{DescribedRole, DescribedTask, MyOrganization}
+import dbd.core.model.enumeration.{TaskType, UserRole}
 import dbd.core.model.existing
 import utopia.flow.datastructure.immutable.Value
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.model.enumeration.BasicCombineOperator.Or
-import utopia.vault.nosql.access.{SingleIdAccess, SingleIdModelAccess, SingleModelAccess, UniqueAccess}
+import utopia.vault.nosql.access.{ManyModelAccess, SingleIdAccess, SingleIdModelAccess, SingleModelAccess, UniqueAccess}
 import utopia.vault.sql.{Select, Where}
+import utopia.vault.sql.Extensions._
 
 /**
   * Used for accessing individual user's data
@@ -85,6 +88,11 @@ object User extends SingleModelAccess[existing.User]
 		// Will need to read settings for accessing since joining logic would get rather complex otherwise
 		def receivedInvitations(implicit connection: Connection) = new InvitationsForUser(settings.map { _.email })
 		
+		/**
+		  * @return An access point to this user's memberships
+		  */
+		def memberships = Memberships
+		
 		
 		// OTHER	----------------------
 		
@@ -154,6 +162,62 @@ object User extends SingleModelAccess[existing.User]
 						.withRecipientEmail(email).toConditionWithOperator(combineOperator = Or))
 					case None => Some(factory.withRecipientId(userId).toCondition)
 				}
+			}
+		}
+		
+		object Memberships extends ManyModelAccess[existing.Membership]
+		{
+			// IMPLEMENTED	---------------------------
+			
+			override def factory = database.model.OrganizationMembership
+			
+			override def globalCondition = Some(userCondition && factory.nonDeprecatedCondition)
+			
+			
+			// COMPUTED	--------------------------------
+			
+			private def userCondition = factory.withUserId(userId).toCondition
+			
+			/**
+			  * All organizations & roles associated with these memberships
+			  * @param connection DB Connection (implicit)
+			  * @return A list of organizations, along with all roles, rights and descriptions that these
+			  *         memberships link to
+			  */
+			def myOrganizations(implicit connection: Connection) =
+			{
+				// Reads all memberships & roles first
+				val memberships = MembershipWithRoles.getMany(userCondition && MembershipWithRoles.nonDeprecatedCondition)
+				// Reads organization descriptions
+				val organizationIds = memberships.map { _.wrapped.organizationId }.toSet
+				if (organizationIds.nonEmpty)
+				{
+					val organizationDescriptions = OrganizationDescription.getMany(
+						OrganizationDescription.targetIdColumn.in(organizationIds))
+					// Reads all role descriptions
+					val roleIds = memberships.flatMap { _.roles }.map { _.id }.toSet
+					val roleDescriptions = RoleDescription.getMany(RoleDescription.targetIdColumn.in(roleIds)).toSet
+					// Reads all task links & task descriptions
+					val roleRights = RoleRight.getMany(RoleRight.roleIdColumn.in(roleIds))
+					val taskIds = roleRights.map { _.task.id }.toSet
+					val taskDescriptions = TaskDescription.getMany(TaskDescription.targetIdColumn.in(taskIds)).toSet
+					
+					// Combines all gathered information
+					val describedTasks = taskIds.flatMap { TaskType.forId(_).toOption }.map { task =>
+						DescribedTask(task, taskDescriptions.filter { _.task == task }) }
+					val describedRoles = roleIds.flatMap { UserRole.forId(_).toOption }.map { role =>
+						DescribedRole(role, roleDescriptions.filter { _.role == role },
+							roleRights.filter { _.role == role }.flatMap { link =>
+								describedTasks.filter { _.task == link.task } }.toSet) }
+					memberships.map { membership =>
+						val organizationId = membership.wrapped.organizationId
+						MyOrganization(organizationId, userId,
+							organizationDescriptions.filter { _.organizationId == organizationId }.toSet,
+							membership.roles.flatMap { role => describedRoles.find { _.role == role } })
+					}
+				}
+				else
+					Vector()
 			}
 		}
 	}

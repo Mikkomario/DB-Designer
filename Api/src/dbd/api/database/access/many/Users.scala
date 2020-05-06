@@ -93,6 +93,7 @@ object Users extends ManyModelAccess[existing.User]
 				{
 					case Right(deviceId) => deviceId
 					case Left(deviceData) => Devices.insert(deviceData._1, deviceData._2, user.id).deviceId
+					
 				}
 				UserDevice.insert(user.id, deviceId)
 				// Returns inserted user
