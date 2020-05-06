@@ -7,7 +7,7 @@ import dbd.core.model.enumeration.TaskType.InviteMembers
 import dbd.core.model.existing.Invitation
 import dbd.core.model.post.NewInvitation
 import utopia.access.http.Method.Post
-import utopia.access.http.Status.{BadRequest, Forbidden, NotImplemented}
+import utopia.access.http.Status.{BadRequest, Forbidden, NotImplemented, Unauthorized}
 import utopia.flow.datastructure.immutable.Model
 import utopia.flow.generic.ValueConversions._
 import utopia.flow.util.TimeExtensions._
@@ -25,7 +25,7 @@ import scala.util.{Failure, Success}
   * @author Mikko Hilpinen
   * @since 5.5.2020, v2
   */
-case class Invitations(organizationId: Int) extends Resource[AuthorizedContext]
+case class OrganizationInvitations(organizationId: Int) extends Resource[AuthorizedContext]
 {
 	override val name = "invitations"
 	
@@ -112,7 +112,7 @@ case class Invitations(organizationId: Int) extends Resource[AuthorizedContext]
 					}
 					else
 						Result.Failure(Forbidden, s"You don't have the right to invite new members to this organization")
-				case None => Result.Failure(Forbidden, s"You're not a member of this organization")
+				case None => Result.Failure(Unauthorized, s"You're not a member of this organization")
 			}
 		}
 	}

@@ -7,6 +7,7 @@ import utopia.flow.datastructure.immutable.Model
 import utopia.flow.generic.ModelConvertible
 import utopia.flow.generic.ValueConversions._
 import utopia.flow.util.CollectionExtensions._
+import utopia.flow.util.TimeExtensions._
 
 /**
   * Contains basic information about an invitation to join an organization
@@ -32,6 +33,11 @@ case class InvitationData(organizationId: Int, recipient: Either[String, Int], s
 	  * @return Recipient email address (None if defined by user id)
 	  */
 	def recipientEmail = recipient.leftOption
+	
+	/**
+	  * @return Whether this invitation has expired already
+	  */
+	def hasExpired = expireTime <= Instant.now()
 	
 	
 	// IMPLEMENTED	------------------------

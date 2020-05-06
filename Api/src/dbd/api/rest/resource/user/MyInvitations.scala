@@ -3,11 +3,10 @@ package dbd.api.rest.resource.user
 import dbd.api.database.access.single
 import dbd.api.rest.util.AuthorizedContext
 import utopia.access.http.Method.Get
-import utopia.access.http.Status.NotImplemented
 import utopia.flow.generic.ValueConversions._
 import utopia.nexus.http.Path
 import utopia.nexus.rest.Resource
-import utopia.nexus.rest.ResourceSearchResult.Error
+import utopia.nexus.rest.ResourceSearchResult.{Error, Follow}
 import utopia.nexus.result.Result
 import utopia.vault.database.Connection
 
@@ -32,6 +31,12 @@ object MyInvitations extends Resource[AuthorizedContext]
 		}
 	}
 	
-	override def follow(path: Path)(implicit context: AuthorizedContext) = Error(NotImplemented,
-		message = Some("Individual invitation access hasn't been implemented yet"))
+	override def follow(path: Path)(implicit context: AuthorizedContext) =
+	{
+		path.head.int match
+		{
+			case Some(id) => Follow(Invitation(id), path.tail)
+			case None => Error(message = Some(s"${path.head} is not a valid invitation id"))
+		}
+	}
 }

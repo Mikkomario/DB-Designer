@@ -31,6 +31,12 @@ object InvitationResponse extends StorableFactoryWithValidation[existing.Invitat
 	// OTHER	------------------------------
 	
 	/**
+	  * @param invitationId Id of the invitation this response is for
+	  * @return A model with only invitation id set
+	  */
+	def withInvitationId(invitationId: Int) = apply(invitationId = Some(invitationId))
+	
+	/**
 	  * Inserts a new invitation response to the DB
 	  * @param data Data to insert
 	  * @param connection DB Connection (implicit)
