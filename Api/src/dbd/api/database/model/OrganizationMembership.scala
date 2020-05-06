@@ -27,6 +27,12 @@ object OrganizationMembership extends StorableFactoryWithValidation[existing.Mem
 	// OTHER	-------------------------------
 	
 	/**
+	  * @param organizationId Id of the target organization
+	  * @return A model with only organization id set
+	  */
+	def withOrganizationId(organizationId: Int) = apply(organizationId = Some(organizationId))
+	
+	/**
 	  * @param userId Targeted user's id
 	  * @return A model with only user id set
 	  */

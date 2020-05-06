@@ -62,6 +62,12 @@ case class InvitationResponse(invitationId: Int) extends Resource[AuthorizedCont
 									case None =>
 										// Saves the new response to DB
 										val savedResponse = accessInvitation.response.insert(newResponse, session.userId)
+										// Adds this user to the organization (if the invitation was accepted)
+										if (savedResponse.wasAccepted)
+											single.Organization(invitation.organizationId).memberships.insert(
+												session.userId, invitation.startingRole,
+												invitation.creatorId.getOrElse(session.userId))
+										// Returns the original invitation, along with the posted response
 										Result.Success(InvitationWithResponse(invitation, savedResponse).toModel)
 								}
 							}

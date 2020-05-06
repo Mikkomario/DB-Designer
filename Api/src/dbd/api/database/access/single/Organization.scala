@@ -2,11 +2,14 @@ package dbd.api.database.access.single
 
 import java.time.{Instant, Period}
 
+import dbd.api.database
 import dbd.api.database.access.many.InvitationsAccess
+import dbd.core.model.existing
 import dbd.core.model.enumeration.UserRole
-import dbd.core.model.partial.InvitationData
+import dbd.core.model.partial.{InvitationData, MembershipData}
 import utopia.flow.util.TimeExtensions._
 import utopia.vault.database.Connection
+import utopia.vault.nosql.access.ManyModelAccess
 
 /**
   * Used for accessing individual organizations
@@ -31,12 +34,52 @@ object Organization
 		// COMPUTED	------------------------------
 		
 		/**
+		  * @return An access point to this organization's memberships (organization-user-links)
+		  */
+		def memberships = Memberships
+		
+		/**
 		  * @return An access point to invitations to join this organization
 		  */
 		def invitations = Invitations
 		
 		
 		// NESTED	-------------------------------
+		
+		object Memberships extends ManyModelAccess[existing.Membership]
+		{
+			// COMPUTED	---------------------------
+			
+			private def memberRolesFactory = database.model.OrganizationMemberRole
+			
+			
+			// IMPLEMENTED	-----------------------
+			
+			override def factory = database.model.OrganizationMembership
+			
+			override def globalCondition = Some(factory.withOrganizationId(organizationId).toCondition &&
+				factory.nonDeprecatedCondition)
+			
+			
+			// OTHER	---------------------------
+			
+			/**
+			  * Inserts a new membership, along with a single role
+			  * @param userId Id of the new organization member (user)
+			  * @param startingRole Role given to the user in this organization
+			  * @param creatorId Id of the user who authorized / added this membership
+			  * @param connection DB Connection (implicit)
+			  * @return Inserted membership
+			  */
+			def insert(userId: Int, startingRole: UserRole, creatorId: Int)(implicit connection: Connection) =
+			{
+				// Adds membership
+				val newMembership = factory.insert(MembershipData(organizationId, userId, Some(creatorId)))
+				// Adds user role
+				memberRolesFactory.insert(newMembership.id, startingRole, creatorId)
+				newMembership
+			}
+		}
 		
 		object Invitations extends InvitationsAccess
 		{
