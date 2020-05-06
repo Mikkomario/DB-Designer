@@ -3,9 +3,9 @@ package dbd.api.database.access.many
 import dbd.api.database
 import dbd.api.database.access.single.{Device, Language}
 import dbd.api.database.model.{UserDevice, UserLanguage}
+import dbd.core.model.combined.UserWithLinks
 import dbd.core.model.error.{AlreadyUsedException, IllegalPostModelException}
-import dbd.core.model.existing
-import dbd.core.model.existing.UserWithLinks
+import dbd.core.model.{combined, existing}
 import dbd.core.model.post.NewUser
 import utopia.vault.database.Connection
 import utopia.vault.nosql.access.ManyModelAccess
@@ -96,7 +96,7 @@ object Users extends ManyModelAccess[existing.User]
 				}
 				UserDevice.insert(user.id, deviceId)
 				// Returns inserted user
-				Success(UserWithLinks(user, newUser.languageIds, Vector(deviceId)))
+				Success(combined.UserWithLinks(user, newUser.languageIds, Vector(deviceId)))
 			}
 			else
 				Failure(new IllegalPostModelException("device_id and language_id must point to existing data"))

@@ -1,8 +1,8 @@
 package dbd.api.database.model
 
 import dbd.api.database.Tables
-import dbd.core.model.existing
-import dbd.core.model.existing.UserWithLinks
+import dbd.core.model.combined.UserWithLinks
+import dbd.core.model.{combined, existing}
 import dbd.core.model.partial.UserSettingsData
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.flow.generic.ValueConversions._
@@ -61,7 +61,7 @@ object User extends LinkedStorableFactory[existing.User, existing.UserSettings] 
 			Where(UserDevice.withUserId(user.id).toCondition && UserDevice.nonDeprecatedCondition)).rowIntValues
 		
 		// Combines data
-		UserWithLinks(user, languageIds, deviceIds)
+		combined.UserWithLinks(user, languageIds, deviceIds)
 	}
 }
 

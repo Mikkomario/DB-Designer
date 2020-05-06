@@ -2,7 +2,8 @@ package dbd.api.rest.resource.user
 
 import dbd.api.database.access.single
 import dbd.api.rest.util.AuthorizedContext
-import dbd.core.model.existing.InvitationWithResponse
+import dbd.core.model.combined
+import dbd.core.model.combined.InvitationWithResponse
 import dbd.core.model.post.NewInvitationResponse
 import utopia.access.http.Method.Post
 import utopia.access.http.Status.{Forbidden, NotFound, Unauthorized}
@@ -56,7 +57,7 @@ case class InvitationResponse(invitationId: Int) extends Resource[AuthorizedCont
 										// If there was a response, will not create a new one
 										if (earlierResponse.wasAccepted == newResponse.wasAccepted &&
 											earlierResponse.wasBlocked == newResponse.wasBlocked)
-											Result.Success(InvitationWithResponse(invitation, earlierResponse).toModel)
+											Result.Success(combined.InvitationWithResponse(invitation, earlierResponse).toModel)
 										else
 											Result.Failure(Forbidden, "You've already responded to this invitation")
 									case None =>
@@ -68,7 +69,7 @@ case class InvitationResponse(invitationId: Int) extends Resource[AuthorizedCont
 												session.userId, invitation.startingRole,
 												invitation.creatorId.getOrElse(session.userId))
 										// Returns the original invitation, along with the posted response
-										Result.Success(InvitationWithResponse(invitation, savedResponse).toModel)
+										Result.Success(combined.InvitationWithResponse(invitation, savedResponse).toModel)
 								}
 							}
 						}

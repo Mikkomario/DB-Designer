@@ -1,10 +1,11 @@
-package dbd.core.model.existing
+package dbd.core.model.combined
 
+import dbd.core.model.existing.User
 import dbd.core.model.template.Extender
 import utopia.flow.datastructure.immutable.Constant
 import utopia.flow.datastructure.template.{Model, Property}
-import utopia.flow.generic.{FromModelFactory, ModelConvertible}
 import utopia.flow.generic.ValueConversions._
+import utopia.flow.generic.{FromModelFactory, ModelConvertible}
 
 object UserWithLinks extends FromModelFactory[UserWithLinks]
 {

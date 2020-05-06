@@ -1,6 +1,6 @@
 package dbd.api.database.model
 
-import dbd.core.model.existing
+import dbd.core.model.combined
 import utopia.vault.model.immutable.Row
 import utopia.vault.nosql.factory.FromRowFactory
 
@@ -9,12 +9,12 @@ import utopia.vault.nosql.factory.FromRowFactory
   * @author Mikko Hilpinen
   * @since 4.5.2020, v2
   */
-object InvitationWithResponse extends FromRowFactory[existing.InvitationWithResponse]
+object InvitationWithResponse extends FromRowFactory[combined.InvitationWithResponse]
 {
 	// IMPLEMENTED	------------------------------
 	
 	override def apply(row: Row) = Invitation(row).flatMap { invitation =>
-		InvitationResponse(row).map { response => existing.InvitationWithResponse(invitation, response) }
+		InvitationResponse(row).map { response => combined.InvitationWithResponse(invitation, response) }
 	}
 	
 	override def table = Invitation.table

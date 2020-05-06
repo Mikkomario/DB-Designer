@@ -85,6 +85,11 @@ object Tables
 	def userRole = apply("organization_user_role")
 	
 	/**
+	  * @return Table that contains links between user roles and their descriptions
+	  */
+	def roleDescription = apply("user_role_description")
+	
+	/**
 	  * @return Table that contains role links for organization memberships
 	  */
 	def organizationMemberRole = apply("organization_member_role")
@@ -93,6 +98,16 @@ object Tables
 	  * @return Table that contains links between user roles and the tasks they have access to
 	  */
 	def roleRight = apply("user_role_right")
+	
+	/**
+	  * @return A table that lists all available tasks/rights
+	  */
+	def task = apply("task")
+	
+	/**
+	  * @return A table that contains links between tasks and descriptions
+	  */
+	def taskDescription = apply("task_description")
 	
 	/**
 	  * @return Table that contains sent organization join invitations

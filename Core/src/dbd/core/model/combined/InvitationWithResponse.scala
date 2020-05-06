@@ -1,5 +1,6 @@
-package dbd.core.model.existing
+package dbd.core.model.combined
 
+import dbd.core.model.existing.{Invitation, InvitationResponse}
 import dbd.core.model.template.Extender
 import utopia.flow.datastructure.immutable.Constant
 import utopia.flow.generic.ModelConvertible
