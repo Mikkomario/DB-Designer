@@ -1,6 +1,7 @@
 package dbd.core.model.partial
 
 import dbd.core.model.template.DescriptionLinkLike
+import utopia.flow.generic.ModelConvertible
 
 /**
   * Contains basic data for a device-description
@@ -10,7 +11,7 @@ import dbd.core.model.template.DescriptionLinkLike
   * @param description Description of the device
   * @tparam D Type of description contained within this data
   */
-case class DeviceDescriptionData[+D](deviceId: Int, description: D) extends DescriptionLinkLike[D]
+case class DeviceDescriptionData[+D <: ModelConvertible](deviceId: Int, description: D) extends DescriptionLinkLike[D]
 {
 	override def targetId = deviceId
 }

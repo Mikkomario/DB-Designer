@@ -14,6 +14,11 @@ sealed trait DescriptionRole
 	  * @return Id of this role
 	  */
 	def id: Int
+	
+	/**
+	  * @return Key that describes this description role in json context
+	  */
+	def jsonKey: String
 }
 
 object DescriptionRole
@@ -24,6 +29,8 @@ object DescriptionRole
 	case object Name extends DescriptionRole
 	{
 		override def id = 1
+		
+		override def jsonKey = "name"
 	}
 	
 	/**

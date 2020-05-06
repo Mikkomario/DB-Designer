@@ -2,6 +2,9 @@ package dbd.core.model.combined
 
 import dbd.core.model.enumeration.TaskType
 import dbd.core.model.existing.TaskDescription
+import utopia.flow.datastructure.immutable.Model
+import utopia.flow.generic.ModelConvertible
+import utopia.flow.generic.ValueConversions._
 
 /**
   * Combines task type with some or all of its descriptions
@@ -10,4 +13,8 @@ import dbd.core.model.existing.TaskDescription
   * @param task Wrapped task
   * @param descriptions Various descriptions for this task
   */
-case class DescribedTask(task: TaskType, descriptions: Set[TaskDescription])
+case class DescribedTask(task: TaskType, descriptions: Set[TaskDescription]) extends ModelConvertible
+{
+	override def toModel = Model(Vector("id" -> task.id,
+		"descriptions" -> descriptions.map { _.toModel }.toVector))
+}
