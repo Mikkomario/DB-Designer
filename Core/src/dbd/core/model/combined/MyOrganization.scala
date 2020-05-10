@@ -14,7 +14,7 @@ import utopia.flow.generic.ValueConversions._
   * @param descriptions Various descriptions of this organization
   * @param myRoles Described user's roles in this organization
   */
-case class MyOrganization(id: Int, userId: Int, descriptions: Set[OrganizationDescription], myRoles: Set[DescribedRole])
+case class MyOrganization(id: Int, userId: Int, descriptions: Set[OrganizationDescription], myRoles: Set[RoleWithRights])
 	extends ModelConvertible
 {
 	override def toModel =

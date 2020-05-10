@@ -3,10 +3,9 @@ package dbd.api.database.access.single
 import dbd.api.database
 import dbd.api.database.access.id.UserId
 import dbd.api.database.access.many.InvitationsAccess
-import dbd.api.database.model.{MembershipWithRoles, OrganizationDescription, RoleDescription, RoleRight, TaskDescription, UserAuth, UserDevice}
+import dbd.api.database.model.{MembershipWithRoles, OrganizationDescription, RoleRight,UserAuth, UserDevice}
 import dbd.api.util.PasswordHash
-import dbd.core.model.combined.{DescribedRole, DescribedTask, MyOrganization}
-import dbd.core.model.enumeration.{TaskType, UserRole}
+import dbd.core.model.combined.{MyOrganization, RoleWithRights}
 import dbd.core.model.existing
 import utopia.flow.datastructure.immutable.Value
 import utopia.flow.generic.ValueConversions._
@@ -194,26 +193,18 @@ object User extends SingleModelAccess[existing.User]
 				{
 					val organizationDescriptions = OrganizationDescription.getMany(
 						OrganizationDescription.targetIdColumn.in(organizationIds))
-					// Reads all role descriptions
+					// Reads all task links
 					val roleIds = memberships.flatMap { _.roles }.map { _.id }.toSet
-					val roleDescriptions = RoleDescription.getMany(RoleDescription.targetIdColumn.in(roleIds)).toSet
-					// Reads all task links & task descriptions
 					val roleRights = RoleRight.getMany(RoleRight.roleIdColumn.in(roleIds))
-					val taskIds = roleRights.map { _.task.id }.toSet
-					val taskDescriptions = TaskDescription.getMany(TaskDescription.targetIdColumn.in(taskIds)).toSet
+					// Groups the information
+					val rolesWithRights = roleRights.groupBy { _.role }.map { case (role, links) =>
+						RoleWithRights(role, links.map { _.task }.toSet) }
 					
-					// Combines all gathered information
-					val describedTasks = taskIds.flatMap { TaskType.forId(_).toOption }.map { task =>
-						DescribedTask(task, taskDescriptions.filter { _.task == task }) }
-					val describedRoles = roleIds.flatMap { UserRole.forId(_).toOption }.map { role =>
-						DescribedRole(role, roleDescriptions.filter { _.role == role },
-							roleRights.filter { _.role == role }.flatMap { link =>
-								describedTasks.filter { _.task == link.task } }.toSet) }
 					memberships.map { membership =>
 						val organizationId = membership.wrapped.organizationId
 						MyOrganization(organizationId, userId,
 							organizationDescriptions.filter { _.organizationId == organizationId }.toSet,
-							membership.roles.flatMap { role => describedRoles.find { _.role == role } })
+							membership.roles.flatMap { role => rolesWithRights.find { _.role == role } })
 					}
 				}
 				else

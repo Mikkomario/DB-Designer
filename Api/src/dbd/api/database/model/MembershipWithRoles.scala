@@ -1,11 +1,9 @@
 package dbd.api.database.model
 
-import dbd.core.model.existing
 import dbd.core.model.combined
 import dbd.core.model.enumeration.UserRole
-import utopia.flow.generic.ValueConversions._
 import utopia.vault.model.immutable.Result
-import utopia.vault.nosql.factory.{Deprecatable, FromResultFactory, MultiLinkedStorableFactory}
+import utopia.vault.nosql.factory.{Deprecatable, FromResultFactory}
 import utopia.vault.util.ErrorHandling
 
 import scala.util.{Failure, Success}
