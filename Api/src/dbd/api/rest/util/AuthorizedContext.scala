@@ -1,12 +1,14 @@
 package dbd.api.rest.util
 
 import dbd.api.database.access
+import dbd.api.database.access.single
 import dbd.api.database.access.single.User
 import dbd.api.model.existing
 import dbd.core.database.ConnectionPool
+import dbd.core.model.enumeration.TaskType
 import dbd.core.util.Log
 import dbd.core.util.ThreadPool.executionContext
-import utopia.access.http.Status.{BadRequest, InternalServerError, Unauthorized}
+import utopia.access.http.Status.{BadRequest, Forbidden, InternalServerError, Unauthorized}
 import utopia.flow.generic.FromModelFactory
 import utopia.flow.util.CollectionExtensions._
 import utopia.flow.util.StringExtensions._
@@ -112,6 +114,37 @@ class AuthorizedContext(request: Request)(implicit serverSettings: ServerSetting
 				else
 					Result.Failure(Unauthorized, "Only basic and bearer authorizations are supported").toResponse(this)
 			case None => Result.Failure(Unauthorized, "Authorization header is required").toResponse(this)
+		}
+	}
+	
+	/**
+	  * Performs the specified function if:<br>
+	  * 1) The request can be authorized using a valid session key<br>
+	  * 2) The authorized user is a member of the specified organization and<br>
+	  * 3) The user has the right/authorization to perform the specified task within that organization
+	  * @param organizationId Id of the targeted organization
+	  * @param task The task the user is trying to perform
+	  * @param f Function called when the user is fully authorized. Takes user session, membership id and database
+	  *          connection as parameters. Returns operation result.
+	  * @return An http response based either on the function result or authorization failure.
+	  */
+	def authorizedForTask(organizationId: Int, task: TaskType)(f: (existing.UserSession, Int, Connection) => Result) =
+	{
+		// Authorizes the request using a session key token
+		sessionKeyAuthorized { (session, connection) =>
+			implicit val c: Connection = connection
+			// Makes sure the user belongs to the target organization
+			single.User(session.userId).membershipIdInOrganizationWithId(organizationId).pull match
+			{
+				case Some(membershipId) =>
+					// Makes sure the user has a right to perform the required task
+					if (single.Membership(membershipId).allows(task))
+						f(session, membershipId, connection)
+					else
+						Result.Failure(Forbidden,
+							"You haven't been granted the right to perform this task within this organization")
+				case None => Result.Failure(Unauthorized, "You're not a member of this organization")
+			}
 		}
 	}
 	
