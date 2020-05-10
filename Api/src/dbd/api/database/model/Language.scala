@@ -10,12 +10,28 @@ import utopia.vault.nosql.factory.StorableFactoryWithValidation
 
 object Language extends StorableFactoryWithValidation[existing.Language]
 {
+	// ATTRIBUTES	-------------------------------
+	
+	/**
+	  * Name of the attribute that contains the language ISO-code
+	  */
+	val isoCodeAttName = "isoCode"
+	
+	
 	// IMPLEMENTED	-------------------------------
 	
 	override def table = Tables.language
 	
 	override protected def fromValidatedModel(model: Model[Constant]) = existing.Language(model("id").getInt,
 		model("isoCode").getString)
+	
+	
+	// COMPUTED	-----------------------------------
+	
+	/**
+	  * @return Column that contains the language ISO-code
+	  */
+	def isoCodeColumn = table(isoCodeAttName)
 	
 	
 	// OTHER	-----------------------------------
@@ -57,7 +73,9 @@ object Language extends StorableFactoryWithValidation[existing.Language]
   */
 case class Language(id: Option[Int] = None, isoCode: Option[String] = None) extends StorableWithFactory[existing.Language]
 {
+	import Language._
+	
 	override def factory = Language
 	
-	override def valueProperties = Vector("id" -> id, "isoCode" -> isoCode)
+	override def valueProperties = Vector("id" -> id, isoCodeAttName -> isoCode)
 }

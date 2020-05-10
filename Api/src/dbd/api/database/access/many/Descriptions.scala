@@ -6,9 +6,11 @@ import dbd.core.model.existing
 import dbd.core.model.partial.DescriptionData
 import dbd.core.model.post.NewDescription
 import dbd.core.model.template.DescriptionLinkLike
+import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.Storable
 import utopia.vault.nosql.access.ManyModelAccess
+import utopia.vault.sql.Extensions._
 
 /**
   * Used for accessing various types of descriptions
@@ -52,12 +54,23 @@ object Descriptions
 																			  factory: DescriptionLinkFactory[E, Storable, P])
 		extends ManyModelAccess[E]
 	{
+		// COMPUTED	------------------------
+		
+		private def descriptionFactory = factory.childFactory
+		
+		
 		// IMPLEMENTED	--------------------
 		
 		override val globalCondition = Some(factory.withTargetId(targetId).toCondition && factory.nonDeprecatedCondition)
 		
 		
 		// OTHER	------------------------
+		
+		/**
+		  * @param languageId Id of targeted language
+		  * @return An access point to a subset of these descriptions. Only contains desriptions written in that language.
+		  */
+		def inLanguageWithId(languageId: Int) = DescriptionsInLanguage(languageId)
 		
 		def update(newDescription: NewDescription, authorId: Int)(implicit connection: Connection): Map[Int, existing.Description] =
 		{
@@ -79,10 +92,40 @@ object Descriptions
 		{
 			// Needs to join into description table in order to filter by language id and role id
 			// (factories automatically do this)
-			val descriptionCondition = factory.childFactory.withRole(role).withLanguageId(languageId).toCondition
-			val linkCondition = factory.withTargetId(targetId).toCondition
-			factory.nowDeprecated.updateWhere(descriptionCondition && linkCondition && factory.nonDeprecatedCondition,
-				Some(factory.target)) > 0
+			val descriptionCondition = descriptionFactory.withRole(role).withLanguageId(languageId).toCondition
+			factory.nowDeprecated.updateWhere(mergeCondition(descriptionCondition), Some(factory.target)) > 0
+		}
+		
+		
+		// NESTED	-------------------------
+		
+		case class DescriptionsInLanguage(languageId: Int) extends ManyModelAccess[E]
+		{
+			// IMPLEMENTED	-----------------
+			
+			override def factory = DescriptionsOf.this.factory
+			
+			override val globalCondition = Some(DescriptionsOf.this.mergeCondition(
+				descriptionFactory.withLanguageId(languageId).toCondition))
+			
+			
+			// OTHER	---------------------
+			
+			/**
+			  * @param roles Targeted description roles
+			  * @param connection DB Connection (implicit)
+			  * @return Recorded descriptions for those roles (in this language & target)
+			  */
+			def apply(roles: Set[DescriptionRole])(implicit connection: Connection) =
+			{
+				if (roles.nonEmpty)
+					read(Some(descriptionFactory.descriptionRoleIdColumn.in(roles.map { _.id })))
+				else
+					Vector()
+			}
+			
+			def forRolesOutside(excludedRoles: Set[DescriptionRole])(implicit connection: Connection) =
+				apply(DescriptionRole.values.toSet -- excludedRoles)
 		}
 	}
 }

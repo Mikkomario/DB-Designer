@@ -13,16 +13,32 @@ import utopia.vault.nosql.factory.StorableFactory
 
 object Description extends StorableFactory[existing.Description]
 {
+	// ATTRIBUTES	--------------------------------
+	
+	/**
+	  * Name of the attribute that contains description role id
+	  */
+	val descriptionRoleIdAttName = "roleId"
+	
+	
 	// IMPLEMENTED	--------------------------------
 	
 	override def apply(model: template.Model[Property]) = table.requirementDeclaration.validate(model).toTry.flatMap { valid =>
-		DescriptionRole.forId(valid("roleId").getInt).map { role =>
+		DescriptionRole.forId(valid(descriptionRoleIdAttName).getInt).map { role =>
 			existing.Description(valid("id").getInt, DescriptionData(role, valid("languageId").getInt,
 				valid("text").getString, valid("authorId").int))
 		}
 	}
 	
 	override def table = Tables.description
+	
+	
+	// COMPUTED	-------------------------------------
+	
+	/**
+	  * @return Column that contains description role id
+	  */
+	def descriptionRoleIdColumn = table(descriptionRoleIdAttName)
 	
 	
 	// OTHER	-------------------------------------
@@ -32,6 +48,12 @@ object Description extends StorableFactory[existing.Description]
 	  * @return A model with only description role set
 	  */
 	def withRole(role: DescriptionRole) = apply(role = Some(role))
+	
+	/**
+	  * @param languageId Description language id
+	  * @return A model with only language id set
+	  */
+	def withLanguageId(languageId: Int) = apply(languageId = Some(languageId))
 	
 	/**
 	  * Inserts a new description to the DB
@@ -55,12 +77,14 @@ case class Description(id: Option[Int] = None, role: Option[DescriptionRole] = N
 					   text: Option[String] = None, authorId: Option[Int] = None)
 	extends StorableWithFactory[existing.Description]
 {
+	import Description._
+	
 	// IMPLEMENTED	--------------------------------
 	
 	override def factory = Description
 	
-	override def valueProperties = Vector("id" -> id, "roleId" -> role.map { _.id }, "languageId" -> languageId,
-		"text" -> text, "authorId" -> authorId)
+	override def valueProperties = Vector("id" -> id, descriptionRoleIdAttName -> role.map { _.id },
+		"languageId" -> languageId, "text" -> text, "authorId" -> authorId)
 	
 	
 	// OTHER	------------------------------------

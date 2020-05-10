@@ -1,6 +1,9 @@
 package dbd.api.rest.util
 
+import scala.math.Ordering.Double.TotalOrdering
+
 import dbd.api.database.access
+import dbd.api.database.access.many.Languages
 import dbd.api.database.access.single
 import dbd.api.database.access.single.User
 import dbd.api.model.existing
@@ -26,6 +29,31 @@ import scala.util.{Failure, Success}
   */
 class AuthorizedContext(request: Request)(implicit serverSettings: ServerSettings) extends BaseContext(request)
 {
+	// COMPUTED	----------------------------
+	
+	/**
+	  * @param connection DB Connection (implicit)
+	  * @return Languages that were requested in the Accept-Language header. The languages are listed from most to
+	  *         least preferred. May be empty.
+	  */
+	def requestedLanguages(implicit connection: Connection) =
+	{
+		val acceptedLanguages = request.headers.acceptedLanguages.map { case (code, weight) => code.toLowerCase -> weight }
+		if (acceptedLanguages.nonEmpty)
+		{
+			val acceptedCodes = acceptedLanguages.keySet
+			// Maps codes to language ids (if present)
+			val languages = Languages.forIsoCodes(acceptedCodes)
+			// Orders the languages based on assigned weight
+			languages.sortBy { l => -acceptedLanguages(l.isoCode.toLowerCase) }
+		}
+		else
+			Vector()
+	}
+	
+	
+	// OTHER	----------------------------
+	
 	/**
 	  * Performs the provided function if the request has correct basic authorization (email + password)
 	  * @param f Function called when request is authorized. Accepts userId + database connection. Produces an http result.
@@ -118,6 +146,28 @@ class AuthorizedContext(request: Request)(implicit serverSettings: ServerSetting
 	}
 	
 	/**
+	  * Performs the specified function if the user is authorized (using session key) and they are a member of the
+	  * specified organization
+	  * @param organizationId Id of the organization the user is supposed to be a member of
+	  * @param f              Function called when the user is fully authorized. Takes user session, membership id and database
+	  *                       connection as parameters. Returns operation result.
+	  * @return An http response based either on the function result or authorization failure.
+	  */
+	def authorizedInOrganization(organizationId: Int)(f: (existing.UserSession, Int, Connection) => Result) =
+	{
+		// Authorizes the request using a session key token
+		sessionKeyAuthorized { (session, connection) =>
+			implicit val c: Connection = connection
+			// Makes sure the user belongs to the target organization
+			single.User(session.userId).membershipIdInOrganizationWithId(organizationId).pull match
+			{
+				case Some(membershipId) => f(session, membershipId, connection)
+				case None => Result.Failure(Unauthorized, "You're not a member of this organization")
+			}
+		}
+	}
+	
+	/**
 	  * Performs the specified function if:<br>
 	  * 1) The request can be authorized using a valid session key<br>
 	  * 2) The authorized user is a member of the specified organization and<br>
@@ -130,21 +180,15 @@ class AuthorizedContext(request: Request)(implicit serverSettings: ServerSetting
 	  */
 	def authorizedForTask(organizationId: Int, task: TaskType)(f: (existing.UserSession, Int, Connection) => Result) =
 	{
-		// Authorizes the request using a session key token
-		sessionKeyAuthorized { (session, connection) =>
+		// Makes sure the user belongs to the organization and that they have a valid session key authorization
+		authorizedInOrganization(organizationId) { (session, membershipId, connection) =>
 			implicit val c: Connection = connection
-			// Makes sure the user belongs to the target organization
-			single.User(session.userId).membershipIdInOrganizationWithId(organizationId).pull match
-			{
-				case Some(membershipId) =>
-					// Makes sure the user has a right to perform the required task
-					if (single.Membership(membershipId).allows(task))
-						f(session, membershipId, connection)
-					else
-						Result.Failure(Forbidden,
-							"You haven't been granted the right to perform this task within this organization")
-				case None => Result.Failure(Unauthorized, "You're not a member of this organization")
-			}
+			// Makes sure the user has a right to perform the required task
+			if (single.Membership(membershipId).allows(task))
+				f(session, membershipId, connection)
+			else
+				Result.Failure(Forbidden,
+					"You haven't been granted the right to perform this task within this organization")
 		}
 	}
 	

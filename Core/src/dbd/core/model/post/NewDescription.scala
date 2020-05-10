@@ -24,7 +24,7 @@ object NewDescription extends FromModelFactory[NewDescription]
 		} }
 		descriptions.map { validDescriptions =>
 			// NB: If there are multiple descriptions for a single role, only one of those is preserved
-			NewDescription(valid("languageId"), validDescriptions.toMap)
+			NewDescription(valid("language_id"), validDescriptions.toMap)
 		}
 	}
 }
