@@ -11,6 +11,8 @@ import scala.util.Success
 object OrganizationDescription extends DescriptionLinkFactory[existing.OrganizationDescription,
 	OrganizationDescription, OrganizationDescriptionData[DescriptionData]]
 {
+	// IMPLEMENTED	------------------------------
+	
 	override def targetIdAttName = "organizationId"
 	
 	override protected def apply(id: Int, targetId: Int, description: existing.Description) =

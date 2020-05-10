@@ -76,6 +76,12 @@ trait DescriptionLinkFactory[+E, +M <: Storable, -P <: DescriptionLinkLike[Descr
 	// OTHER	-----------------------------------
 	
 	/**
+	  * @param targetId Id of description target
+	  * @return A model with only target id set
+	  */
+	def withTargetId(targetId: Int) = apply(targetId = Some(targetId))
+	
+	/**
 	  * @param deprecationTime Deprecation time for this description link
 	  * @return A model with only deprecation time set
 	  */
@@ -87,12 +93,22 @@ trait DescriptionLinkFactory[+E, +M <: Storable, -P <: DescriptionLinkLike[Descr
 	  * @param connection DB Connection (implicit)
 	  * @return Newly inserted description link's id + newly inserted description model
 	  */
-	def insert(data: P)(implicit connection: Connection) =
+	def insert(data: P)(implicit connection: Connection): (Int, existing.Description) = insert(
+		data.targetId, data.description)
+	
+	/**
+	  * Inserts a new description link to DB
+	  * @param targetId Id of described item
+	  * @param data Description to insert
+	  * @param connection DB Connection (implicit)
+	  * @return Newly inserted description link's id + newly inserted description model
+	  */
+	def insert(targetId: Int, data: DescriptionData)(implicit connection: Connection) =
 	{
 		// Inserts the description
-		val newDescription = Description.insert(data.description)
-		// Inserts the link between description and device
-		val linkId = apply(None, Some(data.targetId), Some(newDescription.id)).insert().getInt
+		val newDescription = Description.insert(data)
+		// Inserts the link between description and target
+		val linkId = apply(None, Some(targetId), Some(newDescription.id)).insert().getInt
 		linkId -> newDescription
 	}
 }

@@ -10,8 +10,9 @@ import dbd.core.model.partial.{DescriptionData, DeviceDescriptionData}
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.nosql.access.{SingleModelAccess, UniqueAccess}
-
 import java.util.UUID.randomUUID
+
+import dbd.api.database.access.many.Descriptions
 
 /**
   * Used for accessing and modifying individual devices
@@ -50,6 +51,11 @@ object Device
 		  * @return An access point to this device's authentication key
 		  */
 		def authenticationKey = DeviceAuthKey
+		
+		/**
+		  * @return An access point to descriptions of this device
+		  */
+		def descriptions = Descriptions.ofDeviceWithId(deviceId)
 		
 		
 		// OTHER	-----------------------------

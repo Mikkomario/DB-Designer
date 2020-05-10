@@ -176,7 +176,8 @@ CREATE TABLE task
 -- 1 = Delete organization
 -- 2 = Change user roles (to similar or lower)
 -- 3 = Invite new users to organization (with similar or lower role)
-INSERT INTO task (id) VALUES (1), (2), (3);
+-- 4 = Edit organization description (including name)
+INSERT INTO task (id) VALUES (1), (2), (3), (4);
 
 -- Names and descriptions of various tasks
 CREATE TABLE task_description
@@ -206,7 +207,7 @@ CREATE TABLE organization_user_role
 )Engine=InnoDB DEFAULT CHARSET=latin1;
 
 -- 1 = Owner (all rights)
--- 2 = Admin (all rights except owner-specific rights)
+-- 2 = Admin/Steward (all rights except owner-specific rights)
 -- 3 = Manager (rights to modify users)
 -- 4 = Developer (rights to create & edit resources and to publish)
 -- 5 = Publisher (Read access to data + publish rights)
@@ -249,8 +250,8 @@ CREATE TABLE user_role_right
 )Engine=InnoDB DEFAULT CHARSET=latin1;
 
 INSERT INTO user_role_right (role_id, task_id) VALUES
-    (1, 1), (1, 2), (1, 3),
-    (2, 2), (2, 3);
+    (1, 1), (1, 2), (1, 3), (1, 4),
+    (2, 2), (2, 3), (2, 4);
 
 -- Contains links between users and organizations (many-to-many)
 -- One user may belong to multiple organizations and one organization may contain multiple users

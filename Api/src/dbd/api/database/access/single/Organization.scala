@@ -3,7 +3,7 @@ package dbd.api.database.access.single
 import java.time.{Instant, Period}
 
 import dbd.api.database
-import dbd.api.database.access.many.InvitationsAccess
+import dbd.api.database.access.many.{Descriptions, InvitationsAccess}
 import dbd.core.model.existing
 import dbd.core.model.enumeration.UserRole
 import dbd.core.model.partial.{InvitationData, MembershipData}
@@ -42,6 +42,11 @@ object Organization
 		  * @return An access point to invitations to join this organization
 		  */
 		def invitations = Invitations
+		
+		/**
+		  * @return An access point to descriptions of this organization
+		  */
+		def descriptions = Descriptions.ofOrganizationWithId(organizationId)
 		
 		
 		// NESTED	-------------------------------

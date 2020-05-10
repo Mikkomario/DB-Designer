@@ -43,6 +43,14 @@ object TaskType
 	}
 	
 	/**
+	  * This task allows one to update organization description
+	  */
+	case object DocumentOrganization extends TaskType
+	{
+		override val id = 4
+	}
+	
+	/**
 	  * All task values
 	  */
 	val values = Vector[TaskType](DeleteOrganization, ChangeRoles, InviteMembers)
