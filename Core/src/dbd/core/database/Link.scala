@@ -30,7 +30,7 @@ object Link extends SingleModelAccess[existing.Link] with NonDeprecatedAccess[ex
 	
 	// NESTED	----------------------------
 	
-	class LinkById(linkId: Int) extends SingleIdModelAccess[existing.Link](linkId, Link.factory)
+	class LinkById(linkId: Int) extends SingleIdModelAccess(linkId, Link.factory)
 	{
 		// COMPUTED	------------------------
 		

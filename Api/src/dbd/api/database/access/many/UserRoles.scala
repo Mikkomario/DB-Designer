@@ -1,7 +1,7 @@
 package dbd.api.database.access.many
 
 import dbd.api.database.model.RoleRight
-import dbd.core.model.enumeration.UserRole
+import dbd.core.model.enumeration.{TaskType, UserRole}
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.sql.{SelectDistinct, Where}
@@ -26,6 +26,19 @@ object UserRoles
 		// Only includes roles that have only tasks within "allowed tasks" list
 		val excludedRoleIds = connection(SelectDistinct(RoleRight.table, RoleRight.roleIdAttName) +
 			Where.not(RoleRight.taskIdColumn.in(allowedTasks.map { _.id }))).rowIntValues
+		UserRole.values.filterNot { role => excludedRoleIds.contains(role.id) }
+	}
+	
+	/**
+	  * @param tasks Set of allowed tasks
+	  * @param connection DB Connection (implicit)
+	  * @return List of user roles that allow all of, or a subset of the specified tasks
+	  */
+	def allowingOnly(tasks: Set[TaskType])(implicit connection: Connection) =
+	{
+		// Only includes roles that have only tasks within "allowed tasks" list
+		val excludedRoleIds = connection(SelectDistinct(RoleRight.table, RoleRight.roleIdAttName) +
+			Where.not(RoleRight.taskIdColumn.in(tasks.map { _.id }))).rowIntValues
 		UserRole.values.filterNot { role => excludedRoleIds.contains(role.id) }
 	}
 }

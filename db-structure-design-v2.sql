@@ -175,9 +175,11 @@ CREATE TABLE task
 
 -- 1 = Delete organization
 -- 2 = Change user roles (to similar or lower)
--- 3 = Invite new users to organization (with similar or lower role)
+-- 3 = Invite new users to organization (with similar or lower role) - Can also be used for raising the role/rights
+--     of another user
 -- 4 = Edit organization description (including name)
-INSERT INTO task (id) VALUES (1), (2), (3), (4);
+-- 5 = Remove users (of lower role) from the organization - Can also be used for lowering the role of another user
+INSERT INTO task (id) VALUES (1), (2), (3), (4), (5);
 
 -- Names and descriptions of various tasks
 CREATE TABLE task_description
@@ -250,8 +252,8 @@ CREATE TABLE user_role_right
 )Engine=InnoDB DEFAULT CHARSET=latin1;
 
 INSERT INTO user_role_right (role_id, task_id) VALUES
-    (1, 1), (1, 2), (1, 3), (1, 4),
-    (2, 2), (2, 3), (2, 4);
+    (1, 1), (1, 2), (1, 3), (1, 4), (1, 5),
+    (2, 2), (2, 3), (2, 4), (2, 5);
 
 -- Contains links between users and organizations (many-to-many)
 -- One user may belong to multiple organizations and one organization may contain multiple users

@@ -35,8 +35,13 @@ object Membership extends SingleModelAccess[existing.Membership]
 	
 	// NESTED	------------------------------
 	
-	class SingleMembership(membershipId: Int) extends SingleIdModelAccess[existing.Membership](membershipId, factory)
+	class SingleMembership(membershipId: Int) extends SingleIdModelAccess(membershipId, factory)
 	{
+		// IMPLEMENTED	----------------------
+		
+		override val factory = Membership.factory
+		
+		
 		// COMPUTED	--------------------------
 		
 		private def memberRoleFactory = database.model.OrganizationMemberRole
@@ -96,6 +101,16 @@ object Membership extends SingleModelAccess[existing.Membership]
 			val myTasks = allowedActions.toSet
 			val requiredTasks = TaskTypes.forRole(targetRole).toSet
 			requiredTasks.forall(myTasks.contains)
+		}
+		
+		/**
+		  * @param connection DB Connection (implicit)
+		  * @return Whether a membership was updated/changed
+		  */
+		def end()(implicit connection: Connection) =
+		{
+			// Marks this membership as ended (if not ended already)
+			factory.nowEnded.updateWhere(mergeCondition(factory.nonDeprecatedCondition)) > 0
 		}
 	}
 }

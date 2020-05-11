@@ -2,7 +2,9 @@ package dbd.api.database.access.many
 
 import dbd.api.database.model.RoleRight
 import dbd.core.model.enumeration.UserRole
+import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
+import utopia.vault.sql.Extensions._
 
 /**
   * Used for accessing multiple task types at once
@@ -20,5 +22,20 @@ object TaskTypes
 	{
 		// Reads task types from role rights
 		RoleRight.getMany(RoleRight.withRole(role).toCondition).map { _.task }
+	}
+	
+	/**
+	  * @param roles A set of roles
+	  * @param connection DB Connection
+	  * @return All task types that are accessible for any of these roles
+	  */
+	def forRoleCombination(roles: Set[UserRole])(implicit connection: Connection) =
+	{
+		if (roles.isEmpty)
+			Vector()
+		else if (roles.size == 1)
+			forRole(roles.head)
+		else
+			RoleRight.getMany(RoleRight.roleIdColumn.in(roles.map { _.id })).map { _.task }
 	}
 }

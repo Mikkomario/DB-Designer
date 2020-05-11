@@ -24,6 +24,14 @@ object OrganizationMembership extends StorableFactoryWithValidation[existing.Mem
 	override def table = Tables.organizationMembership
 	
 	
+	// COMPUTED	-------------------------------
+	
+	/**
+	  * @return A model that has just been marked as an ended membership
+	  */
+	def nowEnded = apply(ended = Some(Instant.now()))
+	
+	
 	// OTHER	-------------------------------
 	
 	/**

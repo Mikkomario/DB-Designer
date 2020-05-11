@@ -50,10 +50,15 @@ object TaskType
 		override val id = 4
 	}
 	
+	case object RemoveMember extends TaskType
+	{
+		override val id = 5
+	}
+	
 	/**
 	  * All task values
 	  */
-	val values = Vector[TaskType](DeleteOrganization, ChangeRoles, InviteMembers)
+	val values = Vector[TaskType](DeleteOrganization, ChangeRoles, InviteMembers, DocumentOrganization, RemoveMember)
 	
 	/**
 	  * @param taskId A task id

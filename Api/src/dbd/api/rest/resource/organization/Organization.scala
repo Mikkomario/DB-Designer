@@ -18,7 +18,10 @@ case class Organization(organizationId: Int) extends ResourceWithChildren[Author
 	// At this time, no methods are allowed for organization
 	override val allowedMethods = Vector()
 	
-	override def children = Vector(OrganizationInvitations(organizationId), OrganizationDescriptions(organizationId))
+	override def children = Vector(
+		OrganizationInvitations(organizationId),
+		OrganizationDescriptions(organizationId),
+		OrganizationMembers(organizationId))
 	
 	override def toResponse(remainingPath: Option[Path])(implicit context: AuthorizedContext) = Result.Failure(
 		NotImplemented, "Organization resource access hasn't been implemented yet").toResponse

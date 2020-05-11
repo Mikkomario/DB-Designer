@@ -137,7 +137,7 @@ object Class extends SingleModelAccess[existing.Class] with NonDeprecatedAccess[
 			 * Provides access to an individual attribute's data
 			 * @param attId Id of targeted attribute
 			 */
-			class AttributeById(attId: Int) extends SingleIdModelAccess[Attribute](attId, attributeFactory)
+			class AttributeById(attId: Int) extends SingleIdModelAccess(attId, attributeFactory)
 			{
 				// COMPUTED	----------
 				

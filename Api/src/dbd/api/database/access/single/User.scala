@@ -55,7 +55,7 @@ object User extends SingleModelAccess[existing.User]
 	
 	// NESTED	-------------------------
 	
-	class SingleUser(userId: Int) extends SingleIdModelAccess[existing.User](userId, User.factory)
+	class SingleUser(userId: Int) extends SingleIdModelAccess(userId, User.factory)
 	{
 		// COMPUTED	---------------------
 		
@@ -107,7 +107,7 @@ object User extends SingleModelAccess[existing.User]
 		  * @param organizationId Id of targeted organization
 		  * @return An access point to this user's membership id in that organization
 		  */
-		def membershipIdInOrganizationWithId(organizationId: Int) = new MembershipId(organizationId)
+		def membershipIdInOrganizationWithId(organizationId: Int) = MembershipId(organizationId)
 		
 		/**
 		  * Links this user with the specified device
@@ -131,7 +131,7 @@ object User extends SingleModelAccess[existing.User]
 		
 		// NESTED	-----------------------
 		
-		class MembershipId(organizationId: Int) extends SingleIdAccess[Int] with UniqueAccess[Int]
+		case class MembershipId(organizationId: Int) extends SingleIdAccess[Int] with UniqueAccess[Int]
 		{
 			// ATTRIBUTES	------------------------
 			
