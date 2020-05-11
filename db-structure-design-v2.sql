@@ -175,10 +175,9 @@ CREATE TABLE task
 
 -- 1 = Delete organization
 -- 2 = Change user roles (to similar or lower)
--- 3 = Invite new users to organization (with similar or lower role) - Can also be used for raising the role/rights
---     of another user
+-- 3 = Invite new users to organization (with similar or lower role)
 -- 4 = Edit organization description (including name)
--- 5 = Remove users (of lower role) from the organization - Can also be used for lowering the role of another user
+-- 5 = Remove users (of lower role) from the organization
 INSERT INTO task (id) VALUES (1), (2), (3), (4), (5);
 
 -- Names and descriptions of various tasks

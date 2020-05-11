@@ -9,6 +9,7 @@ import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.nosql.access.{SingleIdModelAccess, SingleModelAccess}
 import utopia.vault.sql.{Exists, Select, SelectDistinct, Where}
+import utopia.vault.sql.Extensions._
 
 /**
   * An access point to individual memberships and their data
@@ -85,6 +86,27 @@ object Membership extends SingleModelAccess[existing.Membership]
 		  */
 		def hasRole(role: UserRole)(implicit connection: Connection) =
 			Exists(memberRoleFactory.table, rolesCondition && memberRoleFactory.withRole(role).toCondition)
+		
+		/**
+		  * Assigns new roles to this membership. <b>Please make sure all assigned roles are actually new,
+		  * since no such check is made here</b>
+		  * @param newRoles New roles to assign to this membership
+		  * @param creatorId Id of the user who added these roles
+		  * @param connection DB Connection (implicit)
+		  */
+		def assignRoles(newRoles: Set[UserRole], creatorId: Int)(implicit connection: Connection) =
+			newRoles.foreach { role => memberRoleFactory.insert(membershipId, role, creatorId) }
+		
+		/**
+		  * @param rolesToRemove Roles that should be removed from this membership
+		  * @param connection DB Connection (implicit)
+		  * @return Number of roles that were removed
+		  */
+		def removeRoles(rolesToRemove: Set[UserRole])(implicit connection: Connection) =
+		{
+			memberRoleFactory.nowDeprecated.updateWhere(rolesCondition &&
+				memberRoleFactory.roleIdColumn.in(rolesToRemove.map { _.id }))
+		}
 		
 		/**
 		  * Checks whether this membership allows the specified action

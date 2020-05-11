@@ -30,6 +30,14 @@ object UserRoles
 	}
 	
 	/**
+	  * @param roles A set of roles
+	  * @param connection DB Connection
+	  * @return List of roles that allow all of, or a subset of tasks allowed for any of the specified roles
+	  */
+	def belowOrEqualTo(roles: Set[UserRole])(implicit connection: Connection) =
+		allowingOnly(TaskTypes.forRoleCombination(roles).toSet)
+	
+	/**
 	  * @param tasks Set of allowed tasks
 	  * @param connection DB Connection (implicit)
 	  * @return List of user roles that allow all of, or a subset of the specified tasks

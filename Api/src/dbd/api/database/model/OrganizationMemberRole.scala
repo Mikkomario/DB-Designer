@@ -23,6 +23,16 @@ object OrganizationMemberRole extends Deprecatable
 	
 	def table = Tables.organizationMemberRole
 	
+	/**
+	  * @return Column that contains the associated role id
+	  */
+	def roleIdColumn = table(roleIdAttName)
+	
+	/**
+	  * @return A model that has just been marked as deprecated
+	  */
+	def nowDeprecated = apply(deprecatedAfter = Some(Instant.now()))
+	
 	
 	// IMPLEMENTED	------------------------
 	

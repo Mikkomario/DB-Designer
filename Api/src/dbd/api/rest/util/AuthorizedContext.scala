@@ -1,7 +1,6 @@
 package dbd.api.rest.util
 
 import scala.math.Ordering.Double.TotalOrdering
-
 import dbd.api.database.access
 import dbd.api.database.access.many.Languages
 import dbd.api.database.access.single
@@ -12,6 +11,7 @@ import dbd.core.model.enumeration.TaskType
 import dbd.core.util.Log
 import dbd.core.util.ThreadPool.executionContext
 import utopia.access.http.Status.{BadRequest, Forbidden, InternalServerError, Unauthorized}
+import utopia.flow.datastructure.immutable.Value
 import utopia.flow.generic.FromModelFactory
 import utopia.flow.util.CollectionExtensions._
 import utopia.flow.util.StringExtensions._
@@ -193,31 +193,65 @@ class AuthorizedContext(request: Request)(implicit serverSettings: ServerSetting
 	}
 	
 	/**
+	  * Parses a value from the request body and uses it to produce a response
+	  * @param f Function that will be called if the value was successfully read. Returns an http result.
+	  * @return Function result or a failure result if no value could be read.
+	  */
+	def handlePost(f: Value => Result) =
+	{
+		// Parses the post body first
+		request.body.headOption match
+		{
+			case Some(body) =>
+				body.bufferedJSON.contents match
+				{
+					case Success(value) => f(value)
+					case Failure(error) => Result.Failure(BadRequest, error.getMessage)
+				}
+			case None => Result.Failure(BadRequest, "Please provide a json-body with the response")
+		}
+	}
+	
+	/**
 	  * Parses a model from the request body and uses it to produce a response
 	  * @param parser Model parser
 	  * @param f Function that will be called if the model was successfully parsed. Returns an http result.
 	  * @tparam A Type of parsed model
 	  * @return Function result or a failure result if no model could be parsed.
 	  */
-	def handlePost[A](parser: FromModelFactory[A])(f: A => Result) =
+	def handlePost[A](parser: FromModelFactory[A])(f: A => Result): Result =
 	{
-		// Parses the post model first
-		request.body.headOption match
-		{
-			case Some(body) =>
-				body.bufferedJSONModel.contents match
-				{
-					case Success(model) =>
-						parser(model) match
-						{
-							// Gives the parsed model to specified function
-							case Success(parsed) => f(parsed)
-							case Failure(error) => Result.Failure(BadRequest, error.getMessage)
-						}
-					case Failure(error) => Result.Failure(BadRequest, error.getMessage)
-				}
-			case None => Result.Failure(BadRequest, "Please provide a json-body with the response")
+		handlePost { value =>
+			value.model match
+			{
+				case Some(model) =>
+					parser(model) match
+					{
+						// Gives the parsed model to specified function
+						case Success(parsed) => f(parsed)
+						case Failure(error) => Result.Failure(BadRequest, error.getMessage)
+					}
+				case None => Result.Failure(BadRequest, "Please provide a json object in the request body")
+			}
 		}
+	}
+	
+	/**
+	  * Parses request body into a vector of values and handles them using the specified function.
+	  * For non-array bodies, wraps the body in a vector.
+	  * @param f Function that will be called if a json body was present. Accepts a vector of values. Returns result.
+	  * @return Function result or a failure if no value could be read
+	  */
+	def handleArrayPost(f: Vector[Value] => Result) = handlePost { v: Value =>
+		if (v.isEmpty)
+			f(Vector())
+		else
+			v.vector match
+			{
+				case Some(vector) => f(vector)
+				// Wraps the value into a vector if necessary
+				case None => f(Vector(v))
+			}
 	}
 	
 	private def tokenAuthorized[K](keyTypeName: => String, f: (K, Connection) => Result)(

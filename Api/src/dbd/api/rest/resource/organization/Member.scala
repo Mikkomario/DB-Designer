@@ -1,15 +1,16 @@
 package dbd.api.rest.resource.organization
 
 import dbd.api.database.access.single
-import dbd.api.database.access.many.{TaskTypes, UserRoles}
+import dbd.api.database.access.many.UserRoles
 import dbd.api.rest.util.AuthorizedContext
 import dbd.core.model.enumeration.TaskType.RemoveMember
 import dbd.core.model.enumeration.UserRole.Owner
 import utopia.access.http.Method.Delete
 import utopia.access.http.Status.Forbidden
+import utopia.flow.util.StringExtensions._
 import utopia.nexus.http.Path
 import utopia.nexus.rest.Resource
-import utopia.nexus.rest.ResourceSearchResult.Error
+import utopia.nexus.rest.ResourceSearchResult.{Error, Follow}
 import utopia.nexus.result.Result
 import utopia.vault.database.Connection
 
@@ -51,7 +52,7 @@ case class Member(organizationId: Int, userId: Option[Int]) extends Resource[Aut
 								Result.Failure(Forbidden, s"User $targetUserId has same or higher role as you do")
 							else
 							{
-								val managedRoles = UserRoles.allowingOnly(TaskTypes.forRoleCombination(activeUserRoles).toSet)
+								val managedRoles = UserRoles.belowOrEqualTo(activeUserRoles)
 								targetUserRoles.find { !managedRoles.contains(_) } match
 								{
 									case Some(conflictingRole) => Result.Failure(Forbidden,
@@ -86,6 +87,12 @@ case class Member(organizationId: Int, userId: Option[Int]) extends Resource[Aut
 		}
 	}
 	
-	override def follow(path: Path)(implicit context: AuthorizedContext) = Error(message = Some(
-		"Organization member doesn't have any sub-resources at this time"))
+	override def follow(path: Path)(implicit context: AuthorizedContext) =
+	{
+		if (path.head ~== "roles")
+			Follow(MemberRoles(organizationId, userId), path.tail)
+		else
+			Error(message = Some(
+				"Organization member only has sub-resource 'roles'"))
+	}
 }
