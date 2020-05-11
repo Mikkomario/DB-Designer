@@ -78,6 +78,15 @@ object Membership extends SingleModelAccess[existing.Membership]
 		// OTHER	---------------------------
 		
 		/**
+		  * Checks whether this user has the specified role as a part of this membership
+		  * @param role Checked role
+		  * @param connection DB Connection (implicit)
+		  * @return Whether this membership is associated with specified role
+		  */
+		def hasRole(role: UserRole)(implicit connection: Connection) =
+			Exists(memberRoleFactory.table, rolesCondition && memberRoleFactory.withRole(role).toCondition)
+		
+		/**
 		  * Checks whether this membership allows the specified action
 		  * @param action Action the user would like to perform
 		  * @param connection DB Connection (implicit)

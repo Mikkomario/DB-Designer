@@ -10,6 +10,7 @@ import dbd.core.model.partial.{InvitationData, MembershipData}
 import utopia.flow.util.TimeExtensions._
 import utopia.vault.database.Connection
 import utopia.vault.nosql.access.ManyModelAccess
+import utopia.vault.sql.{Select, Where}
 
 /**
   * Used for accessing individual organizations
@@ -67,6 +68,18 @@ object Organization
 			
 			
 			// OTHER	---------------------------
+			
+			/**
+			  * @param role Searched user role
+			  * @param connection DB Connection (implicit)
+			  * @return Members within this organization that have the specified role
+			  */
+			def withRole(role: UserRole)(implicit connection: Connection) =
+			{
+				// Needs to join into role rights
+				connection(Select(factory.target join memberRolesFactory.table, factory.table) +
+					Where(mergeCondition(memberRolesFactory.withRole(role).toCondition))).parse(factory)
+			}
 			
 			/**
 			  * Inserts a new membership, along with a single role

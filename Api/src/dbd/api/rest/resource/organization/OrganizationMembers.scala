@@ -3,6 +3,7 @@ package dbd.api.rest.resource.organization
 import dbd.api.rest.util.AuthorizedContext
 import utopia.access.http.Status.NotImplemented
 import utopia.flow.generic.ValueConversions._
+import utopia.flow.util.StringExtensions._
 import utopia.nexus.http.Path
 import utopia.nexus.rest.Resource
 import utopia.nexus.rest.ResourceSearchResult.{Error, Follow}
@@ -22,9 +23,15 @@ case class OrganizationMembers(organizationId: Int) extends Resource[AuthorizedC
 	override def toResponse(remainingPath: Option[Path])(implicit context: AuthorizedContext) = Result.Failure(
 		NotImplemented, "Organization members resource doesn't support any methods yet").toResponse
 	
-	override def follow(path: Path)(implicit context: AuthorizedContext) = path.head.int match
+	override def follow(path: Path)(implicit context: AuthorizedContext) =
 	{
-		case Some(userId) => Follow(Member(organizationId, userId), path.tail)
-		case None => Error(message = Some(s"${path.head} is not a valid user id"))
+		if (path.head ~== "me")
+			Follow(Member(organizationId, None), path.tail)
+		else
+			path.head.int match
+			{
+				case Some(userId) => Follow(Member(organizationId, Some(userId)), path.tail)
+				case None => Error(message = Some(s"${path.head} is not a valid user id"))
+			}
 	}
 }

@@ -38,6 +38,12 @@ object OrganizationMemberRole extends Deprecatable
 	def withMembershipId(membershipId: Int) = apply(membershipId = Some(membershipId))
 	
 	/**
+	  * @param role a user role
+	  * @return A model with only role set
+	  */
+	def withRole(role: UserRole) = apply(role = Some(role))
+	
+	/**
 	  * Inserts a new membership-role -connection to the DB
 	  * @param membershipId Id of associated organization membership
 	  * @param role Role assigned to the user in the organization
