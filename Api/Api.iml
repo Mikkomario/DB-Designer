@@ -15,5 +15,6 @@
     <orderEntry type="module" module-name="Access" />
     <orderEntry type="library" name="servlet-api" level="project" />
     <orderEntry type="module" module-name="NexusForTomcat" />
+    <orderEntry type="module" module-name="BunnyMunch" />
   </component>
 </module>

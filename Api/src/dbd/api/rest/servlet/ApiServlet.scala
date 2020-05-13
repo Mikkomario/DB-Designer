@@ -7,7 +7,9 @@ import dbd.api.rest.util.AuthorizedContext
 import javax.servlet.annotation.MultipartConfig
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 import utopia.access.http.Status.BadRequest
+import utopia.bunnymunch.jawn.JsonBunny
 import utopia.flow.generic.DataType
+import utopia.flow.parse.JsonParser
 import utopia.nexus.http.{Path, ServerSettings}
 import utopia.nexus.rest.RequestHandler
 import utopia.nexus.servlet.HttpExtensions._
@@ -39,6 +41,7 @@ class ApiServlet extends HttpServlet
 	
 	// TODO: When going to production, read these from settings and maybe use parameter encoding
 	private implicit val serverSettings: ServerSettings = ServerSettings("http://localhost:9999")
+	private implicit val jsonParser: JsonParser = JsonBunny
 	
 	private val handler = new RequestHandler(Vector(Users, Devices, Organizations), Some(Path("db-designer", "api", "v1")),
 		r => new AuthorizedContext(r))

@@ -11,8 +11,10 @@ import dbd.core.model.enumeration.TaskType
 import dbd.core.util.Log
 import dbd.core.util.ThreadPool.executionContext
 import utopia.access.http.Status.{BadRequest, Forbidden, InternalServerError, Unauthorized}
+import utopia.bunnymunch.jawn.JsonBunny
 import utopia.flow.datastructure.immutable.Value
 import utopia.flow.generic.FromModelFactory
+import utopia.flow.parse.JsonParser
 import utopia.flow.util.CollectionExtensions._
 import utopia.flow.util.StringExtensions._
 import utopia.nexus.http.{Request, ServerSettings}
@@ -29,6 +31,11 @@ import scala.util.{Failure, Success}
   */
 class AuthorizedContext(request: Request)(implicit serverSettings: ServerSettings) extends BaseContext(request)
 {
+	// ATTRIBUTES	------------------------
+	
+	private implicit val jsonParser: JsonParser = JsonBunny
+	
+	
 	// COMPUTED	----------------------------
 	
 	/**
@@ -203,7 +210,7 @@ class AuthorizedContext(request: Request)(implicit serverSettings: ServerSetting
 		request.body.headOption match
 		{
 			case Some(body) =>
-				body.bufferedJSON.contents match
+				body.bufferedJson.contents match
 				{
 					case Success(value) => f(value)
 					case Failure(error) => Result.Failure(BadRequest, error.getMessage)
