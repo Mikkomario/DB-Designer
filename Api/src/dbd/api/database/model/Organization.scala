@@ -12,7 +12,21 @@ object Organization extends Deprecatable
 {
 	// COMPUTED	------------------------------
 	
+	/**
+	  * @return The table used by this factory
+	  */
 	def table = Tables.organization
+	
+	/**
+	  * @return A model that has just been marked as deleted
+	  */
+	def nowDeleted = apply(deletedAfter = Some(Instant.now()))
+	
+	/**
+	  * @return A condition that only accepts organizations that have been marked as deleted
+	  */
+	def deletedCondition = table("deletedAfter").isNotNull
+	
 	
 	// IMPLEMENTED	--------------------------
 	
@@ -20,6 +34,12 @@ object Organization extends Deprecatable
 	
 	
 	// OTHER	------------------------------
+	
+	/**
+	  * @param organizationId Id of the organization
+	  * @return A model with only id set
+	  */
+	def withId(organizationId: Int) = apply(Some(organizationId))
 	
 	/**
 	  * Inserts a new organization to the DB

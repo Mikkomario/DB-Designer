@@ -19,6 +19,11 @@ import utopia.vault.sql.{Select, Where}
   */
 object Organization
 {
+	// COMPUTED	----------------------------
+	
+	private def factory = database.model.Organization
+	
+	
 	// OTHER	----------------------------
 	
 	/**
@@ -48,6 +53,16 @@ object Organization
 		  * @return An access point to descriptions of this organization
 		  */
 		def descriptions = Descriptions.ofOrganizationWithId(organizationId)
+		
+		
+		// OTHER	-------------------------------
+		
+		/**
+		  * @param connection DB Connection (implicit)
+		  * @return Whether
+		  */
+		def markDeleted()(implicit connection: Connection) =
+			factory.nowDeleted.updateWhere(factory.withId(organizationId).toCondition && factory.nonDeprecatedCondition) > 0
 		
 		
 		// NESTED	-------------------------------
