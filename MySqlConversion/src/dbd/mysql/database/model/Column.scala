@@ -9,12 +9,15 @@ import dbd.mysql.model.partial.NewColumn
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.{Row, StorableWithFactory}
 import utopia.vault.nosql.factory.FromRowFactory
+import utopia.vault.sql.JoinType
 
 import scala.util.{Failure, Success}
 
 object Column extends FromRowFactory[existing.Column]
 {
 	// IMPLEMENTED	----------------------
+	
+	override def joinType = JoinType.Left
 	
 	override def apply(row: Row) =
 	{

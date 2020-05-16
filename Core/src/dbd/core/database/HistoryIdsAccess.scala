@@ -8,7 +8,7 @@ import utopia.vault.sql.Extensions._
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.Column
 import utopia.vault.nosql.access.ManyIdAccess
-import utopia.vault.nosql.factory.RowFactoryWithTimestamps
+import utopia.vault.nosql.factory.FromRowFactoryWithTimestamps
 import utopia.vault.sql.Condition
 
 /**
@@ -26,7 +26,7 @@ trait HistoryIdsAccess extends ManyIdAccess[Int]
 	
 	def notDeletedCondition: Condition
 	
-	def configurationFactory: RowFactoryWithTimestamps[_]
+	def configurationFactory: FromRowFactoryWithTimestamps[_]
 	
 	
 	// IMPLEMENTED	-------------------------

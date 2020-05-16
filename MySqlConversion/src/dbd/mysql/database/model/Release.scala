@@ -8,9 +8,9 @@ import utopia.flow.generic.ValueConversions._
 import dbd.mysql.model.{VersionNumber, existing}
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.{RowFactoryWithTimestamps, StorableFactoryWithValidation}
+import utopia.vault.nosql.factory.{FromRowFactoryWithTimestamps, FromValidatedRowModelFactory}
 
-object Release extends StorableFactoryWithValidation[existing.Release] with RowFactoryWithTimestamps[existing.Release]
+object Release extends FromValidatedRowModelFactory[existing.Release] with FromRowFactoryWithTimestamps[existing.Release]
 {
 	// IMPLEMENTED	-------------------------
 	

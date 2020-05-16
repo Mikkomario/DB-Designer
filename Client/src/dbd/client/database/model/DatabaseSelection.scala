@@ -9,10 +9,10 @@ import dbd.client.model.template.DatabaseSelectionData
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.{RowFactoryWithTimestamps, StorableFactoryWithValidation}
+import utopia.vault.nosql.factory.{FromRowFactoryWithTimestamps, FromValidatedRowModelFactory}
 
-object DatabaseSelection extends StorableFactoryWithValidation[existing.DatabaseSelection]
-	with RowFactoryWithTimestamps[existing.DatabaseSelection]
+object DatabaseSelection extends FromValidatedRowModelFactory[existing.DatabaseSelection]
+	with FromRowFactoryWithTimestamps[existing.DatabaseSelection]
 {
 	// IMPLEMENTED	------------------------
 	

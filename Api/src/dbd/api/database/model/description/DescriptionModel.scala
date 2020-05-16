@@ -10,9 +10,9 @@ import utopia.flow.datastructure.template.Property
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.StorableFactory
+import utopia.vault.nosql.factory.FromRowModelFactory
 
-object DescriptionModel extends StorableFactory[existing.description.Description]
+object DescriptionModel extends FromRowModelFactory[existing.description.Description]
 {
 	// ATTRIBUTES	--------------------------------
 	

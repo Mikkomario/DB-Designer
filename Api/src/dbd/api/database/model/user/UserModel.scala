@@ -9,10 +9,10 @@ import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.Storable
-import utopia.vault.nosql.factory.{Deprecatable, LinkedStorableFactory}
+import utopia.vault.nosql.factory.{Deprecatable, LinkedFactory}
 import utopia.vault.sql.{Select, Where}
 
-object UserModel extends LinkedStorableFactory[user.User, user.UserSettings] with Deprecatable
+object UserModel extends LinkedFactory[user.User, user.UserSettings] with Deprecatable
 {
 	// IMPLEMENTED	-----------------------------------
 	

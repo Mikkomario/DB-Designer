@@ -11,9 +11,9 @@ import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.{Deprecatable, StorableFactoryWithValidation}
+import utopia.vault.nosql.factory.{Deprecatable, FromValidatedRowModelFactory}
 
-object MembershipModel extends StorableFactoryWithValidation[Membership] with Deprecatable
+object MembershipModel extends FromValidatedRowModelFactory[Membership] with Deprecatable
 {
 	// IMPLEMENTED	--------------------------
 	

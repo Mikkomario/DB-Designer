@@ -7,9 +7,9 @@ import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.StorableFactoryWithValidation
+import utopia.vault.nosql.factory.FromValidatedRowModelFactory
 
-object InvitationResponseModel extends StorableFactoryWithValidation[organization.InvitationResponse]
+object InvitationResponseModel extends FromValidatedRowModelFactory[organization.InvitationResponse]
 {
 	// ATTRIBUTES	--------------------------
 	

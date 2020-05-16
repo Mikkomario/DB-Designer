@@ -10,9 +10,9 @@ import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.model.enumeration.ComparisonOperator.Larger
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.{Deprecatable, StorableFactoryWithValidation}
+import utopia.vault.nosql.factory.{Deprecatable, FromValidatedRowModelFactory}
 
-object SessionModel extends StorableFactoryWithValidation[existing.UserSession] with Deprecatable
+object SessionModel extends FromValidatedRowModelFactory[existing.UserSession] with Deprecatable
 {
 	// IMPLEMENTED	-------------------------------
 	

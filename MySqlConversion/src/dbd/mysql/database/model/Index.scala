@@ -7,9 +7,9 @@ import dbd.mysql.model.partial.NewIndex
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.StorableFactoryWithValidation
+import utopia.vault.nosql.factory.FromValidatedRowModelFactory
 
-object Index extends StorableFactoryWithValidation[existing.Index]
+object Index extends FromValidatedRowModelFactory[existing.Index]
 {
 	// IMPLEMENTED	-----------------------
 	

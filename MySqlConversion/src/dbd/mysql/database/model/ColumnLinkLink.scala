@@ -8,6 +8,7 @@ import dbd.mysql.model.partial.NewColumnLinkLink
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.{Row, StorableWithFactory}
 import utopia.vault.nosql.factory.FromRowFactory
+import utopia.vault.sql.JoinType
 
 object ColumnLinkLink extends FromRowFactory[existing.ColumnLinkLink]
 {
@@ -20,6 +21,8 @@ object ColumnLinkLink extends FromRowFactory[existing.ColumnLinkLink]
 			}
 		}
 	}
+	
+	override def joinType = JoinType.Inner
 	
 	override def joinedTables = ForeignKey.tables ++ LinkConfiguration.tables
 	

@@ -6,10 +6,10 @@ import dbd.mysql.model.existing
 import dbd.mysql.model.partial.NewTable
 import utopia.flow.datastructure.immutable.{Constant, Model, Value}
 import utopia.vault.database.Connection
-import utopia.vault.nosql.factory.MultiLinkedStorableFactory
+import utopia.vault.nosql.factory.PossiblyMultiLinkedFactory
 import utopia.vault.model.immutable.Storable
 
-object Table extends MultiLinkedStorableFactory[existing.Table, existing.Column]
+object Table extends PossiblyMultiLinkedFactory[existing.Table, existing.Column]
 {
 	// IMPLEMENTED	---------------------
 	

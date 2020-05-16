@@ -4,11 +4,11 @@ import java.time.Instant
 
 import utopia.flow.util.CollectionExtensions._
 import dbd.core.database.Tables
-import dbd.core.model.existing
 import dbd.core.model.existing.database
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.model.immutable.{Result, Storable}
 import utopia.vault.nosql.factory.{Deprecatable, FromResultFactory}
+import utopia.vault.sql.JoinType
 import utopia.vault.util.ErrorHandling
 
 import scala.util.{Failure, Success}
@@ -20,6 +20,8 @@ object Class extends FromResultFactory[database.Class] with Deprecatable
 	override def nonDeprecatedCondition = nonDeprecatedDataCondition && notDeletedCondition
 	
 	override def table = Tables.classTable
+	
+	override def joinType = JoinType.Left
 	
 	override def joinedTables = ClassInfo.tables ++ Attribute.tables
 	

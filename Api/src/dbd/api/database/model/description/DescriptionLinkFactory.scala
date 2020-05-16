@@ -8,7 +8,7 @@ import dbd.core.model.template.DescriptionLinkLike
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.Storable
-import utopia.vault.nosql.factory.{Deprecatable, LinkedStorableFactory}
+import utopia.vault.nosql.factory.{Deprecatable, LinkedFactory}
 
 import scala.util.Try
 
@@ -18,7 +18,7 @@ import scala.util.Try
   * @since 4.5.2020, v2
   */
 trait DescriptionLinkFactory[+E, +M <: Storable, -P <: DescriptionLinkLike[DescriptionData]]
-	extends LinkedStorableFactory[E, existing.description.Description] with Deprecatable
+	extends LinkedFactory[E, existing.description.Description] with Deprecatable
 {
 	// ABSTRACT	----------------------------------
 	

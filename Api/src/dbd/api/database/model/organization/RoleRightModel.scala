@@ -6,9 +6,9 @@ import dbd.core.model.enumeration.{TaskType, UserRole}
 import utopia.flow.datastructure.template.{Model, Property}
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.StorableFactory
+import utopia.vault.nosql.factory.FromRowModelFactory
 
-object RoleRightModel extends StorableFactory[existing.RoleRight]
+object RoleRightModel extends FromRowModelFactory[existing.RoleRight]
 {
 	// ATTRIBUTES	--------------------------
 	

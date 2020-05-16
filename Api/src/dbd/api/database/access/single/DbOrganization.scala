@@ -4,10 +4,12 @@ import java.time.{Instant, Period}
 
 import dbd.api.database.model.organization
 import dbd.api.database.access.many.{DbDescriptions, InvitationsAccess}
-import dbd.api.database.model.organization.{MemberRoleModel, MembershipModel}
+import dbd.api.database.factory.organization.DeletionFactory
+import dbd.api.database.model.organization.{DeletionCancelModel, DeletionModel, MemberRoleModel, MembershipModel}
+import dbd.core.model.combined.organization.DeletionWithCancellations
 import dbd.core.model.enumeration.UserRole
 import dbd.core.model.existing.organization.Membership
-import dbd.core.model.partial.organization.{InvitationData, MembershipData}
+import dbd.core.model.partial.organization.{DeletionCancelData, InvitationData, MembershipData}
 import utopia.flow.util.TimeExtensions._
 import utopia.vault.database.Connection
 import utopia.vault.nosql.access.ManyModelAccess
@@ -49,6 +51,11 @@ object DbOrganization
 		  * @return An access point to invitations to join this organization
 		  */
 		def invitations = Invitations
+		
+		/**
+		  * @return An access point to deletions targeting this organization
+		  */
+		def deletions = Deletions
 		
 		/**
 		  * @return An access point to descriptions of this organization
@@ -128,6 +135,54 @@ object DbOrganization
 					(implicit connection: Connection) =
 			{
 				factory.insert(InvitationData(organizationId, recipient, role, Instant.now() + validDuration, Some(senderId)))
+			}
+		}
+		
+		object Deletions extends ManyModelAccess[DeletionWithCancellations]
+		{
+			// IMPLEMENTED	----------------------
+			
+			override def factory = DeletionFactory
+			
+			override val globalCondition = Some(DeletionModel.withOrganizationId(organizationId).toCondition)
+			
+			
+			// COMPUTED	--------------------------
+			
+			/**
+			  * @return An access point to pending deletions (those not cancelled)
+			  */
+			def pending = Pending
+			
+			
+			// NESTED	--------------------------
+			
+			object Pending extends ManyModelAccess[DeletionWithCancellations]
+			{
+				// IMPLEMENTED	------------------
+				
+				override def factory = Deletions.factory
+				
+				override val globalCondition = Some(Deletions.mergeCondition(DeletionCancelModel.table.primaryColumn.get.isNull))
+				
+				
+				// OTHER	----------------------
+				
+				/**
+				  * Cancels all pending deletions for this organization
+				  * @param creatorId Id of the user who cancels these deletions
+				  * @param connection DB Connection (implicit)
+				  * @return Affected deletions, along with the new cancellations
+				  */
+				def cancel(creatorId: Int)(implicit connection: Connection) =
+				{
+					// Inserts a new deletion cancel for all pending deletions
+					val pendingDeletions = all
+					pendingDeletions.map { deletion =>
+						val cancellation = DeletionCancelModel.insert(DeletionCancelData(deletion.id, Some(creatorId)))
+						DeletionWithCancellations(deletion, Vector(cancellation))
+					}
+				}
 			}
 		}
 	}

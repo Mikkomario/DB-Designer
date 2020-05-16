@@ -14,9 +14,9 @@ import dbd.core.model.partial.database.NewLinkConfiguration
 import utopia.flow.datastructure.template
 import utopia.flow.datastructure.template.Property
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.{Deprecatable, RowFactoryWithTimestamps, StorableFactory}
+import utopia.vault.nosql.factory.{Deprecatable, FromRowFactoryWithTimestamps, FromRowModelFactory}
 
-object LinkConfiguration extends StorableFactory[database.LinkConfiguration] with Deprecatable with RowFactoryWithTimestamps[database.LinkConfiguration]
+object LinkConfiguration extends FromRowModelFactory[database.LinkConfiguration] with Deprecatable with FromRowFactoryWithTimestamps[database.LinkConfiguration]
 {
 	// IMPLEMENTED	---------------------------
 	

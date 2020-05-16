@@ -10,10 +10,10 @@ import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.{Deprecatable, RowFactoryWithTimestamps, StorableFactoryWithValidation}
+import utopia.vault.nosql.factory.{Deprecatable, FromRowFactoryWithTimestamps, FromValidatedRowModelFactory}
 
-object DatabaseConfiguration extends StorableFactoryWithValidation[database.DatabaseConfiguration] with Deprecatable
-	with RowFactoryWithTimestamps[database.DatabaseConfiguration]
+object DatabaseConfiguration extends FromValidatedRowModelFactory[database.DatabaseConfiguration] with Deprecatable
+	with FromRowFactoryWithTimestamps[database.DatabaseConfiguration]
 {
 	// IMPLEMENTED	---------------------
 	

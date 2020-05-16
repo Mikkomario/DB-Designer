@@ -8,10 +8,10 @@ import dbd.core.model.existing
 import dbd.core.model.existing.database
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.{Deprecatable, LinkedStorableFactory, RowFactoryWithTimestamps}
+import utopia.vault.nosql.factory.{Deprecatable, LinkedFactory, FromRowFactoryWithTimestamps}
 
-object Attribute extends LinkedStorableFactory[database.Attribute, database.AttributeConfiguration] with Deprecatable
-	with RowFactoryWithTimestamps[database.Attribute]
+object Attribute extends LinkedFactory[database.Attribute, database.AttributeConfiguration] with Deprecatable
+	with FromRowFactoryWithTimestamps[database.Attribute]
 {
 	// IMPLEMENTED	-----------------------
 	

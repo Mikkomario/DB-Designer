@@ -8,7 +8,7 @@ import utopia.vault.sql.Extensions._
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.Column
 import utopia.vault.nosql.access.ManyModelAccess
-import utopia.vault.nosql.factory.RowFactoryWithTimestamps
+import utopia.vault.nosql.factory.FromRowFactoryWithTimestamps
 
 /**
   * Used for accessing multiple models and specifically those that have been added or modified
@@ -24,7 +24,7 @@ trait ChangedModelsAccess[+A, +Conf] extends ManyModelAccess[A]
 	/**
 	  * @return Factory used for retrieving only current data configurations
 	  */
-	def configurationFactory: RowFactoryWithTimestamps[Conf]
+	def configurationFactory: FromRowFactoryWithTimestamps[Conf]
 	
 	
 	// OTHER	--------------------------

@@ -10,10 +10,10 @@ import dbd.core.model.existing.database
 import dbd.core.model.partial.database.NewAttributeConfiguration
 import utopia.flow.datastructure.template.{Model, Property}
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.{Deprecatable, RowFactoryWithTimestamps, StorableFactory}
+import utopia.vault.nosql.factory.{Deprecatable, FromRowFactoryWithTimestamps, FromRowModelFactory}
 
-object AttributeConfiguration extends StorableFactory[database.AttributeConfiguration] with Deprecatable
-	with RowFactoryWithTimestamps[database.AttributeConfiguration]
+object AttributeConfiguration extends FromRowModelFactory[database.AttributeConfiguration] with Deprecatable
+	with FromRowFactoryWithTimestamps[database.AttributeConfiguration]
 {
 	// ATTRIBUTES	---------------------------
 	

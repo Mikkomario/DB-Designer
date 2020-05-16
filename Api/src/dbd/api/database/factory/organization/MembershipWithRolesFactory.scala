@@ -5,6 +5,7 @@ import dbd.core.model.combined
 import dbd.core.model.enumeration.UserRole
 import utopia.vault.model.immutable.Result
 import utopia.vault.nosql.factory.{Deprecatable, FromResultFactory}
+import utopia.vault.sql.JoinType
 import utopia.vault.util.ErrorHandling
 
 import scala.util.{Failure, Success}
@@ -22,6 +23,8 @@ object MembershipWithRolesFactory extends FromResultFactory[combined.organizatio
 		MemberRoleModel.nonDeprecatedCondition
 	
 	override def table = MembershipModel.table
+	
+	override def joinType = JoinType.Left
 	
 	override def joinedTables = Vector(roleLinkTable)
 	

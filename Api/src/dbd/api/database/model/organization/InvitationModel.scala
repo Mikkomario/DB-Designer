@@ -13,11 +13,11 @@ import utopia.flow.generic.ValueConversions._
 import utopia.flow.util.CollectionExtensions._
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.StorableFactory
+import utopia.vault.nosql.factory.FromRowModelFactory
 
 import scala.util.{Failure, Success}
 
-object InvitationModel extends StorableFactory[existing.organization.Invitation]
+object InvitationModel extends FromRowModelFactory[existing.organization.Invitation]
 {
 	// IMPLEMENTED	---------------------------
 	
