@@ -1,13 +1,11 @@
 package dbd.api.rest.resource.user
 
 import dbd.api.database.access.single
+import dbd.api.rest.resource.ResourceWithChildren
 import dbd.api.rest.util.AuthorizedContext
 import utopia.access.http.Method.Get
-import utopia.access.http.Status.NotImplemented
 import utopia.flow.generic.ValueConversions._
 import utopia.nexus.http.Path
-import utopia.nexus.rest.Resource
-import utopia.nexus.rest.ResourceSearchResult.Error
 import utopia.nexus.result.Result
 import utopia.vault.database.Connection
 
@@ -16,13 +14,15 @@ import utopia.vault.database.Connection
   * @author Mikko Hilpinen
   * @since 6.5.2020, v2
   */
-object MyOrganizationsNode extends Resource[AuthorizedContext]
+object MyOrganizationsNode extends ResourceWithChildren[AuthorizedContext]
 {
 	// IMPLEMENTED	------------------------
 	
 	override val name = "organizations"
 	
 	override val allowedMethods = Vector(Get)
+	
+	override def children = Vector(DeletionsForMyOrganizationsNode)
 	
 	override def toResponse(remainingPath: Option[Path])(implicit context: AuthorizedContext) =
 	{
@@ -33,7 +33,4 @@ object MyOrganizationsNode extends Resource[AuthorizedContext]
 			Result.Success(organizations.map { _.toModel })
 		}
 	}
-	
-	override def follow(path: Path)(implicit context: AuthorizedContext) = Error(NotImplemented,
-		Some("Access to individual user's organizations hasn't yet been implemented"))
 }

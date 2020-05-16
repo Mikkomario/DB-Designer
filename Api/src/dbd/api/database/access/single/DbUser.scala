@@ -175,12 +175,21 @@ object DbUser extends SingleModelAccess[existing.user.User]
 			
 			override def factory = MembershipModel
 			
-			override def globalCondition = Some(userCondition && factory.nonDeprecatedCondition)
+			override def globalCondition = Some(condition)
 			
 			
 			// COMPUTED	--------------------------------
 			
+			private def condition = userCondition && factory.nonDeprecatedCondition
+			
 			private def userCondition = factory.withUserId(userId).toCondition
+			
+			/**
+			  * @param connection DB Connection (implicit)
+			  * @return Ids of all the organizations this user is a current member of
+			  */
+			def organizationIds(implicit connection: Connection) =
+				connection(Select(table, factory.organizationIdAttName) + Where(condition)).rowIntValues
 			
 			/**
 			  * All organizations & roles associated with these memberships

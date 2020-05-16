@@ -2,6 +2,7 @@ package dbd.api.database.model.organization
 
 import java.time.Instant
 
+import dbd.api.database.Tables
 import dbd.api.database.factory.organization.DeletionFactory
 import dbd.core.model.existing.organization.Deletion
 import dbd.core.model.partial.organization.DeletionData
@@ -11,6 +12,29 @@ import utopia.vault.database.Connection
 
 object DeletionModel
 {
+	// ATTRIBUTES	----------------------------
+	
+	/**
+	  * Name of the attribute that contains targeted organization's id
+	  */
+	val organizationIdAttName = "organizationId"
+	
+	
+	// COMPUTED	--------------------------------
+	
+	/**
+	  * @return Table used by this model
+	  */
+	def table = Tables.organizationDeletion
+	
+	/**
+	  * @return Column that contains targeted organization's id
+	  */
+	def organizationIdColumn = table(organizationIdAttName)
+	
+	
+	// OTHER	--------------------------------
+	
 	/**
 	  * @param organizationId Id of targeted organization
 	  * @return A model with only organization id set
@@ -45,8 +69,10 @@ object DeletionModel
 case class DeletionModel(id: Option[Int] = None, organizationId: Option[Int] = None, creatorId: Option[Int] = None,
 						 actualizationTime: Option[Instant] = None) extends Storable
 {
+	import DeletionModel._
+	
 	override def table = DeletionFactory.table
 	
-	override def valueProperties = Vector("id" -> id, "organizationId" -> organizationId, "creatorId" -> creatorId,
+	override def valueProperties = Vector("id" -> id, organizationIdAttName -> organizationId, "creatorId" -> creatorId,
 		"actualization" -> actualizationTime)
 }

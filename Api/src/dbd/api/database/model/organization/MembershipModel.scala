@@ -15,12 +15,20 @@ import utopia.vault.nosql.factory.{Deprecatable, FromValidatedRowModelFactory}
 
 object MembershipModel extends FromValidatedRowModelFactory[Membership] with Deprecatable
 {
+	// ATTRIBUTES	--------------------------
+	
+	/**
+	  * Name of the attribute that contains the associated organization's id
+	  */
+	val organizationIdAttName = "organizationId"
+	
+	
 	// IMPLEMENTED	--------------------------
 	
 	override val nonDeprecatedCondition = table("ended").isNull
 	
 	override protected def fromValidatedModel(model: Model[Constant]) = existing.organization.Membership(model("id").getInt,
-		organization.MembershipData(model("organizationId").getInt, model("userId").getInt, model("creatorId").int,
+		organization.MembershipData(model(organizationIdAttName).getInt, model("userId").getInt, model("creatorId").int,
 			model("started").getInstant, model("ended").instant))
 	
 	override def table = Tables.organizationMembership
@@ -71,11 +79,13 @@ case class MembershipModel(id: Option[Int] = None, organizationId: Option[Int] =
 						   userId: Option[Int] = None, creatorId: Option[Int] = None, started: Option[Instant] = None,
 						   ended: Option[Instant] = None) extends StorableWithFactory[Membership]
 {
+	import MembershipModel._
+	
 	// IMPLEMENTED	---------------------------
 	
 	override def factory = MembershipModel
 	
-	override def valueProperties = Vector("id" -> id, "organizationId" -> organizationId, "userId" -> userId,
+	override def valueProperties = Vector("id" -> id, organizationIdAttName -> organizationId, "userId" -> userId,
 		"creatorId" -> creatorId, "started" -> started, "ended" -> ended)
 	
 	

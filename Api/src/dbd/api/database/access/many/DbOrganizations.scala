@@ -1,12 +1,14 @@
 package dbd.api.database.access.many
 
 import dbd.api.database.model.description.OrganizationDescriptionModel
-import dbd.api.database.model.organization.{OrganizationModel, MemberRoleModel, MembershipModel}
+import dbd.api.database.model.organization.{DeletionModel, MemberRoleModel, MembershipModel, OrganizationModel}
 import dbd.core.model.enumeration.DescriptionRole.Name
 import dbd.core.model.enumeration.UserRole.Owner
 import dbd.core.model.partial.description.{DescriptionData, OrganizationDescriptionData}
 import dbd.core.model.partial.organization.MembershipData
+import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
+import utopia.vault.sql.Extensions._
 
 /**
   * Used for accessing multiple organizations at a time
@@ -21,6 +23,12 @@ object DbOrganizations
 	
 	
 	// OTHER	-----------------------
+	
+	/**
+	  * @param ids Organization ids
+	  * @return An access point to organizations with those ids
+	  */
+	def withIds(ids: Set[Int]) = new OrganizationsWithIds(ids)
 	
 	/**
 	  * Inserts a new organization to the database
@@ -39,5 +47,28 @@ object DbOrganizations
 		OrganizationDescriptionModel.insert(OrganizationDescriptionData(organizationId,
 			DescriptionData(Name, languageId, organizationName, Some(founderId))))
 		organizationId
+	}
+	
+	
+	// NESTED	------------------------
+	
+	class OrganizationsWithIds(organizationIds: Set[Int])
+	{
+		// COMPUTED	--------------------
+		
+		/**
+		  * @return An access point to deletions concerning these organizations
+		  */
+		def deletions = Deletions
+		
+		
+		// NESTED	--------------------
+		
+		object Deletions extends OrganizationDeletionsAccess
+		{
+			// IMPLEMENTED	------------
+			
+			override def globalCondition = Some(DeletionModel.organizationIdColumn.in(organizationIds))
+		}
 	}
 }
