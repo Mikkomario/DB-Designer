@@ -7,5 +7,6 @@ import dbd.core.model.partial.description.RoleDescriptionData
   * @author Mikko Hilpinen
   * @since 6.5.2020, v2
   */
+@deprecated("Replaced with DescriptionLink", "v2")
 case class RoleDescription(id: Int, data: RoleDescriptionData[Description])
 	extends StoredDescriptionLink[RoleDescriptionData[Description]]

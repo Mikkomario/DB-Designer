@@ -6,7 +6,6 @@ import dbd.api.database.model.user.{UserDeviceModel, UserLanguageModel, UserMode
 import dbd.core.model.combined.user.UserWithLinks
 import dbd.core.model.error.{AlreadyUsedException, IllegalPostModelException}
 import dbd.core.model.existing.user
-import dbd.core.model.combined
 import dbd.core.model.post.NewUser
 import utopia.vault.database.Connection
 import utopia.vault.nosql.access.ManyModelAccess
@@ -93,7 +92,7 @@ object DbUsers extends ManyModelAccess[user.User]
 				val deviceId = newUser.device match
 				{
 					case Right(deviceId) => deviceId
-					case Left(deviceData) => DbDevices.insert(deviceData._1, deviceData._2, user.id).deviceId
+					case Left(deviceData) => DbDevices.insert(deviceData._1, deviceData._2, user.id).targetId
 					
 				}
 				UserDeviceModel.insert(user.id, deviceId)

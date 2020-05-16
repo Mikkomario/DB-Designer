@@ -1,13 +1,13 @@
 package dbd.api.database.access.many
 
-import dbd.api.database.model.description.{DescriptionLinkFactory, DeviceDescriptionModel, OrganizationDescriptionModel, RoleDescriptionModel, TaskDescriptionModel}
+import dbd.api.database.factory.description.DescriptionLinkFactory
+import dbd.api.database.model.description.{DescriptionLinkModel, DescriptionLinkModelFactory}
 import dbd.core.model.enumeration.{DescriptionRole, TaskType, UserRole}
-import dbd.core.model.existing
-import dbd.core.model.existing.description.Description
+import dbd.core.model.existing.description.DescriptionLink
 import dbd.core.model.partial.description
 import dbd.core.model.partial.description.DescriptionData
+import dbd.core.model.partial.description.DescriptionLinkData.PartialDescriptionLinkData
 import dbd.core.model.post.NewDescription
-import dbd.core.model.template.DescriptionLinkLike
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.Storable
@@ -28,33 +28,86 @@ object DbDescriptions
 	  * @return An access point to that organization's descriptions
 	  */
 	def ofOrganizationWithId(organizationId: Int) =
-		DescriptionsOf(organizationId, OrganizationDescriptionModel)
+		DescriptionsOfSingle(organizationId, DescriptionLinkFactory.organization, DescriptionLinkModel.organization)
+	
+	/**
+	  * @param organizationIds Organization ids
+	  * @return An access point to descriptions of those organizations
+	  */
+	def ofOrganizationsWithIds(organizationIds: Set[Int]) = DescriptionsOfMany(organizationIds,
+		DescriptionLinkFactory.organization, DescriptionLinkModel.organization)
 	
 	/**
 	  * @param deviceId Device id
 	  * @return An access point to that device's descriptions
 	  */
 	def ofDeviceWithId(deviceId: Int) =
-		DescriptionsOf(deviceId, DeviceDescriptionModel)
+		DescriptionsOfSingle(deviceId, DescriptionLinkFactory.device, DescriptionLinkModel.device)
+	
+	/**
+	  * @param deviceIds Device ids
+	  * @return An access point to descriptions of those devices
+	  */
+	def ofDevicesWithIds(deviceIds: Set[Int]) = DescriptionsOfMany(deviceIds,
+		DescriptionLinkFactory.device, DescriptionLinkModel.device)
 	
 	/**
 	  * @param task Task type
 	  * @return An access point to descriptions of that task type
 	  */
-	def ofTask(task: TaskType) = DescriptionsOf(task.id, TaskDescriptionModel)
+	def ofTask(task: TaskType) =
+		DescriptionsOfSingle(task.id, DescriptionLinkFactory.task, DescriptionLinkModel.task)
+	
+	/**
+	  * @param tasks Task types
+	  * @return An access point to descriptions of those task types
+	  */
+	def ofTasks(tasks: Set[TaskType]) = DescriptionsOfMany(tasks.map { _.id },
+		DescriptionLinkFactory.task, DescriptionLinkModel.task)
 	
 	/**
 	  * @param role User role
 	  * @return An access point to descriptions of that user role
 	  */
-	def ofRole(role: UserRole) = DescriptionsOf(role.id, RoleDescriptionModel)
+	def ofRole(role: UserRole) =
+		DescriptionsOfSingle(role.id, DescriptionLinkFactory.role, DescriptionLinkModel.role)
+	
+	/**
+	  * @param roles Roles
+	  * @return An access point to descriptions of those roles
+	  */
+	def ofRoles(roles: Set[UserRole]) = DescriptionsOfMany(roles.map { _.id },
+		DescriptionLinkFactory.role, DescriptionLinkModel.role)
+	
+	/**
+	  * @param languageId Language id
+	  * @return An access point to that language's descriptions
+	  */
+	def ofLanguageWithId(languageId: Int) =
+		DescriptionsOfSingle(languageId, DescriptionLinkFactory.language, DescriptionLinkModel.language)
+	
+	/**
+	  * @param languageIds Language ids
+	  * @return An access point to descriptions of languages with those ids
+	  */
+	def ofLanguagesWithIds(languageIds: Set[Int]) = DescriptionsOfMany(languageIds, DescriptionLinkFactory.language,
+		DescriptionLinkModel.language)
 	
 	
 	// NESTED	----------------------------
 	
-	case class DescriptionsOf[+E, -P <: DescriptionLinkLike[DescriptionData]](targetId: Int,
-																			  factory: DescriptionLinkFactory[E, Storable, P])
-		extends ManyModelAccess[E]
+	case class DescriptionsOfMany(targetIds: Set[Int], factory: DescriptionLinkFactory[DescriptionLink],
+								  modelFactory: DescriptionLinkModelFactory[Storable, PartialDescriptionLinkData])
+		extends ManyModelAccess[DescriptionLink]
+	{
+		// IMPLEMENTED	---------------------
+		
+		override val globalCondition = Some(modelFactory.targetIdColumn.in(targetIds) && factory.nonDeprecatedCondition)
+	}
+	
+	case class DescriptionsOfSingle(targetId: Int, factory: DescriptionLinkFactory[DescriptionLink],
+									modelFactory: DescriptionLinkModelFactory[Storable, PartialDescriptionLinkData])
+		extends ManyModelAccess[DescriptionLink]
 	{
 		// COMPUTED	------------------------
 		
@@ -63,7 +116,7 @@ object DbDescriptions
 		
 		// IMPLEMENTED	--------------------
 		
-		override val globalCondition = Some(factory.withTargetId(targetId).toCondition && factory.nonDeprecatedCondition)
+		override val globalCondition = Some(modelFactory.withTargetId(targetId).toCondition && factory.nonDeprecatedCondition)
 		
 		
 		// OTHER	------------------------
@@ -74,44 +127,85 @@ object DbDescriptions
 		  */
 		def inLanguageWithId(languageId: Int) = DescriptionsInLanguage(languageId)
 		
-		def update(newDescription: NewDescription, authorId: Int)(implicit connection: Connection): Map[Int, Description] =
+		/**
+		  * Updates possibly multiple descriptions for this item (will replace old description versions)
+		  * @param newDescription New description to insert
+		  * @param authorId Id of the user who wrote this description
+		  * @param connection DB Connection (implicit)
+		  * @return Newly inserted description links
+		  */
+		def update(newDescription: NewDescription, authorId: Int)(implicit connection: Connection): Vector[DescriptionLink] =
 		{
 			// Updates each role + text pair separately
 			newDescription.descriptions.map { case (role, text) =>
 				update(description.DescriptionData(role, newDescription.languageId, text, Some(authorId)))
-			}
+			}.toVector
 		}
 		
+		/**
+		  * Updates a single description for this item
+		  * @param newDescription New description
+		  * @param connection DB Connection
+		  * @return Newly inserted description
+		  */
 		def update(newDescription: DescriptionData)(implicit connection: Connection) =
 		{
 			// Must first deprecate the old version of this description
 			deprecate(newDescription.languageId, newDescription.role)
 			// Then inserts a new description
-			factory.insert(targetId, newDescription)
+			modelFactory.insert(targetId, newDescription)
 		}
 		
+		/**
+		  * Updates a single description for this item
+		  * @param newDescriptionRole Role of the new description
+		  * @param languageId Id of the language the new description is written in
+		  * @param authorId Id of the user who wrote this description
+		  * @param text Description text
+		  * @param connection DB Connection (implicit)
+		  * @return Newly inserted description
+		  */
+		def update(newDescriptionRole: DescriptionRole, languageId: Int, authorId: Int, text: String)
+				  (implicit connection: Connection): DescriptionLink = update(DescriptionData(newDescriptionRole,
+			languageId, text, Some(authorId)))
+		
+		/**
+		  * Deprecates a description for this item
+		  * @param languageId Id of the language the description is written in
+		  * @param role Targeted description role
+		  * @param connection DB Connection (implicit)
+		  * @return Whether a description was deprecated
+		  */
 		def deprecate(languageId: Int, role: DescriptionRole)(implicit connection: Connection) =
 		{
 			// Needs to join into description table in order to filter by language id and role id
 			// (factories automatically do this)
 			val descriptionCondition = descriptionFactory.withRole(role).withLanguageId(languageId).toCondition
-			factory.nowDeprecated.updateWhere(mergeCondition(descriptionCondition), Some(factory.target)) > 0
+			modelFactory.nowDeprecated.updateWhere(mergeCondition(descriptionCondition), Some(factory.target)) > 0
 		}
 		
 		
 		// NESTED	-------------------------
 		
-		case class DescriptionsInLanguage(languageId: Int) extends ManyModelAccess[E]
+		case class DescriptionsInLanguage(languageId: Int) extends ManyModelAccess[DescriptionLink]
 		{
 			// IMPLEMENTED	-----------------
 			
-			override def factory = DescriptionsOf.this.factory
+			override def factory = DescriptionsOfSingle.this.factory
 			
-			override val globalCondition = Some(DescriptionsOf.this.mergeCondition(
+			override val globalCondition = Some(DescriptionsOfSingle.this.mergeCondition(
 				descriptionFactory.withLanguageId(languageId).toCondition))
 			
 			
 			// OTHER	---------------------
+			
+			/**
+			  * @param role Targeted description role
+			  * @param connection Db Connection
+			  * @return Description for that role for this item in targeted language
+			  */
+			def apply(role: DescriptionRole)(implicit connection: Connection): Option[DescriptionLink] =
+				apply(Set(role)).headOption
 			
 			/**
 			  * @param roles Targeted description roles
@@ -126,6 +220,12 @@ object DbDescriptions
 					Vector()
 			}
 			
+			/**
+			  * Reads descriptions of this item, except those in excluded description roles
+			  * @param excludedRoles Excluded description roles
+			  * @param connection DB Connection (implicit)
+			  * @return Read description links
+			  */
 			def forRolesOutside(excludedRoles: Set[DescriptionRole])(implicit connection: Connection) =
 				apply(DescriptionRole.values.toSet -- excludedRoles)
 		}

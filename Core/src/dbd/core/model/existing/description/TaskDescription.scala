@@ -7,5 +7,6 @@ import dbd.core.model.partial.description.TaskDescriptionData
   * @author Mikko Hilpinen
   * @since 6.5.2020, v2
   */
+@deprecated("Replaced with DescriptionLink", "v2")
 case class TaskDescription(id: Int, data: TaskDescriptionData[Description])
 	extends StoredDescriptionLink[TaskDescriptionData[Description]]

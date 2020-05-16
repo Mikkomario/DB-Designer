@@ -15,6 +15,11 @@ object Tables
 	def language = apply("language")
 	
 	/**
+	  * @return Table that contains links between languages and their descriptions
+	  */
+	def languageDescription = apply("language_description")
+	
+	/**
 	  * @return Table that contains users
 	  */
 	def user = apply("user")

@@ -7,5 +7,6 @@ import dbd.core.model.partial.description.DeviceDescriptionData
   * @author Mikko Hilpinen
   * @since 2.5.2020, v2
   */
+@deprecated("Replaced with DescriptionLink", "v2")
 case class DeviceDescription(id: Int, data: DeviceDescriptionData[Description])
 	extends StoredDescriptionLink[DeviceDescriptionData[Description]]

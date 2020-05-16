@@ -1,14 +1,14 @@
 package dbd.api.database.factory.user
 
 import dbd.api.database.Tables
-import dbd.api.database.model.user.{UserDeviceModel, UserLanguageModel, UserSettingsModel}
+import dbd.api.database.access.single.DbUser
+import dbd.api.database.model.user.UserSettingsModel
 import dbd.core.model.combined.user.UserWithLinks
 import dbd.core.model.existing
 import dbd.core.model.existing.user
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.vault.database.Connection
 import utopia.vault.nosql.factory.{Deprecatable, LinkedFactory}
-import utopia.vault.sql.{Select, Where}
 
 object UserFactory extends LinkedFactory[user.User, user.UserSettings] with Deprecatable
 {
@@ -37,11 +37,9 @@ object UserFactory extends LinkedFactory[user.User, user.UserSettings] with Depr
 	def complete(user: existing.user.User)(implicit connection: Connection) =
 	{
 		// Reads language links
-		val languageIds = connection(Select(UserLanguageModel.table, UserLanguageModel.languageIdAttName) +
-			Where(UserLanguageModel.withUserId(user.id).toCondition)).rowIntValues
+		val languageIds = DbUser(user.id).languageIds
 		// Reads device links
-		val deviceIds = connection(Select(UserDeviceModel.table, UserDeviceModel.deviceIdAttName) +
-			Where(UserDeviceModel.withUserId(user.id).toCondition && UserDeviceModel.nonDeprecatedCondition)).rowIntValues
+		val deviceIds = DbUser(user.id).deviceIds
 		
 		// Combines data
 		UserWithLinks(user, languageIds, deviceIds)

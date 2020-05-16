@@ -3,7 +3,6 @@ package dbd.api.database.access.single
 import dbd.api
 import dbd.api.database.model.device
 import dbd.api.model.partial.DeviceKeyData
-import dbd.core.model.enumeration.DescriptionRole
 import dbd.core.model.enumeration.DescriptionRole.Name
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
@@ -11,10 +10,7 @@ import utopia.vault.nosql.access.{SingleModelAccess, UniqueAccess}
 import java.util.UUID.randomUUID
 
 import dbd.api.database.access.many.DbDescriptions
-import dbd.api.database.model.description.{DescriptionModel, DeviceDescriptionModel}
 import dbd.api.database.model.device.ClientDeviceModel
-import dbd.core.model.existing.description
-import dbd.core.model.partial.description.{DescriptionData, DeviceDescriptionData}
 
 /**
   * Used for accessing and modifying individual devices
@@ -62,45 +58,16 @@ object DbDevice
 		
 		// OTHER	-----------------------------
 		
-		def nameInLanguageWithId(languageId: Int) = new DeviceDescription(Name, languageId)
+		/**
+		  * @param languageId Id of targeted language
+		  * @param connection DB Connection (implicit)
+		  * @return This device's name in specified language
+		  */
+		def nameInLanguageWithId(languageId: Int)(implicit connection: Connection) =
+			DbDescriptions.ofDeviceWithId(deviceId).inLanguageWithId(languageId)(Name)
 		
 		
 		// NESTED	-----------------------------
-		
-		class DeviceDescription(descriptionType: DescriptionRole, languageId: Int)
-			extends UniqueAccess[description.DeviceDescription] with SingleModelAccess[description.DeviceDescription]
-		{
-			// COMPUTED	-------------------------
-			
-			private def descriptionFactory = DescriptionModel
-			
-			
-			// IMPLEMENTED	---------------------
-			
-			override val condition = factory.nonDeprecatedCondition &&
-				descriptionFactory.withRole(descriptionType).withLanguageId(languageId).toCondition
-			
-			override def factory = DeviceDescriptionModel
-			
-			
-			// OTHER	------------------------
-			
-			/**
-			  * Updates this device description
-			  * @param newDescription New description for this device
-			  * @param authorId Id of the user who wrote the description (optional)
-			  * @param connection DB Connection (implicit)
-			  * @return Newly inserted description
-			  */
-			def update(newDescription: String, authorId: Option[Int] = None)(implicit connection: Connection) =
-			{
-				// First deprecates the old description (link)
-				factory.nowDeprecated.updateWhere(condition)
-				// Inserts a new description
-				factory.insert(DeviceDescriptionData(deviceId, DescriptionData(descriptionType, languageId,
-					newDescription, authorId)))
-			}
-		}
 		
 		object DeviceAuthKey extends UniqueAccess[api.model.existing.DeviceKey] with SingleModelAccess[api.model.existing.DeviceKey]
 		{

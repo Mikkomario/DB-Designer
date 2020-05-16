@@ -5,9 +5,7 @@ import dbd.api.database.access.single
 import dbd.api.rest.util.AuthorizedContext
 import dbd.core.model.enumeration.DescriptionRole
 import dbd.core.model.enumeration.TaskType.DocumentOrganization
-import dbd.core.model.existing
-import dbd.core.model.existing.description.OrganizationDescription
-import dbd.core.model.partial.description.OrganizationDescriptionData
+import dbd.core.model.existing.description.DescriptionLink
 import dbd.core.model.post.NewDescription
 import utopia.access.http.Method.{Get, Put}
 import utopia.access.http.Status.{BadRequest, NotFound}
@@ -65,9 +63,8 @@ case class OrganizationDescriptionsNode(organizationId: Int) extends Resource[Au
 					if (single.DbLanguage(newDescription.languageId).isDefined)
 					{
 						// Updates the organization's descriptions accordingly
-						val insertedDescriptions = single.DbOrganization(organizationId).descriptions.update(newDescription,
-							session.userId).map { case (linkId, description) => existing.description.OrganizationDescription(
-							linkId, OrganizationDescriptionData(organizationId, description)) }.toVector
+						val insertedDescriptions = single.DbOrganization(organizationId).descriptions.update(
+							newDescription, session.userId)
 						// Returns new version of organization's descriptions (in specified language)
 						val otherDescriptions =
 						{
@@ -92,7 +89,8 @@ case class OrganizationDescriptionsNode(organizationId: Int) extends Resource[Au
 	
 	// OTHER	---------------------------------
 	
-	private def inLanguages(languageIds: Seq[Int])(implicit connection: Connection): Vector[OrganizationDescription] =
+	// TODO: Add this feature directly to the descriptions db accessor
+	private def inLanguages(languageIds: Seq[Int])(implicit connection: Connection): Vector[DescriptionLink] =
 	{
 		languageIds.headOption match
 		{
@@ -108,7 +106,7 @@ case class OrganizationDescriptionsNode(organizationId: Int) extends Resource[Au
 	}
 	
 	private def inLanguages(languageIds: Seq[Int], remainingRoles: Set[DescriptionRole])(
-		implicit connection: Connection): Vector[OrganizationDescription] =
+		implicit connection: Connection): Vector[DescriptionLink] =
 	{
 		// Reads descriptions in target languages until either all description types have been read or all language
 		// options exhausted

@@ -2,6 +2,8 @@ package dbd.api.database.model.description
 
 import java.time.Instant
 
+import dbd.api.database.Tables
+import dbd.api.database.factory.description.DescriptionLinkFactory
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.model.immutable.StorableWithFactory
 
@@ -10,7 +12,7 @@ import utopia.vault.model.immutable.StorableWithFactory
   * @author Mikko Hilpinen
   * @since 2.5.2020, v2
   */
-trait DescriptionLinkModel[+E, +F <: DescriptionLinkFactory[E, _, _]] extends StorableWithFactory[E]
+trait DescriptionLinkModel[+E, +F <: DescriptionLinkFactory[E]] extends StorableWithFactory[E]
 {
 	// ABSTRACT	------------------------------
 	
@@ -39,6 +41,34 @@ trait DescriptionLinkModel[+E, +F <: DescriptionLinkFactory[E, _, _]] extends St
 	
 	// IMPLEMENTED	--------------------------
 	
-	override def valueProperties = Vector("id" -> id, factory.targetIdAttName -> targetId,
+	override def valueProperties = Vector("id" -> id, factory.modelFactory.targetIdAttName -> targetId,
 		"descriptionId" -> descriptionId, "deprecatedAfter" -> deprecatedAfter)
+}
+
+object DescriptionLinkModel
+{
+	/**
+	  * Device description links model factory
+	  */
+	val device = DescriptionLinkModelFactory(Tables.deviceDescription, "deviceId")
+	
+	/**
+	  * Organization description links model factory
+	  */
+	val organization = DescriptionLinkModelFactory(Tables.organizationDescription, "organizationId")
+	
+	/**
+	  * Role description links model factory
+	  */
+	val role = DescriptionLinkModelFactory(Tables.roleDescription, "roleId")
+	
+	/**
+	  * Task description links model factory
+	  */
+	val task = DescriptionLinkModelFactory(Tables.taskDescription, "taskId")
+	
+	/**
+	  * Language description links model factory
+	  */
+	val language = DescriptionLinkModelFactory(Tables.languageDescription, "languageId")
 }

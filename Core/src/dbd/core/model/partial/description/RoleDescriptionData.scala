@@ -9,6 +9,7 @@ import utopia.flow.generic.ModelConvertible
   * @author Mikko Hilpinen
   * @since 6.5.2020, v2
   */
+@deprecated("Replaced with DescriptionLinkData", "v2")
 case class RoleDescriptionData[+D <: ModelConvertible](role: UserRole, description: D) extends DescriptionLinkLike[D]
 {
 	override def targetId = role.id

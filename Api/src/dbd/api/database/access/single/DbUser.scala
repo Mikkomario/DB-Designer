@@ -1,12 +1,11 @@
 package dbd.api.database.access.single
 
 import dbd.api.database.access.id.UserId
-import dbd.api.database.access.many.InvitationsAccess
+import dbd.api.database.access.many.{DbDescriptions, InvitationsAccess}
 import dbd.api.database.factory.organization.MembershipWithRolesFactory
 import dbd.api.database.factory.user.UserFactory
-import dbd.api.database.model.description.OrganizationDescriptionModel
 import dbd.api.database.model.organization.{MembershipModel, RoleRightModel}
-import dbd.api.database.model.user.{UserAuthModel, UserDeviceModel, UserSettingsModel}
+import dbd.api.database.model.user.{UserAuthModel, UserDeviceModel, UserLanguageModel, UserSettingsModel}
 import dbd.api.util.PasswordHash
 import dbd.core.model.combined.organization.RoleWithRights
 import dbd.core.model.combined.user.MyOrganization
@@ -17,7 +16,7 @@ import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.model.enumeration.BasicCombineOperator.Or
 import utopia.vault.nosql.access.{ManyModelAccess, SingleIdAccess, SingleIdModelAccess, SingleModelAccess, UniqueAccess}
-import utopia.vault.sql.{Select, Where}
+import utopia.vault.sql.{Delete, Select, Where}
 import utopia.vault.sql.Extensions._
 
 /**
@@ -71,6 +70,21 @@ object DbUser extends SingleModelAccess[existing.user.User]
 		
 		/**
 		  * @param connection DB Connection
+		  * @return Ids of the languages known by this user
+		  */
+		def languageIds(implicit connection: Connection) = connection(Select(UserLanguageModel.table,
+			UserLanguageModel.languageIdAttName) + Where(UserLanguageModel.withUserId(userId).toCondition)).rowIntValues
+		
+		/**
+		  * @param connection DB Connection
+		  * @return Ids of the devices this user has used
+		  */
+		def deviceIds(implicit connection: Connection) = connection(Select(UserDeviceModel.table,
+			UserDeviceModel.deviceIdAttName) + Where(UserDeviceModel.withUserId(userId).toCondition &&
+			UserDeviceModel.nonDeprecatedCondition)).rowIntValues
+		
+		/**
+		  * @param connection DB Connection
 		  * @return This user's data, along with linked data
 		  */
 		def withLinks(implicit connection: Connection) = pull.map { base => factory.complete(base) }
@@ -94,7 +108,6 @@ object DbUser extends SingleModelAccess[existing.user.User]
 			val settingsFactory = UserSettingsModel
 			settingsFactory.get(settingsFactory.withUserId(userId).toCondition && settingsFactory.nonDeprecatedCondition)
 		}
-		
 		
 		/**
 		  * @param connection DB Connection (implicit), used for reading user email address
@@ -142,6 +155,29 @@ object DbUser extends SingleModelAccess[existing.user.User]
 				UserDeviceModel.insert(userId, deviceId)
 				true
 			}
+		}
+		
+		/**
+		  * Adds provided languages to those known by this user. Please make sure to only add new language ids.
+		  * @param newLanguageIds Ids of new languages for this user
+		  * @param connection DB Connection (implicit)
+		  */
+		def addLanguagesWithIds(newLanguageIds: Set[Int])(implicit connection: Connection) =
+			newLanguageIds.foreach { languageId => UserLanguageModel.insert(userId, languageId) }
+		
+		/**
+		  * Removes languages from those known by the user
+		  * @param languageIds Ids of the languages to disassociate
+		  * @param connection DB Connection (implicit)
+		  * @return Number of languages removed from this user's known languages
+		  */
+		def removeLanguagesWithIds(languageIds: Set[Int])(implicit connection: Connection) =
+		{
+			if (languageIds.nonEmpty)
+				connection(Delete(UserLanguageModel.table) + Where(UserLanguageModel.withUserId(userId).toCondition &&
+					UserLanguageModel.languageIdColumn.in(languageIds))).updatedRowCount
+			else
+				0
 		}
 		
 		
@@ -216,8 +252,8 @@ object DbUser extends SingleModelAccess[existing.user.User]
 				val organizationIds = memberships.map { _.wrapped.organizationId }.toSet
 				if (organizationIds.nonEmpty)
 				{
-					val organizationDescriptions = OrganizationDescriptionModel.getMany(
-						OrganizationDescriptionModel.targetIdColumn.in(organizationIds))
+					// TODO: Add proper language filtering
+					val organizationDescriptions = DbDescriptions.ofOrganizationsWithIds(organizationIds).all
 					// Reads all task links
 					val roleIds = memberships.flatMap { _.roles }.map { _.id }.toSet
 					val roleRights = RoleRightModel.getMany(RoleRightModel.roleIdColumn.in(roleIds))
@@ -228,7 +264,7 @@ object DbUser extends SingleModelAccess[existing.user.User]
 					memberships.map { membership =>
 						val organizationId = membership.wrapped.organizationId
 						MyOrganization(organizationId, userId,
-							organizationDescriptions.filter { _.organizationId == organizationId }.toSet,
+							organizationDescriptions.filter { _.targetId == organizationId }.toSet,
 							membership.roles.flatMap { role => rolesWithRights.find { _.role == role } })
 					}
 				}

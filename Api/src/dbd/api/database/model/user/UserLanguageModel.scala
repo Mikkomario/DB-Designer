@@ -17,7 +17,15 @@ object UserLanguageModel
 	
 	// COMPUTED	-----------------------------
 	
+	/**
+	  * @return Table used by this model
+	  */
 	def table = Tables.userLanguage
+	
+	/**
+	  * @return Column that contains the associated language's id
+	  */
+	def languageIdColumn = table(languageIdAttName)
 	
 	
 	// OTHER	-----------------------------

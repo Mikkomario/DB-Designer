@@ -1,10 +1,8 @@
 package dbd.api.database.access.many
 
-import dbd.api.database.model.description.OrganizationDescriptionModel
 import dbd.api.database.model.organization.{DeletionModel, MemberRoleModel, MembershipModel, OrganizationModel}
 import dbd.core.model.enumeration.DescriptionRole.Name
 import dbd.core.model.enumeration.UserRole.Owner
-import dbd.core.model.partial.description.{DescriptionData, OrganizationDescriptionData}
 import dbd.core.model.partial.organization.MembershipData
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
@@ -44,8 +42,8 @@ object DbOrganizations
 		val membership = MembershipModel.insert(MembershipData(organizationId, founderId, Some(founderId)))
 		MemberRoleModel.insert(membership.id, Owner, founderId)
 		// Inserts a name for that organization
-		OrganizationDescriptionModel.insert(OrganizationDescriptionData(organizationId,
-			DescriptionData(Name, languageId, organizationName, Some(founderId))))
+		DbDescriptions.ofOrganizationWithId(organizationId).update(Name, languageId, founderId, organizationName)
+		// Returns organization id
 		organizationId
 	}
 	

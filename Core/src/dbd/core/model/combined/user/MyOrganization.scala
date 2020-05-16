@@ -1,7 +1,7 @@
 package dbd.core.model.combined.user
 
 import dbd.core.model.combined.organization.RoleWithRights
-import dbd.core.model.existing.description.OrganizationDescription
+import dbd.core.model.existing.description.DescriptionLink
 import utopia.flow.datastructure.immutable.Model
 import utopia.flow.generic.ModelConvertible
 import utopia.flow.generic.ValueConversions._
@@ -15,7 +15,7 @@ import utopia.flow.generic.ValueConversions._
   * @param descriptions Various descriptions of this organization
   * @param myRoles Described user's roles in this organization
   */
-case class MyOrganization(id: Int, userId: Int, descriptions: Set[OrganizationDescription], myRoles: Set[RoleWithRights])
+case class MyOrganization(id: Int, userId: Int, descriptions: Set[DescriptionLink], myRoles: Set[RoleWithRights])
 	extends ModelConvertible
 {
 	override def toModel =

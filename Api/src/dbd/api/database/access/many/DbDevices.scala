@@ -1,10 +1,7 @@
 package dbd.api.database.access.many
 
-import dbd.api.database.model.description.DeviceDescriptionModel
 import dbd.api.database.model.device.ClientDeviceModel
-import dbd.core.model.existing
 import dbd.core.model.enumeration.DescriptionRole.Name
-import dbd.core.model.partial.description.{DescriptionData, DeviceDescriptionData}
 import utopia.vault.database.Connection
 
 /**
@@ -29,8 +26,6 @@ object DbDevices
 		// Inserts a new device first
 		val newDeviceId = factory.insert(authorId)
 		// Then inserts a description for the device
-		val dataToInsert = DeviceDescriptionData(newDeviceId, DescriptionData(Name, languageId, deviceName))
-		val (linkId, description) = DeviceDescriptionModel.insert(dataToInsert)
-		existing.description.DeviceDescription(linkId, dataToInsert.copy (description = description))
+		DbDescriptions.ofDeviceWithId(newDeviceId).update(Name, languageId, authorId, deviceName)
 	}
 }
