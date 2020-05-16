@@ -1,6 +1,6 @@
 package dbd.api.database.access.many
 
-import dbd.api.database
+import dbd.api.database.model.user.UserSession
 import dbd.api.model.existing
 import utopia.vault.database.Connection
 import utopia.vault.nosql.access.ManyModelAccess
@@ -14,7 +14,7 @@ object UserSessions extends ManyModelAccess[existing.UserSession]
 {
 	// IMPLEMENTED	----------------------------
 	
-	override def factory = database.model.UserSession
+	override def factory = UserSession
 	
 	override def globalCondition = Some(factory.nonDeprecatedCondition)
 	

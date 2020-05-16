@@ -1,4 +1,4 @@
-package dbd.api.database.model
+package dbd.api.database.model.organization
 
 import dbd.core.model.combined
 import utopia.vault.model.immutable.Row

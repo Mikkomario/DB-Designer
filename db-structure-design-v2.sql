@@ -136,10 +136,7 @@ CREATE TABLE organization
 (
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted_after DATETIME,
     creator_id INT,
-
-    INDEX (deleted_after),
 
     FOREIGN KEY o_u_organization_founder (creator_id)
         REFERENCES `user`(id) ON DELETE SET NULL
@@ -301,6 +298,7 @@ CREATE TABLE organization_member_role
 
 )Engine=InnoDB DEFAULT CHARSET=latin1;
 
+
 -- Contains invitations for joining an organization
 CREATE TABLE organization_invitation
 (
@@ -346,6 +344,43 @@ CREATE TABLE invitation_response
         REFERENCES `user`(id) ON DELETE CASCADE
 
 )Engine=InnoDB DEFAULT CHARSET=latin1;
+
+
+-- Requested deletions for an organization
+-- There is a period of time during which organization owners may cancel the deletion
+CREATE TABLE organization_deletion
+(
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    organization_id INT NOT NULL,
+    creator_id INT NOT NULL,
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actualization DATETIME NOT NULL,
+
+    INDEX (actualization),
+
+    FOREIGN KEY od_o_deletion_target (organization_id)
+        REFERENCES organization(id) ON DELETE CASCADE,
+
+    FOREIGN KEY od_u_deletion_proposer (creator_id)
+        REFERENCES `user`(id) ON DELETE CASCADE
+
+)Engine=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE organization_deletion_cancellation
+(
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    deletion_id INT NOT NULL,
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    creator_id INT,
+
+    FOREIGN KEY odc_od_cancelled_deletion (deletion_id)
+        REFERENCES organization_deletion(id) ON DELETE CASCADE,
+
+    FOREIGN KEY odc_u_cancel_author (creator_id)
+        REFERENCES `user`(id) ON DELETE SET NULL
+
+)Engine=InnoDB DEFAULT CHARSET=latin1;
+
 
 -- Devices the users use to log in and use this service
 CREATE TABLE client_device

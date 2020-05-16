@@ -1,4 +1,4 @@
-package dbd.api.database.model
+package dbd.api.database.model.organization
 
 import dbd.api.database.Tables
 import dbd.core.model.existing

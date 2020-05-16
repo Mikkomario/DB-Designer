@@ -1,6 +1,7 @@
 package dbd.api.database.access.many
 
-import dbd.api.database.model.{Organization, OrganizationDescription, OrganizationMemberRole, OrganizationMembership}
+import dbd.api.database.model.description.OrganizationDescription
+import dbd.api.database.model.organization.{Organization, OrganizationMemberRole, OrganizationMembership}
 import dbd.core.model.enumeration.DescriptionRole.Name
 import dbd.core.model.enumeration.UserRole.Owner
 import dbd.core.model.partial.{DescriptionData, MembershipData, OrganizationDescriptionData}

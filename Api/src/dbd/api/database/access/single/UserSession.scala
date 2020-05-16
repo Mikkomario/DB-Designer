@@ -2,7 +2,7 @@ package dbd.api.database.access.single
 
 import java.time.Instant
 
-import dbd.api.database
+import dbd.api.database.model.user
 import dbd.api.database.access.many.UserSessions
 import dbd.api.model.existing
 import dbd.api.model.partial.UserSessionData
@@ -21,7 +21,7 @@ object UserSession extends SingleModelAccess[existing.UserSession]
 {
 	// IMPLEMENTED	-----------------------------
 	
-	override def factory = database.model.UserSession
+	override def factory = user.UserSession
 	
 	override def globalCondition = Some(factory.nonDeprecatedCondition)
 	

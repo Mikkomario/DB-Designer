@@ -1,14 +1,11 @@
-package dbd.api.database.model
-
-import java.time.Instant
+package dbd.api.database.model.organization
 
 import dbd.api.database.Tables
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.Storable
-import utopia.vault.nosql.factory.Deprecatable
 
-object Organization extends Deprecatable
+object Organization
 {
 	// COMPUTED	------------------------------
 	
@@ -16,21 +13,6 @@ object Organization extends Deprecatable
 	  * @return The table used by this factory
 	  */
 	def table = Tables.organization
-	
-	/**
-	  * @return A model that has just been marked as deleted
-	  */
-	def nowDeleted = apply(deletedAfter = Some(Instant.now()))
-	
-	/**
-	  * @return A condition that only accepts organizations that have been marked as deleted
-	  */
-	def deletedCondition = table("deletedAfter").isNotNull
-	
-	
-	// IMPLEMENTED	--------------------------
-	
-	override val nonDeprecatedCondition = table("deletedAfter").isNull
 	
 	
 	// OTHER	------------------------------
@@ -55,9 +37,9 @@ object Organization extends Deprecatable
   * @author Mikko Hilpinen
   * @since 4.5.2020, v2
   */
-case class Organization(id: Option[Int] = None, creatorId: Option[Int] = None, deletedAfter: Option[Instant] = None) extends Storable
+case class Organization(id: Option[Int] = None, creatorId: Option[Int] = None) extends Storable
 {
 	override def table = Organization.table
 	
-	override def valueProperties = Vector("id" -> id, "deletedAfter" -> deletedAfter, "creatorId" -> creatorId)
+	override def valueProperties = Vector("id" -> id, "creatorId" -> creatorId)
 }

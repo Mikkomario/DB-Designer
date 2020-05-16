@@ -1,4 +1,4 @@
-package dbd.api.database.model
+package dbd.api.database.model.user
 
 import java.time.Instant
 

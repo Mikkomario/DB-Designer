@@ -1,8 +1,7 @@
 package dbd.api.database.access.id
 
-import dbd.api.database.model.Organization
+import dbd.api.database.model.organization.Organization
 import utopia.flow.datastructure.immutable.Value
-import utopia.vault.database.Connection
 import utopia.vault.nosql.access.ManyIdAccess
 
 /**
@@ -26,10 +25,4 @@ object OrganizationIds extends ManyIdAccess[Int]
 	// COMPUTED	------------------------
 	
 	private def factory = Organization
-	
-	/**
-	  * @param connection DB Connection (implicit)
-	  * @return Ids of organizations that are waiting to be deleted / have been marked as deleted
-	  */
-	def waitingDeletion(implicit connection: Connection) = find(factory.deletedCondition)
 }

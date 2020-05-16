@@ -2,7 +2,7 @@ package dbd.api.database.access.many
 
 import java.time.Instant
 
-import dbd.api.database.model.{Invitation, InvitationResponse, InvitationWithResponse}
+import dbd.api.database.model.organization.{Invitation, InvitationResponse, InvitationWithResponse}
 import dbd.core.model.existing
 import utopia.vault.database.Connection
 import utopia.vault.model.enumeration.ComparisonOperator.Larger

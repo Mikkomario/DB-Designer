@@ -1,10 +1,10 @@
-package dbd.api.database.model
+package dbd.api.database.model.description
 
-import dbd.core.model.existing
 import java.time.Instant
 
 import dbd.api.database.Tables
 import dbd.core.model.enumeration.UserRole
+import dbd.core.model.existing
 import dbd.core.model.partial.{DescriptionData, RoleDescriptionData}
 
 object RoleDescription extends DescriptionLinkFactory[existing.RoleDescription, RoleDescription,

@@ -1,6 +1,6 @@
 package dbd.api.database.access.single
 
-import dbd.api.database
+import dbd.api.database.model.organization
 import dbd.core.model.combined.InvitationWithResponse
 import dbd.core.model.existing
 import dbd.core.model.partial.InvitationResponseData
@@ -18,7 +18,7 @@ object Invitation extends SingleModelAccess[existing.Invitation]
 {
 	// IMPLEMENTED	---------------------------
 	
-	override def factory = database.model.Invitation
+	override def factory = organization.Invitation
 	
 	override def globalCondition = None
 	
@@ -60,7 +60,7 @@ object Invitation extends SingleModelAccess[existing.Invitation]
 			
 			override val condition = factory.withInvitationId(invitationId).toCondition
 			
-			override def factory = database.model.InvitationResponse
+			override def factory = organization.InvitationResponse
 			
 			
 			// OTHER	------------------------
@@ -91,6 +91,6 @@ object Invitation extends SingleModelAccess[existing.Invitation]
 		}
 		
 		object InvitationWithResponseAccess extends SingleIdModelAccess[InvitationWithResponse](invitationId,
-			database.model.InvitationWithResponse)
+			organization.InvitationWithResponse)
 	}
 }

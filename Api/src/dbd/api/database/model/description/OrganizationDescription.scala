@@ -1,9 +1,9 @@
-package dbd.api.database.model
+package dbd.api.database.model.description
 
-import dbd.core.model.existing
 import java.time.Instant
 
 import dbd.api.database.Tables
+import dbd.core.model.existing
 import dbd.core.model.partial.{DescriptionData, OrganizationDescriptionData}
 
 import scala.util.Success

@@ -1,6 +1,6 @@
 package dbd.api.database.access.single
 
-import dbd.api.database
+import dbd.api.database.model.language
 import dbd.core.model.existing
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.nosql.access.SingleModelAccessById
@@ -16,5 +16,5 @@ object Language extends SingleModelAccessById[existing.Language, Int]
 	
 	override def idToValue(id: Int) = id
 	
-	override def factory = database.model.Language
+	override def factory = language.Language
 }

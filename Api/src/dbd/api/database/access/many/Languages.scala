@@ -1,6 +1,6 @@
 package dbd.api.database.access.many
 
-import dbd.api.database
+import dbd.api.database.model.language.Language
 import dbd.core.model.existing
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
@@ -16,7 +16,7 @@ object Languages extends ManyModelAccess[existing.Language]
 {
 	// IMPLEMENTED	----------------------------
 	
-	override def factory = database.model.Language
+	override def factory = Language
 	
 	override def globalCondition = None
 	

@@ -23,6 +23,10 @@ case class Organization(organizationId: Int) extends ResourceWithChildren[Author
 		OrganizationDescriptions(organizationId),
 		OrganizationMembers(organizationId))
 	
-	override def toResponse(remainingPath: Option[Path])(implicit context: AuthorizedContext) = Result.Failure(
-		NotImplemented, "Organization resource access hasn't been implemented yet").toResponse
+	override def toResponse(remainingPath: Option[Path])(implicit context: AuthorizedContext) =
+	{
+		
+		Result.Failure(
+			NotImplemented, "Organization resource access hasn't been implemented yet").toResponse
+	}
 }

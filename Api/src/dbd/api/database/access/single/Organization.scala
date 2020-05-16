@@ -2,8 +2,9 @@ package dbd.api.database.access.single
 
 import java.time.{Instant, Period}
 
-import dbd.api.database
+import dbd.api.database.model.organization
 import dbd.api.database.access.many.{Descriptions, InvitationsAccess}
+import dbd.api.database.model.organization.{OrganizationMemberRole, OrganizationMembership}
 import dbd.core.model.existing
 import dbd.core.model.enumeration.UserRole
 import dbd.core.model.partial.{InvitationData, MembershipData}
@@ -21,7 +22,7 @@ object Organization
 {
 	// COMPUTED	----------------------------
 	
-	private def factory = database.model.Organization
+	private def factory = organization.Organization
 	
 	
 	// OTHER	----------------------------
@@ -55,28 +56,18 @@ object Organization
 		def descriptions = Descriptions.ofOrganizationWithId(organizationId)
 		
 		
-		// OTHER	-------------------------------
-		
-		/**
-		  * @param connection DB Connection (implicit)
-		  * @return Whether
-		  */
-		def markDeleted()(implicit connection: Connection) =
-			factory.nowDeleted.updateWhere(factory.withId(organizationId).toCondition && factory.nonDeprecatedCondition) > 0
-		
-		
 		// NESTED	-------------------------------
 		
 		object Memberships extends ManyModelAccess[existing.Membership]
 		{
 			// COMPUTED	---------------------------
 			
-			private def memberRolesFactory = database.model.OrganizationMemberRole
+			private def memberRolesFactory = OrganizationMemberRole
 			
 			
 			// IMPLEMENTED	-----------------------
 			
-			override def factory = database.model.OrganizationMembership
+			override def factory = OrganizationMembership
 			
 			override def globalCondition = Some(factory.withOrganizationId(organizationId).toCondition &&
 				factory.nonDeprecatedCondition)

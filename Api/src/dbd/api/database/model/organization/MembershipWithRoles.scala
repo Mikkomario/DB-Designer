@@ -1,4 +1,4 @@
-package dbd.api.database.model
+package dbd.api.database.model.organization
 
 import dbd.core.model.combined
 import dbd.core.model.enumeration.UserRole

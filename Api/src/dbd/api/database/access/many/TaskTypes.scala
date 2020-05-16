@@ -1,6 +1,6 @@
 package dbd.api.database.access.many
 
-import dbd.api.database.model.RoleRight
+import dbd.api.database.model.organization.RoleRight
 import dbd.core.model.enumeration.UserRole
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection

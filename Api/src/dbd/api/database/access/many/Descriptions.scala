@@ -1,6 +1,6 @@
 package dbd.api.database.access.many
 
-import dbd.api.database.model.{DescriptionLinkFactory, DeviceDescription, OrganizationDescription, RoleDescription, TaskDescription}
+import dbd.api.database.model.description.{DescriptionLinkFactory, DeviceDescription, OrganizationDescription, RoleDescription, TaskDescription}
 import dbd.core.model.enumeration.{DescriptionRole, TaskType, UserRole}
 import dbd.core.model.existing
 import dbd.core.model.partial.DescriptionData

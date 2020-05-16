@@ -1,9 +1,11 @@
 package dbd.api.database.access.single
 
-import dbd.api.database
+import dbd.api.database.model.user
 import dbd.api.database.access.id.UserId
 import dbd.api.database.access.many.InvitationsAccess
-import dbd.api.database.model.{MembershipWithRoles, OrganizationDescription, RoleRight,UserAuth, UserDevice}
+import dbd.api.database.model.description.OrganizationDescription
+import dbd.api.database.model.organization.{MembershipWithRoles, OrganizationMembership, RoleRight}
+import dbd.api.database.model.user.{UserAuth, UserDevice, UserSettings}
 import dbd.api.util.PasswordHash
 import dbd.core.model.combined.{MyOrganization, RoleWithRights}
 import dbd.core.model.existing
@@ -24,7 +26,7 @@ object User extends SingleModelAccess[existing.User]
 {
 	// IMPLEMENTED	---------------------
 	
-	override def factory = database.model.User
+	override def factory = user.User
 	
 	override def globalCondition = Some(factory.nonDeprecatedCondition)
 	
@@ -75,7 +77,7 @@ object User extends SingleModelAccess[existing.User]
 		  */
 		def settings(implicit connection: Connection) =
 		{
-			val settingsFactory = database.model.UserSettings
+			val settingsFactory = UserSettings
 			settingsFactory.get(settingsFactory.withUserId(userId).toCondition && settingsFactory.nonDeprecatedCondition)
 		}
 		
@@ -135,7 +137,7 @@ object User extends SingleModelAccess[existing.User]
 		{
 			// ATTRIBUTES	------------------------
 			
-			private val factory = database.model.OrganizationMembership
+			private val factory = OrganizationMembership
 			
 			
 			// IMPLEMENTED	------------------------
@@ -168,7 +170,7 @@ object User extends SingleModelAccess[existing.User]
 		{
 			// IMPLEMENTED	---------------------------
 			
-			override def factory = database.model.OrganizationMembership
+			override def factory = OrganizationMembership
 			
 			override def globalCondition = Some(userCondition && factory.nonDeprecatedCondition)
 			

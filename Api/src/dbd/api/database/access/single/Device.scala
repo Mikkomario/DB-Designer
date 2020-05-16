@@ -1,7 +1,7 @@
 package dbd.api.database.access.single
 
 import dbd.api
-import dbd.api.database
+import dbd.api.database.model.device
 import dbd.api.model.partial.DeviceKeyData
 import dbd.core.model.enumeration.DescriptionRole
 import dbd.core.model.enumeration.DescriptionRole.Name
@@ -13,6 +13,8 @@ import utopia.vault.nosql.access.{SingleModelAccess, UniqueAccess}
 import java.util.UUID.randomUUID
 
 import dbd.api.database.access.many.Descriptions
+import dbd.api.database.model.description.{Description, DeviceDescription}
+import dbd.api.database.model.device.ClientDevice
 
 /**
   * Used for accessing and modifying individual devices
@@ -23,7 +25,7 @@ object Device
 {
 	// COMPUTED	---------------------------------
 	
-	private def factory = database.model.ClientDevice
+	private def factory = ClientDevice
 	
 	
 	// OTHER	---------------------------------
@@ -70,7 +72,7 @@ object Device
 		{
 			// COMPUTED	-------------------------
 			
-			private def descriptionFactory = database.model.Description
+			private def descriptionFactory = Description
 			
 			
 			// IMPLEMENTED	---------------------
@@ -78,7 +80,7 @@ object Device
 			override val condition = factory.nonDeprecatedCondition &&
 				descriptionFactory.withRole(descriptionType).withLanguageId(languageId).toCondition
 			
-			override def factory = database.model.DeviceDescription
+			override def factory = DeviceDescription
 			
 			
 			// OTHER	------------------------
@@ -106,7 +108,7 @@ object Device
 			
 			override def condition = factory.withDeviceId(deviceId).toCondition && factory.nonDeprecatedCondition
 			
-			override def factory = database.model.DeviceKey
+			override def factory = device.DeviceKey
 			
 			
 			// OTHER	---------------------------

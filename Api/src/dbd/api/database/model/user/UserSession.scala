@@ -1,12 +1,12 @@
-package dbd.api.database.model
+package dbd.api.database.model.user
 
-import dbd.api.model.existing
-import utopia.flow.generic.ValueConversions._
 import java.time.Instant
 
 import dbd.api.database.Tables
+import dbd.api.model.existing
 import dbd.api.model.partial.UserSessionData
 import utopia.flow.datastructure.immutable.{Constant, Model}
+import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.model.enumeration.ComparisonOperator.Larger
 import utopia.vault.model.immutable.StorableWithFactory

@@ -1,6 +1,6 @@
 package dbd.api.database.access.id
 
-import dbd.api.database.model.UserSettings
+import dbd.api.database.model.user.UserSettings
 import utopia.vault.database.Connection
 import utopia.vault.sql.{Select, Where}
 

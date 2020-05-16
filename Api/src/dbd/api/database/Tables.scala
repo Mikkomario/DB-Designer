@@ -75,6 +75,16 @@ object Tables
 	def organizationDescription = apply("organization_description")
 	
 	/**
+	  * @return Contains attempted and pending organization deletions
+	  */
+	def organizationDeletion = apply("organization_deletion")
+	
+	/**
+	  * @return Contains organization deletion cancellations
+	  */
+	def organizationDeletionCancellation = apply("organization_deletion_cancellation")
+	
+	/**
 	  * @return Table that contains organization user memberships
 	  */
 	def organizationMembership = apply("organization_membership")

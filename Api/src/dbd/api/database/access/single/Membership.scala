@@ -1,8 +1,8 @@
 package dbd.api.database.access.single
 
-import dbd.api.database
 import dbd.api.database.Tables
 import dbd.api.database.access.many.TaskTypes
+import dbd.api.database.model.organization.{OrganizationMemberRole, OrganizationMembership, RoleRight}
 import dbd.core.model.enumeration.{TaskType, UserRole}
 import dbd.core.model.existing
 import utopia.flow.generic.ValueConversions._
@@ -20,7 +20,7 @@ object Membership extends SingleModelAccess[existing.Membership]
 {
 	// IMPLEMENTED	--------------------------
 	
-	override def factory = database.model.OrganizationMembership
+	override def factory = OrganizationMembership
 	
 	override def globalCondition = Some(factory.nonDeprecatedCondition)
 	
@@ -45,9 +45,9 @@ object Membership extends SingleModelAccess[existing.Membership]
 		
 		// COMPUTED	--------------------------
 		
-		private def memberRoleFactory = database.model.OrganizationMemberRole
+		private def memberRoleFactory = OrganizationMemberRole
 		
-		private def rightsFactory = database.model.RoleRight
+		private def rightsFactory = RoleRight
 		
 		private def rightsTarget = memberRoleFactory.table join Tables.userRole join rightsFactory.table
 		

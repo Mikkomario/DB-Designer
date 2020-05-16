@@ -1,6 +1,6 @@
 package dbd.api.database.access.single
 
-import dbd.api.database
+import dbd.api.database.model.device
 import dbd.api.model.existing
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
@@ -15,7 +15,7 @@ object DeviceKey extends SingleModelAccess[existing.DeviceKey]
 {
 	// IMPLEMENTED	------------------------------------
 	
-	override def factory = database.model.DeviceKey
+	override def factory = device.DeviceKey
 	
 	override def globalCondition = Some(factory.nonDeprecatedCondition)
 	

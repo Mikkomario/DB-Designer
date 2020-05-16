@@ -1,8 +1,7 @@
 package dbd.api.database.access.many
 
-import dbd.api.database
 import dbd.api.database.access.single.{Device, Language}
-import dbd.api.database.model.{UserDevice, UserLanguage}
+import dbd.api.database.model.user.{User, UserDevice, UserLanguage, UserSettings}
 import dbd.core.model.combined.UserWithLinks
 import dbd.core.model.error.{AlreadyUsedException, IllegalPostModelException}
 import dbd.core.model.{combined, existing}
@@ -21,14 +20,14 @@ object Users extends ManyModelAccess[existing.User]
 {
 	// IMPLEMENTED	--------------------------
 	
-	override def factory = database.model.User
+	override def factory = User
 	
 	override def globalCondition = Some(factory.nonDeprecatedCondition)
 	
 	
 	// COMPUTED	------------------------------
 	
-	private def settingsFactory = database.model.UserSettings
+	private def settingsFactory = UserSettings
 	
 	
 	// OTHER	-------------------------------

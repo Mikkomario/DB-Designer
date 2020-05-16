@@ -1,4 +1,4 @@
-package dbd.api.database.model
+package dbd.api.database.model.user
 
 import dbd.api.database.Tables
 import utopia.flow.generic.ValueConversions._
