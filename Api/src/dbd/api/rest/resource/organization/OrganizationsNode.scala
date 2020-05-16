@@ -18,7 +18,7 @@ import utopia.vault.database.Connection
   * @author Mikko Hilpinen
   * @since 4.5.2020, v2
   */
-object Organizations extends Resource[AuthorizedContext]
+object OrganizationsNode extends Resource[AuthorizedContext]
 {
 	// IMPLEMENTED	------------------------------
 	
@@ -48,7 +48,7 @@ object Organizations extends Resource[AuthorizedContext]
 		// Allows access to individual organization access points based on organization id
 		path.head.int match
 		{
-			case Some(id) => Follow(Organization(id), path.tail)
+			case Some(id) => Follow(OrganizationNode(id), path.tail)
 			case None => Error(message = Some(s"${path.head} is not a valid organization id"))
 		}
 	}

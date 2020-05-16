@@ -23,7 +23,7 @@ import scala.util.{Failure, Success}
   * @author Mikko Hilpinen
   * @since 2.5.2020, v2
   */
-object Users extends Resource[AuthorizedContext]
+object UsersNode extends Resource[AuthorizedContext]
 {
 	override val name = "users"
 	
@@ -61,7 +61,7 @@ object Users extends Resource[AuthorizedContext]
 	override def follow(path: Path)(implicit context: AuthorizedContext) =
 	{
 		if (path.head ~== "me")
-			Follow(Me, path.tail)
+			Follow(MeNode, path.tail)
 		else
 			Error(message = Some(s"Currently only 'me' is available under $name"))
 	}

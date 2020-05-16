@@ -11,7 +11,7 @@ import utopia.nexus.result.Result
   * @author Mikko Hilpinen
   * @since 6.5.2020, v2
   */
-case class Organization(organizationId: Int) extends ResourceWithChildren[AuthorizedContext]
+case class OrganizationNode(organizationId: Int) extends ResourceWithChildren[AuthorizedContext]
 {
 	override def name = organizationId.toString
 	
@@ -19,9 +19,9 @@ case class Organization(organizationId: Int) extends ResourceWithChildren[Author
 	override val allowedMethods = Vector()
 	
 	override def children = Vector(
-		OrganizationInvitations(organizationId),
-		OrganizationDescriptions(organizationId),
-		OrganizationMembers(organizationId))
+		OrganizationInvitationsNode(organizationId),
+		OrganizationDescriptionsNode(organizationId),
+		OrganizationMembersNode(organizationId))
 	
 	override def toResponse(remainingPath: Option[Path])(implicit context: AuthorizedContext) =
 	{

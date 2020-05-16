@@ -25,7 +25,7 @@ import scala.util.{Failure, Success}
   * @author Mikko Hilpinen
   * @since 5.5.2020, v2
   */
-case class OrganizationInvitations(organizationId: Int) extends Resource[AuthorizedContext]
+case class OrganizationInvitationsNode(organizationId: Int) extends Resource[AuthorizedContext]
 {
 	override val name = "invitations"
 	

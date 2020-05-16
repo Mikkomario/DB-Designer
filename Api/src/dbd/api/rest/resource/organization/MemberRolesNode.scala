@@ -19,7 +19,7 @@ import utopia.vault.database.Connection
   * @author Mikko Hilpinen
   * @since 11.5.2020, v2
   */
-case class MemberRoles(organizationId: Int, userId: Option[Int]) extends Resource[AuthorizedContext]
+case class MemberRolesNode(organizationId: Int, userId: Option[Int]) extends Resource[AuthorizedContext]
 {
 	override val name = "roles"
 	

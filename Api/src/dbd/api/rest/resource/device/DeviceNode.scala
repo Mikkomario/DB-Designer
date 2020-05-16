@@ -13,7 +13,7 @@ import utopia.nexus.result.Result
   * @author Mikko Hilpinen
   * @since 3.5.2020, v2
   */
-case class Device(deviceId: Int) extends Resource[AuthorizedContext]
+case class DeviceNode(deviceId: Int) extends Resource[AuthorizedContext]
 {
 	override def name = deviceId.toString
 	
@@ -26,10 +26,10 @@ case class Device(deviceId: Int) extends Resource[AuthorizedContext]
 	{
 		// Contains 'device-key' child node which allows access to long-term device specific authorization keys
 		if (path.head ~== "device-key")
-			Follow(DeviceKey(deviceId), path.tail)
+			Follow(DeviceKeyNode(deviceId), path.tail)
 		// 'session-key' child node, on the other hand, provides access to short-term device specific user session keys
 		else if (path.head ~== "session-key")
-			Follow(SessionKey(deviceId), path.tail)
+			Follow(SessionKeyNode(deviceId), path.tail)
 		else
 			Error(message = Some("Device only contains 'device-key' and 'session-key' child nodes"))
 	}

@@ -1,6 +1,5 @@
 package dbd.api.rest.resource.user
 
-import dbd.api.rest.resource.ResourceWithChildren
 import dbd.api.rest.util.AuthorizedContext
 import utopia.access.http.Status.NotImplemented
 import utopia.flow.util.StringExtensions._
@@ -10,18 +9,24 @@ import utopia.nexus.rest.ResourceSearchResult.{Error, Follow}
 import utopia.nexus.result.Result
 
 /**
-  * This rest-resource represents the logged user
+  * A rest resource for accessing individual invitation's data
   * @author Mikko Hilpinen
   * @since 6.5.2020, v2
   */
-object Me extends ResourceWithChildren[AuthorizedContext]
+case class InvitationNode(invitationId: Int) extends Resource[AuthorizedContext]
 {
-	override val name = "me"
-	
-	override val children = Vector(MyInvitations, MyOrganizations)
+	override def name = invitationId.toString
 	
 	override val allowedMethods = Vector()
 	
 	override def toResponse(remainingPath: Option[Path])(implicit context: AuthorizedContext) = Result.Failure(
-		NotImplemented, "User data accessing hasn't been implemented yet").toResponse
+		NotImplemented, "Invitation data access hasn't been implemented yet").toResponse
+	
+	override def follow(path: Path)(implicit context: AuthorizedContext) =
+	{
+		if (path.head ~== "response")
+			Follow(InvitationResponseNode(invitationId), path.tail)
+		else
+			Error(message = Some("Currently invitation only has 'response' sub-resource"))
+	}
 }

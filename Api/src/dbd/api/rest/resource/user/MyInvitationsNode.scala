@@ -15,7 +15,7 @@ import utopia.vault.database.Connection
   * @author Mikko Hilpinen
   * @since 6.5.2020, v2
   */
-object MyInvitations extends Resource[AuthorizedContext]
+object MyInvitationsNode extends Resource[AuthorizedContext]
 {
 	override val name = "invitations"
 	
@@ -35,7 +35,7 @@ object MyInvitations extends Resource[AuthorizedContext]
 	{
 		path.head.int match
 		{
-			case Some(id) => Follow(Invitation(id), path.tail)
+			case Some(id) => Follow(InvitationNode(id), path.tail)
 			case None => Error(message = Some(s"${path.head} is not a valid invitation id"))
 		}
 	}

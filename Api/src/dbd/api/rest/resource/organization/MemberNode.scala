@@ -21,7 +21,7 @@ import utopia.vault.database.Connection
   * @param organizationId Id of the targeted organization
   * @param userId Id of targeted user. None if self.
   */
-case class Member(organizationId: Int, userId: Option[Int]) extends Resource[AuthorizedContext]
+case class MemberNode(organizationId: Int, userId: Option[Int]) extends Resource[AuthorizedContext]
 {
 	override def name = userId match
 	{
@@ -90,7 +90,7 @@ case class Member(organizationId: Int, userId: Option[Int]) extends Resource[Aut
 	override def follow(path: Path)(implicit context: AuthorizedContext) =
 	{
 		if (path.head ~== "roles")
-			Follow(MemberRoles(organizationId, userId), path.tail)
+			Follow(MemberRolesNode(organizationId, userId), path.tail)
 		else
 			Error(message = Some(
 				"Organization member only has sub-resource 'roles'"))

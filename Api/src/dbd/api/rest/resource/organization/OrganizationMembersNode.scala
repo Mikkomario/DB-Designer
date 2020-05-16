@@ -14,7 +14,7 @@ import utopia.nexus.result.Result
   * @author Mikko Hilpinen
   * @since 11.5.2020, v2
   */
-case class OrganizationMembers(organizationId: Int) extends Resource[AuthorizedContext]
+case class OrganizationMembersNode(organizationId: Int) extends Resource[AuthorizedContext]
 {
 	override val name = "users"
 	
@@ -26,11 +26,11 @@ case class OrganizationMembers(organizationId: Int) extends Resource[AuthorizedC
 	override def follow(path: Path)(implicit context: AuthorizedContext) =
 	{
 		if (path.head ~== "me")
-			Follow(Member(organizationId, None), path.tail)
+			Follow(MemberNode(organizationId, None), path.tail)
 		else
 			path.head.int match
 			{
-				case Some(userId) => Follow(Member(organizationId, Some(userId)), path.tail)
+				case Some(userId) => Follow(MemberNode(organizationId, Some(userId)), path.tail)
 				case None => Error(message = Some(s"${path.head} is not a valid user id"))
 			}
 	}

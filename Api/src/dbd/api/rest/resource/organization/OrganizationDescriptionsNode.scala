@@ -23,7 +23,7 @@ import utopia.vault.database.Connection
   * @author Mikko Hilpinen
   * @since 10.5.2020, v2
   */
-case class OrganizationDescriptions(organizationId: Int) extends Resource[AuthorizedContext]
+case class OrganizationDescriptionsNode(organizationId: Int) extends Resource[AuthorizedContext]
 {
 	// IMPLEMENTED	-----------------------------
 	

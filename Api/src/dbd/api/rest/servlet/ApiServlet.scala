@@ -1,8 +1,8 @@
 package dbd.api.rest.servlet
 
-import dbd.api.rest.resource.device.Devices
-import dbd.api.rest.resource.organization.Organizations
-import dbd.api.rest.resource.user.Users
+import dbd.api.rest.resource.device.DevicesNode
+import dbd.api.rest.resource.organization.OrganizationsNode
+import dbd.api.rest.resource.user.UsersNode
 import dbd.api.rest.util.AuthorizedContext
 import javax.servlet.annotation.MultipartConfig
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
@@ -43,7 +43,7 @@ class ApiServlet extends HttpServlet
 	private implicit val serverSettings: ServerSettings = ServerSettings("http://localhost:9999")
 	private implicit val jsonParser: JsonParser = JsonBunny
 	
-	private val handler = new RequestHandler(Vector(Users, Devices, Organizations), Some(Path("db-designer", "api", "v1")),
+	private val handler = new RequestHandler(Vector(UsersNode, DevicesNode, OrganizationsNode), Some(Path("db-designer", "api", "v1")),
 		r => new AuthorizedContext(r))
 	
 	

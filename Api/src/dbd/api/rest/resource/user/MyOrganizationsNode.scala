@@ -16,7 +16,7 @@ import utopia.vault.database.Connection
   * @author Mikko Hilpinen
   * @since 6.5.2020, v2
   */
-object MyOrganizations extends Resource[AuthorizedContext]
+object MyOrganizationsNode extends Resource[AuthorizedContext]
 {
 	// IMPLEMENTED	------------------------
 	

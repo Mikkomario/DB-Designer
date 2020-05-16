@@ -17,7 +17,7 @@ import utopia.vault.database.Connection
   * @author Mikko Hilpinen
   * @since 3.5.2020, v2
   */
-case class DeviceKey(deviceId: Int) extends Resource[AuthorizedContext]
+case class DeviceKeyNode(deviceId: Int) extends Resource[AuthorizedContext]
 {
 	// IMPLEMENTED	-------------------------------
 	

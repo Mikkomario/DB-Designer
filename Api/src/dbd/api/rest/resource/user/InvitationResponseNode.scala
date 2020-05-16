@@ -20,7 +20,7 @@ import utopia.vault.database.Connection
   * @author Mikko Hilpinen
   * @since 6.5.2020, v2
   */
-case class InvitationResponse(invitationId: Int) extends Resource[AuthorizedContext]
+case class InvitationResponseNode(invitationId: Int) extends Resource[AuthorizedContext]
 {
 	// IMPLEMENTED	--------------------------
 	

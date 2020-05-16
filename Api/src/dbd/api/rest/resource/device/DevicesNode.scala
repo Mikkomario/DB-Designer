@@ -13,7 +13,7 @@ import utopia.nexus.result.Result
   * @author Mikko Hilpinen
   * @since 3.5.2020, v2
   */
-object Devices extends Resource[AuthorizedContext]
+object DevicesNode extends Resource[AuthorizedContext]
 {
 	override val name = "devices"
 	
@@ -27,7 +27,7 @@ object Devices extends Resource[AuthorizedContext]
 		// Allows access to specific devices with device ids
 		path.head.int match
 		{
-			case Some(deviceId: Int) => Follow(Device(deviceId), path.tail)
+			case Some(deviceId: Int) => Follow(DeviceNode(deviceId), path.tail)
 			case None => Error(message = Some(s"${path.head} is not a valid device id"))
 		}
 	}
