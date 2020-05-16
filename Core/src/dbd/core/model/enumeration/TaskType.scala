@@ -50,9 +50,20 @@ object TaskType
 		override val id = 4
 	}
 	
+	/**
+	  * This task allows one to remove members from an organization
+	  */
 	case object RemoveMember extends TaskType
 	{
 		override val id = 5
+	}
+	
+	/**
+	  * This task allows one to cancel a pending organization deletion
+	  */
+	case object CancelOrganizationDeletion extends TaskType
+	{
+		override def id = 6
 	}
 	
 	/**

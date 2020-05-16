@@ -27,7 +27,9 @@ case class OrganizationNode(organizationId: Int) extends ResourceWithChildren[Au
 	override def children = Vector(
 		OrganizationInvitationsNode(organizationId),
 		OrganizationDescriptionsNode(organizationId),
-		OrganizationMembersNode(organizationId))
+		OrganizationMembersNode(organizationId),
+		OrganizationDeletionsNode(organizationId)
+	)
 	
 	override def toResponse(remainingPath: Option[Path])(implicit context: AuthorizedContext) =
 	{
