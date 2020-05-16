@@ -1,11 +1,10 @@
 package dbd.api.rest.resource.organization
 
-import dbd.api.database.access.many.DbLanguages
+import dbd.api.database.access.many.{DbDescriptions, DbLanguages}
 import dbd.api.database.access.single
 import dbd.api.rest.util.AuthorizedContext
 import dbd.core.model.enumeration.DescriptionRole
 import dbd.core.model.enumeration.TaskType.DocumentOrganization
-import dbd.core.model.existing.description.DescriptionLink
 import dbd.core.model.post.NewDescription
 import utopia.access.http.Method.{Get, Put}
 import utopia.access.http.Status.{BadRequest, NotFound}
@@ -40,7 +39,7 @@ case class OrganizationDescriptionsNode(organizationId: Int) extends Resource[Au
 				val languages = context.requestedLanguages
 				if (languages.nonEmpty)
 				{
-					val descriptions = inLanguages(languages.map { _.id })
+					val descriptions = DbDescriptions.ofOrganizationWithId(organizationId).inLanguages(languages.map { _.id })
 					Result.Success(descriptions.map { _.toModel })
 				}
 				else
@@ -63,14 +62,14 @@ case class OrganizationDescriptionsNode(organizationId: Int) extends Resource[Au
 					if (single.DbLanguage(newDescription.languageId).isDefined)
 					{
 						// Updates the organization's descriptions accordingly
-						val insertedDescriptions = single.DbOrganization(organizationId).descriptions.update(
-							newDescription, session.userId)
+						val dbDescriptions = DbDescriptions.ofOrganizationWithId(organizationId)
+						val insertedDescriptions = dbDescriptions.update(newDescription, session.userId)
 						// Returns new version of organization's descriptions (in specified language)
 						val otherDescriptions =
 						{
 							val missingRoles = DescriptionRole.values.toSet -- insertedDescriptions.map { _.description.role }.toSet
 							if (missingRoles.nonEmpty)
-								inLanguages(Vector(newDescription.languageId), missingRoles)
+								dbDescriptions.inLanguages(Vector(newDescription.languageId), missingRoles)
 							else
 								Vector()
 						}
@@ -85,42 +84,4 @@ case class OrganizationDescriptionsNode(organizationId: Int) extends Resource[Au
 	
 	override def follow(path: Path)(implicit context: AuthorizedContext) = Error(message =
 		Some("Organization descriptions doesn't have any sub-resources at this time"))
-	
-	
-	// OTHER	---------------------------------
-	
-	// TODO: Add this feature directly to the descriptions db accessor
-	private def inLanguages(languageIds: Seq[Int])(implicit connection: Connection): Vector[DescriptionLink] =
-	{
-		languageIds.headOption match
-		{
-			case Some(languageId) =>
-				val readDescriptions = single.DbOrganization(organizationId).descriptions.inLanguageWithId(languageId).all
-				val missingRoles = DescriptionRole.values.toSet -- readDescriptions.map { _.description.role }.toSet
-				if (missingRoles.nonEmpty)
-					readDescriptions ++ inLanguages(languageIds.tail, missingRoles)
-				else
-					readDescriptions
-			case None => Vector()
-		}
-	}
-	
-	private def inLanguages(languageIds: Seq[Int], remainingRoles: Set[DescriptionRole])(
-		implicit connection: Connection): Vector[DescriptionLink] =
-	{
-		// Reads descriptions in target languages until either all description types have been read or all language
-		// options exhausted
-		languageIds.headOption match
-		{
-			case Some(languageId) =>
-				val readDescriptions = single.DbOrganization(organizationId).descriptions.inLanguageWithId(
-					languageId)(remainingRoles)
-				val newRemainingRoles = remainingRoles -- readDescriptions.map { _.description.role }
-				if (remainingRoles.nonEmpty)
-					readDescriptions ++ inLanguages(languageIds.tail, newRemainingRoles)
-				else
-					readDescriptions
-			case None => Vector()
-		}
-	}
 }

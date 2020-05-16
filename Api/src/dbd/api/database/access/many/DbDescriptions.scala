@@ -184,6 +184,53 @@ object DbDescriptions
 			modelFactory.nowDeprecated.updateWhere(mergeCondition(descriptionCondition), Some(factory.target)) > 0
 		}
 		
+		// TODO: Add multi-target versions of these methods
+		/**
+		  * @param languageIds Ids of the targeted languages (in order from most to least preferred)
+		  * @param connection DB Connection (implicit)
+		  * @return This item's descriptions in specified languages (secondary languages are used when no primary
+		  *         language description is found)
+		  */
+		def inLanguages(languageIds: Seq[Int])(implicit connection: Connection): Vector[DescriptionLink] =
+		{
+			languageIds.headOption match
+			{
+				case Some(languageId) =>
+					val readDescriptions = inLanguageWithId(languageId).all
+					val missingRoles = DescriptionRole.values.toSet -- readDescriptions.map { _.description.role }.toSet
+					if (missingRoles.nonEmpty)
+						readDescriptions ++ inLanguages(languageIds.tail, missingRoles)
+					else
+						readDescriptions
+				case None => Vector()
+			}
+		}
+		
+		/**
+		  * @param languageIds Ids of the targeted languages (in order from most to least preferred)
+		  * @param remainingRoles Roles that need descriptions
+		  * @param connection DB Connection (implicit)
+		  * @return This item's descriptions in specified languages (secondary languages are used when no primary
+		  *         language description is found)
+		  */
+		def inLanguages(languageIds: Seq[Int], remainingRoles: Set[DescriptionRole])(
+			implicit connection: Connection): Vector[DescriptionLink] =
+		{
+			// Reads descriptions in target languages until either all description types have been read or all language
+			// options exhausted
+			languageIds.headOption match
+			{
+				case Some(languageId) =>
+					val readDescriptions = inLanguageWithId(languageId)(remainingRoles)
+					val newRemainingRoles = remainingRoles -- readDescriptions.map { _.description.role }
+					if (remainingRoles.nonEmpty)
+						readDescriptions ++ inLanguages(languageIds.tail, newRemainingRoles)
+					else
+						readDescriptions
+				case None => Vector()
+			}
+		}
+		
 		
 		// NESTED	-------------------------
 		
