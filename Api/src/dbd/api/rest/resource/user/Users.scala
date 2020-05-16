@@ -36,7 +36,7 @@ object Users extends Resource[AuthorizedContext]
 			implicit val exc: ExecutionContext = ThreadPool.executionContext
 			// Saves the new user data to DB
 			ConnectionPool.tryWith { implicit connection =>
-				many.Users.tryInsert(newUser) match
+				many.DbUsers.tryInsert(newUser) match
 				{
 					case Success(userData) =>
 						// Returns a summary of the new data

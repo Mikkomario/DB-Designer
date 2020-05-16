@@ -9,13 +9,14 @@ import dbd.core.model.enumeration.LinkType
 import dbd.core.model.error.NoSuchTypeException
 import utopia.flow.generic.ValueConversions._
 import dbd.core.model.existing
-import dbd.core.model.partial.NewLinkConfiguration
+import dbd.core.model.existing.database
+import dbd.core.model.partial.database.NewLinkConfiguration
 import utopia.flow.datastructure.template
 import utopia.flow.datastructure.template.Property
 import utopia.vault.model.immutable.StorableWithFactory
 import utopia.vault.nosql.factory.{Deprecatable, RowFactoryWithTimestamps, StorableFactory}
 
-object LinkConfiguration extends StorableFactory[existing.LinkConfiguration] with Deprecatable with RowFactoryWithTimestamps[existing.LinkConfiguration]
+object LinkConfiguration extends StorableFactory[database.LinkConfiguration] with Deprecatable with RowFactoryWithTimestamps[database.LinkConfiguration]
 {
 	// IMPLEMENTED	---------------------------
 	
@@ -27,7 +28,7 @@ object LinkConfiguration extends StorableFactory[existing.LinkConfiguration] wit
 		// Link type must be parseable
 		LinkType.forId(valid("linkType").getInt).toTry(
 			new NoSuchTypeException(s"No link type for id '${valid("linkType")}'")).map { linkType =>
-			existing.LinkConfiguration(valid("id").getInt, valid("linkId").getInt, linkType,
+			database.LinkConfiguration(valid("id").getInt, valid("linkId").getInt, linkType,
 				valid("originClassId").getInt, valid("targetClassId").getInt, valid("nameInOrigin").string,
 				valid("nameInTarget").string, valid("isOwned").getBoolean, valid("mappingAttributeId").int,
 				valid("deprecatedAfter").instant) }
@@ -84,7 +85,7 @@ case class LinkConfiguration(id: Option[Int] = None, linkId: Option[Int] = None,
 							 nameInOrigin: Option[String] = None, nameInTarget: Option[String] = None,
 							 isOwned: Option[Boolean] = None, mappingAttributeId: Option[Int] = None,
 							 deprecatedAfter: Option[Instant] = None)
-	extends StorableWithFactory[existing.LinkConfiguration]
+	extends StorableWithFactory[database.LinkConfiguration]
 {
 	override def factory = LinkConfiguration
 	

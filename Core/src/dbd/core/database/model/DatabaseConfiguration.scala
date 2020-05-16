@@ -4,21 +4,22 @@ import java.time.Instant
 
 import dbd.core.database.Tables
 import dbd.core.model.existing
-import dbd.core.model.partial.NewDatabaseConfiguration
+import dbd.core.model.existing.database
+import dbd.core.model.partial.database.NewDatabaseConfiguration
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.StorableWithFactory
 import utopia.vault.nosql.factory.{Deprecatable, RowFactoryWithTimestamps, StorableFactoryWithValidation}
 
-object DatabaseConfiguration extends StorableFactoryWithValidation[existing.DatabaseConfiguration] with Deprecatable
-	with RowFactoryWithTimestamps[existing.DatabaseConfiguration]
+object DatabaseConfiguration extends StorableFactoryWithValidation[database.DatabaseConfiguration] with Deprecatable
+	with RowFactoryWithTimestamps[database.DatabaseConfiguration]
 {
 	// IMPLEMENTED	---------------------
 	
 	override def table = Tables.databaseConfiguration
 	
-	override protected def fromValidatedModel(model: Model[Constant]) = existing.DatabaseConfiguration(
+	override protected def fromValidatedModel(model: Model[Constant]) = database.DatabaseConfiguration(
 		model("id").getInt, model("databaseId").getInt, model("name").getString)
 	
 	override def nonDeprecatedCondition = table("deprecatedAfter").isNull
@@ -58,7 +59,7 @@ object DatabaseConfiguration extends StorableFactoryWithValidation[existing.Data
 	def insert(databaseId: Int, data: NewDatabaseConfiguration)(implicit connection: Connection) =
 	{
 		val newId = apply(None, Some(databaseId), Some(data.name), Some(Instant.now())).insert().getInt
-		existing.DatabaseConfiguration(newId, databaseId, data.name)
+		database.DatabaseConfiguration(newId, databaseId, data.name)
 	}
 }
 
@@ -69,7 +70,7 @@ object DatabaseConfiguration extends StorableFactoryWithValidation[existing.Data
  */
 case class DatabaseConfiguration(id: Option[Int] = None, databaseId: Option[Int] = None, name: Option[String] = None,
 								 created: Option[Instant] = None, deprecatedAfter: Option[Instant] = None)
-	extends StorableWithFactory[existing.DatabaseConfiguration]
+	extends StorableWithFactory[database.DatabaseConfiguration]
 {
 	override def factory = DatabaseConfiguration
 	

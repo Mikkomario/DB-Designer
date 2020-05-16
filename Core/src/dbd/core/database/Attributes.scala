@@ -1,6 +1,7 @@
 package dbd.core.database
 
 import dbd.core.model.existing
+import dbd.core.model.existing.database.{Attribute, AttributeConfiguration}
 import utopia.vault.nosql.access.ManyModelAccess
 
 /**
@@ -8,7 +9,7 @@ import utopia.vault.nosql.access.ManyModelAccess
   * @author Mikko Hilpinen
   * @since 19.2.2020, v0.1
   */
-object Attributes extends ManyModelAccess[existing.Attribute]
+object Attributes extends ManyModelAccess[Attribute]
 {
 	// IMPLEMENTED	-----------------------------
 	
@@ -28,7 +29,7 @@ object Attributes extends ManyModelAccess[existing.Attribute]
 	
 	// NESTED	----------------------------------
 	
-	class AttributesInDatabase(databaseId: Int) extends ChangedModelsAccess[existing.Attribute, existing.AttributeConfiguration]
+	class AttributesInDatabase(databaseId: Int) extends ChangedModelsAccess[Attribute, AttributeConfiguration]
 	{
 		override def creationTimeColumn = factory.creationTimeColumn
 		

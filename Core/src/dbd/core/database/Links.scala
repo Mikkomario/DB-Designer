@@ -3,8 +3,9 @@ package dbd.core.database
 import java.time.Instant
 
 import utopia.flow.generic.ValueConversions._
-import dbd.core.model.existing
-import dbd.core.model.partial.NewLinkConfiguration
+import dbd.core.model.existing.database
+import dbd.core.model.existing.database.LinkConfiguration
+import dbd.core.model.partial.database.NewLinkConfiguration
 import utopia.vault.database.Connection
 import utopia.vault.nosql.access.{ManyModelAccess, NonDeprecatedAccess}
 import utopia.vault.sql.{Update, Where}
@@ -14,7 +15,7 @@ import utopia.vault.sql.{Update, Where}
  * @author Mikko HIlpinen
  * @since 19.1.2020, v0.1
  */
-object Links extends ManyModelAccess[existing.Link] with NonDeprecatedAccess[existing.Link, Vector[existing.Link]]
+object Links extends ManyModelAccess[database.Link] with NonDeprecatedAccess[database.Link, Vector[database.Link]]
 {
 	// IMPLEMENTED	----------------------
 	
@@ -48,7 +49,7 @@ object Links extends ManyModelAccess[existing.Link] with NonDeprecatedAccess[exi
 	 * Used for accessing links under a specific database
 	 * @param databaseId Id of target database
 	 */
-	class LinksInDatabase(databaseId: Int) extends ChangedModelsAccess[existing.Link, existing.LinkConfiguration]
+	class LinksInDatabase(databaseId: Int) extends ChangedModelsAccess[database.Link, LinkConfiguration]
 	{
 		// IMPLEMENTED	------------------
 		
@@ -76,7 +77,7 @@ object Links extends ManyModelAccess[existing.Link] with NonDeprecatedAccess[exi
 			// Adds a configuration for that link
 			val insertedConfig = Link(newLinkId).configuration.update(newConfig)
 			
-			existing.Link(newLinkId, databaseId, insertedConfig)
+			database.Link(newLinkId, databaseId, insertedConfig)
 		}
 	}
 	
@@ -84,7 +85,7 @@ object Links extends ManyModelAccess[existing.Link] with NonDeprecatedAccess[exi
 	 * Access point to links attached to a class (as origin or target)
 	 * @param classId Id of target class
 	 */
-	class ClassAttachedLinks(classId: Int) extends ManyModelAccess[existing.Link]
+	class ClassAttachedLinks(classId: Int) extends ManyModelAccess[database.Link]
 	{
 		// IMPLEMENTED	------------------
 		
@@ -112,7 +113,7 @@ object Links extends ManyModelAccess[existing.Link] with NonDeprecatedAccess[exi
 	 * Access points to links using a specified attribute
 	 * @param attributeId Id of used attribute
 	 */
-	class AttributeUsingLinks(attributeId: Int) extends ManyModelAccess[existing.Link]
+	class AttributeUsingLinks(attributeId: Int) extends ManyModelAccess[database.Link]
 	{
 		// IMPLEMENTED	-----------------
 		

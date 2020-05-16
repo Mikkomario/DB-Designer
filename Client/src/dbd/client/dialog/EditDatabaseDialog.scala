@@ -1,6 +1,6 @@
 package dbd.client.dialog
 
-import dbd.core.model.partial.NewDatabaseConfiguration
+import dbd.core.model.partial.database.NewDatabaseConfiguration
 import dbd.core.model.template.DatabaseConfigurationLike
 import utopia.reflection.component.swing.TextField
 import utopia.reflection.shape.LengthExtensions._

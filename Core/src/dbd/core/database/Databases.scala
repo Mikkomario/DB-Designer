@@ -1,7 +1,8 @@
 package dbd.core.database
 
 import dbd.core.model.existing
-import dbd.core.model.partial.NewDatabaseConfiguration
+import dbd.core.model.existing.database.Database
+import dbd.core.model.partial.database.NewDatabaseConfiguration
 import utopia.vault.database.Connection
 import utopia.vault.nosql.access.ManyModelAccess
 
@@ -10,7 +11,7 @@ import utopia.vault.nosql.access.ManyModelAccess
   * @author Mikko Hilpinen
   * @since 1.2.2020, v0.1
   */
-object Databases extends ManyModelAccess[existing.Database]
+object Databases extends ManyModelAccess[Database]
 {
 	// IMPLEMENTED	------------------------
 	

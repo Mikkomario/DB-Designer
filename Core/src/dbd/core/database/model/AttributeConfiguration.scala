@@ -6,13 +6,14 @@ import dbd.core.database.Tables
 import dbd.core.model.enumeration.AttributeType
 import utopia.flow.generic.ValueConversions._
 import dbd.core.model.existing
-import dbd.core.model.partial.NewAttributeConfiguration
+import dbd.core.model.existing.database
+import dbd.core.model.partial.database.NewAttributeConfiguration
 import utopia.flow.datastructure.template.{Model, Property}
 import utopia.vault.model.immutable.StorableWithFactory
 import utopia.vault.nosql.factory.{Deprecatable, RowFactoryWithTimestamps, StorableFactory}
 
-object AttributeConfiguration extends StorableFactory[existing.AttributeConfiguration] with Deprecatable
-	with RowFactoryWithTimestamps[existing.AttributeConfiguration]
+object AttributeConfiguration extends StorableFactory[database.AttributeConfiguration] with Deprecatable
+	with RowFactoryWithTimestamps[database.AttributeConfiguration]
 {
 	// ATTRIBUTES	---------------------------
 	
@@ -26,7 +27,7 @@ object AttributeConfiguration extends StorableFactory[existing.AttributeConfigur
 	override def apply(model: Model[Property]) = table.requirementDeclaration.validate(model).toTry.flatMap { valid =>
 		// Data type must be parseable
 		val typeId = valid("dataType").getInt
-		AttributeType.withId(typeId).map { attType => existing.AttributeConfiguration(valid("id").getInt,
+		AttributeType.withId(typeId).map { attType => database.AttributeConfiguration(valid("id").getInt,
 			valid("attributeId").getInt, valid("name").getString, attType, valid("isOptional").getBoolean,
 			valid("isSearchKey").getBoolean)
 		}
@@ -66,7 +67,7 @@ object AttributeConfiguration extends StorableFactory[existing.AttributeConfigur
 case class AttributeConfiguration(id: Option[Int] = None, attributeId: Option[Int] = None, name: Option[String] = None,
 								  dataType: Option[AttributeType] = None, isOptional: Option[Boolean] = None,
 								  isSearchKey: Option[Boolean] = None, deprecatedAfter: Option[Instant] = None)
-	extends StorableWithFactory[existing.AttributeConfiguration]
+	extends StorableWithFactory[database.AttributeConfiguration]
 {
 	// IMPLEMENTED	-----------------------
 	

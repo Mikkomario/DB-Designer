@@ -1,6 +1,6 @@
 package dbd.mysql.model.template
 
-import dbd.core.model.existing.AttributeConfiguration
+import dbd.core.model.existing.database.AttributeConfiguration
 
 /**
  * A common trait for models that link columns and attributes

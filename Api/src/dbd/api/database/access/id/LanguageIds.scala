@@ -1,6 +1,6 @@
 package dbd.api.database.access.id
 
-import dbd.api.database.model.language.Language
+import dbd.api.database.model.language.LanguageModel
 import utopia.flow.datastructure.immutable.Value
 import utopia.vault.nosql.access.ManyIdAccess
 
@@ -24,5 +24,5 @@ object LanguageIds extends ManyIdAccess[Int]
 	
 	// COMPUTED	-------------------------------
 	
-	private def factory = Language
+	private def factory = LanguageModel
 }

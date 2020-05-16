@@ -1,6 +1,7 @@
 package dbd.client.model
 
-import dbd.core.model.existing.{Attribute, Class}
+import dbd.core.model.existing.database
+import dbd.core.model.existing.database.Attribute
 
 object ChangedItems
 {
@@ -18,7 +19,7 @@ object ChangedItems
   * @param attributes Affected attributes (in cases where classes were not updated), grouped by class
   * @param links Affected links between classes, by class pairs
   */
-case class ChangedItems(classes: Vector[Class], attributes: Map[Class, Attribute], links: Vector[(Class, Class)])
+case class ChangedItems(classes: Vector[database.Class], attributes: Map[database.Class, Attribute], links: Vector[(database.Class, database.Class)])
 {
 	/**
 	  * @return Whether this list of changes is empty

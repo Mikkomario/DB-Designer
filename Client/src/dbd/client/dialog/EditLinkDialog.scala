@@ -4,8 +4,10 @@ import dbd.client.controller.Icons
 import dbd.client.view.Fields
 import utopia.reflection.localization.LocalString._
 import dbd.core.model.enumeration.LinkType
-import dbd.core.model.existing.{Attribute, Class, LinkConfiguration}
-import dbd.core.model.partial.NewLinkConfiguration
+import dbd.core.model.existing
+import dbd.core.model.existing.database.{Attribute, LinkConfiguration}
+import dbd.core.model.partial.database
+import dbd.core.model.partial.database.NewLinkConfiguration
 import utopia.flow.datastructure.mutable.PointerWithEvents
 import utopia.reflection.component.Focusable
 import utopia.reflection.component.context.ButtonContext
@@ -21,7 +23,7 @@ import scala.collection.immutable.HashMap
  * @author Mikko Hilpinen
  * @since 21.1.2020, v0.1
  */
-class EditLinkDialog(linkToEdit: Option[LinkConfiguration], linkingClass: Class, linkableClasses: Vector[Class])
+class EditLinkDialog(linkToEdit: Option[LinkConfiguration], linkingClass: existing.database.Class, linkableClasses: Vector[existing.database.Class])
 	extends InputDialog[Option[NewLinkConfiguration]]
 {
 	// ATTRIBUTES	-----------------------
@@ -34,8 +36,8 @@ class EditLinkDialog(linkToEdit: Option[LinkConfiguration], linkingClass: Class,
 	
 	private val mapKeyVisibilityPointer = new PointerWithEvents[Boolean](false)
 	
-	private val classSelection = Fields.searchFrom[Class]("No class with name: '%s'",
-		"Select linked class", DisplayFunction.noLocalization[Class] { _.name })
+	private val classSelection = Fields.searchFrom[existing.database.Class]("No class with name: '%s'",
+		"Select linked class", DisplayFunction.noLocalization[existing.database.Class] { _.name })
 	private val linkOriginSelection = Fields.dropDown("No choices available", "Select link origin",
 		DisplayFunction.functionToDisplayFunction[Boolean] { isThisClass =>
 			if (isThisClass) linkingClass.name.noLanguageLocalizationSkipped else classSelection.value.map {
@@ -156,7 +158,7 @@ class EditLinkDialog(linkToEdit: Option[LinkConfiguration], linkingClass: Class,
 									otherNickField.value -> localNickField.value
 							}
 							
-							val newLink = NewLinkConfiguration(linkType, originId, targetId, originNick, targetNick,
+							val newLink = database.NewLinkConfiguration(linkType, originId, targetId, originNick, targetNick,
 								mappingKeyAttributeId = actualMappingKey)
 							if (linkToEdit.exists { _ ~== newLink })
 								Right(None)

@@ -2,8 +2,10 @@ package dbd.api.database.access.many
 
 import java.time.Instant
 
-import dbd.api.database.model.organization.{Invitation, InvitationResponse, InvitationWithResponse}
+import dbd.api.database.factory.organization.InvitationWithResponseFactory
+import dbd.api.database.model.organization.{InvitationModel, InvitationResponseModel}
 import dbd.core.model.existing
+import dbd.core.model.existing.organization
 import utopia.vault.database.Connection
 import utopia.vault.model.enumeration.ComparisonOperator.Larger
 import utopia.vault.nosql.access.ManyModelAccess
@@ -14,11 +16,11 @@ import utopia.vault.sql.{JoinType, Select, Where}
   * @author Mikko Hilpinen
   * @since 6.5.2020, v2
   */
-trait InvitationsAccess extends ManyModelAccess[existing.Invitation]
+trait InvitationsAccess extends ManyModelAccess[organization.Invitation]
 {
 	// IMPLEMENTED	------------------------
 	
-	override def factory = Invitation
+	override def factory = InvitationModel
 	
 	
 	// COMPUTED	-----------------------------
@@ -29,8 +31,8 @@ trait InvitationsAccess extends ManyModelAccess[existing.Invitation]
 	  */
 	def blocked(implicit connection: Connection) =
 	{
-		val additionalCondition = InvitationResponse.blocked.toCondition
-		InvitationWithResponse.getMany(mergeCondition(additionalCondition))
+		val additionalCondition = InvitationResponseModel.blocked.toCondition
+		InvitationWithResponseFactory.getMany(mergeCondition(additionalCondition))
 	}
 	
 	/**
@@ -40,10 +42,10 @@ trait InvitationsAccess extends ManyModelAccess[existing.Invitation]
 	def pending(implicit connection: Connection) =
 	{
 		// Pending invitations must not be joined to a response and not be expired
-		val noResponseCondition = InvitationResponse.table.primaryColumn.get.isNull
-		val pendingCondition = Invitation.withExpireTime(Instant.now()).toConditionWithOperator(Larger)
+		val noResponseCondition = InvitationResponseModel.table.primaryColumn.get.isNull
+		val pendingCondition = InvitationModel.withExpireTime(Instant.now()).toConditionWithOperator(Larger)
 		// Has to join invitation response table for the condition to work
-		connection(Select(Invitation.target.join(InvitationResponse.table, JoinType.Left), Invitation.table) +
+		connection(Select(InvitationModel.target.join(InvitationResponseModel.table, JoinType.Left), InvitationModel.table) +
 			Where(mergeCondition(noResponseCondition && pendingCondition))).parse(factory)
 	}
 }

@@ -4,7 +4,7 @@ import dbd.client.controller.{ClassDisplayManager, Icons}
 import dbd.client.dialog.{DeleteQuestionDialog, EditAttributeDialog, InfoDialog}
 import dbd.core.model.enumeration.AttributeType
 import dbd.core.model.enumeration.AttributeType._
-import dbd.core.model.existing.Attribute
+import dbd.core.model.existing.database.Attribute
 import utopia.genesis.color.Color
 import utopia.genesis.image.Image
 import utopia.genesis.shape.shape2D.Line

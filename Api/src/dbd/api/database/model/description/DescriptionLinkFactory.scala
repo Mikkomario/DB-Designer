@@ -3,7 +3,7 @@ package dbd.api.database.model.description
 import java.time.Instant
 
 import dbd.core.model.existing
-import dbd.core.model.partial.DescriptionData
+import dbd.core.model.partial.description.DescriptionData
 import dbd.core.model.template.DescriptionLinkLike
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.vault.database.Connection
@@ -18,7 +18,7 @@ import scala.util.Try
   * @since 4.5.2020, v2
   */
 trait DescriptionLinkFactory[+E, +M <: Storable, -P <: DescriptionLinkLike[DescriptionData]]
-	extends LinkedStorableFactory[E, existing.Description] with Deprecatable
+	extends LinkedStorableFactory[E, existing.description.Description] with Deprecatable
 {
 	// ABSTRACT	----------------------------------
 	
@@ -45,16 +45,16 @@ trait DescriptionLinkFactory[+E, +M <: Storable, -P <: DescriptionLinkLike[Descr
 	  * @param description Description from DB
 	  * @return A new existing desription link model
 	  */
-	protected def apply(id: Int, targetId: Int, description: existing.Description): Try[E]
+	protected def apply(id: Int, targetId: Int, description: existing.description.Description): Try[E]
 	
 	
 	// IMPLEMENTED	------------------------------
 	
 	override def nonDeprecatedCondition = table("deprecatedAfter").isNull
 	
-	override def childFactory = Description
+	override def childFactory = DescriptionModel
 	
-	override def apply(model: Model[Constant], child: existing.Description) =
+	override def apply(model: Model[Constant], child: existing.description.Description) =
 		table.requirementDeclaration.validate(model).toTry.flatMap { valid =>
 			apply(valid("id").getInt, valid(targetIdAttName).getInt, child)
 		}
@@ -93,7 +93,7 @@ trait DescriptionLinkFactory[+E, +M <: Storable, -P <: DescriptionLinkLike[Descr
 	  * @param connection DB Connection (implicit)
 	  * @return Newly inserted description link's id + newly inserted description model
 	  */
-	def insert(data: P)(implicit connection: Connection): (Int, existing.Description) = insert(
+	def insert(data: P)(implicit connection: Connection): (Int, existing.description.Description) = insert(
 		data.targetId, data.description)
 	
 	/**
@@ -106,7 +106,7 @@ trait DescriptionLinkFactory[+E, +M <: Storable, -P <: DescriptionLinkLike[Descr
 	def insert(targetId: Int, data: DescriptionData)(implicit connection: Connection) =
 	{
 		// Inserts the description
-		val newDescription = Description.insert(data)
+		val newDescription = DescriptionModel.insert(data)
 		// Inserts the link between description and target
 		val linkId = apply(None, Some(targetId), Some(newDescription.id)).insert().getInt
 		linkId -> newDescription

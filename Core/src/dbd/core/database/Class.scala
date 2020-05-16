@@ -1,9 +1,9 @@
 package dbd.core.database
 
 import utopia.flow.generic.ValueConversions._
-import dbd.core.model.existing
-import dbd.core.model.existing.{Attribute, AttributeConfiguration, ClassInfo}
-import dbd.core.model.partial.{NewAttribute, NewAttributeConfiguration, NewClassInfo}
+import dbd.core.model.existing.database.{Attribute, AttributeConfiguration, ClassInfo}
+import dbd.core.model.existing.database
+import dbd.core.model.partial.database.{NewAttribute, NewAttributeConfiguration, NewClassInfo}
 import utopia.vault.database.Connection
 import utopia.vault.nosql.access.{ManyModelAccess, NonDeprecatedAccess, SingleIdModelAccess, SingleModelAccess}
 import utopia.vault.sql.Where
@@ -13,7 +13,7 @@ import utopia.vault.sql.Where
  * @author Mikko Hilpinen
  * @since 12.1.2020, v0.1
  */
-object Class extends SingleModelAccess[existing.Class] with NonDeprecatedAccess[existing.Class, Option[existing.Class]]
+object Class extends SingleModelAccess[database.Class] with NonDeprecatedAccess[database.Class, Option[database.Class]]
 {
 	// IMPLEMENTED	-------------------
 	
@@ -35,7 +35,7 @@ object Class extends SingleModelAccess[existing.Class] with NonDeprecatedAccess[
 	 * Used for accessing individual class' data in DB
 	 * @param classId Id of targeted class
 	 */
-	class ClassById(classId: Int) extends SingleIdModelAccess[existing.Class](classId, Class.factory)
+	class ClassById(classId: Int) extends SingleIdModelAccess[database.Class](classId, Class.factory)
 	{
 		// COMPUTED	-------------------
 		

@@ -1,6 +1,6 @@
 package dbd.api.rest.resource.organization
 
-import dbd.api.database.access.many.UserRoles
+import dbd.api.database.access.many.DbUserRoles
 import dbd.api.database.access.single
 import dbd.api.rest.util.AuthorizedContext
 import dbd.core.model.enumeration.TaskType.ChangeRoles
@@ -41,24 +41,24 @@ case class MemberRoles(organizationId: Int, userId: Option[Int]) extends Resourc
 					userId.filterNot { _ == session.userId } match
 					{
 						case Some(targetUserId) =>
-							single.User(targetUserId).membershipIdInOrganizationWithId(organizationId).pull match
+							single.DbUser(targetUserId).membershipIdInOrganizationWithId(organizationId).pull match
 							{
 								case Some(targetMembershipId) =>
 									// Can only modify the roles of a user that has a lower role
 									// Also, can only add or delete those roles that the active user has themselves
-									val activeUserRoles = single.Membership(membershipId).roles.toSet
+									val activeUserRoles = single.DbMembership(membershipId).roles.toSet
 									val illegalRoleModifications = roles -- activeUserRoles
 									if (illegalRoleModifications.nonEmpty)
 										Result.Failure(Forbidden, s"You cannot modify following role(s): [${
 											illegalRoleModifications.toVector.map { _.id }.sorted.mkString(", ")}]")
 									else
 									{
-										val targetUserRoles = single.Membership(targetMembershipId).roles.toSet
+										val targetUserRoles = single.DbMembership(targetMembershipId).roles.toSet
 										if (activeUserRoles.forall(targetUserRoles.contains))
 											Result.Failure(Forbidden, s"User $targetUserId has same or higher role as you do")
 										else
 										{
-											val managedRoles = UserRoles.belowOrEqualTo(activeUserRoles)
+											val managedRoles = DbUserRoles.belowOrEqualTo(activeUserRoles)
 											targetUserRoles.find { !managedRoles.contains(_) } match
 											{
 												case Some(conflictingRole) => Result.Failure(Forbidden,
@@ -76,7 +76,7 @@ case class MemberRoles(organizationId: Int, userId: Option[Int]) extends Resourc
 														else
 														{
 															// Adds new roles to the targeted user
-															single.Membership(targetMembershipId).assignRoles(
+															single.DbMembership(targetMembershipId).assignRoles(
 																newRoles, session.userId)
 															Result.Success((targetUserRoles ++ newRoles).map { _.id }
 																.toVector.sorted)
@@ -92,7 +92,7 @@ case class MemberRoles(organizationId: Int, userId: Option[Int]) extends Resourc
 														else
 														{
 															// Removes the roles
-															single.Membership(targetMembershipId).removeRoles(
+															single.DbMembership(targetMembershipId).removeRoles(
 																rolesToRemove)
 															Result.Success((targetUserRoles -- rolesToRemove)
 																.map { _.id }.toVector.sorted)
@@ -108,10 +108,10 @@ case class MemberRoles(organizationId: Int, userId: Option[Int]) extends Resourc
 															val rolesToAssign = roles -- targetUserRoles
 															val rolesToRemove = targetUserRoles -- roles
 															if (rolesToRemove.nonEmpty)
-																single.Membership(targetMembershipId)
+																single.DbMembership(targetMembershipId)
 																	.removeRoles(rolesToRemove)
 															if (rolesToAssign.nonEmpty)
-																single.Membership(targetMembershipId).assignRoles(
+																single.DbMembership(targetMembershipId).assignRoles(
 																	rolesToAssign, session.userId)
 															Result.Success(roles.map { _.id }.toVector.sorted)
 														}

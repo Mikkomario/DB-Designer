@@ -1,7 +1,7 @@
 package dbd.api.rest.resource.device
 
 import dbd.api.database.access.single
-import dbd.api.database.access.single.UserSession
+import dbd.api.database.access.single.DbUserSession
 import dbd.api.rest.util.AuthorizedContext
 import utopia.access.http.Method.{Delete, Get}
 import utopia.access.http.Status.NotFound
@@ -37,14 +37,14 @@ case class SessionKey(deviceId: Int) extends Resource[AuthorizedContext]
 					if (deviceKeyWasUsed)
 						true
 					else
-						single.Device(deviceId).isDefined
+						single.DbDevice(deviceId).isDefined
 				}
 				if (isRealDevice)
 				{
 					// If basic auth was used, may register a new user device -connection
 					if (!deviceKeyWasUsed)
-						single.User(userId).linkWithDeviceWithId(deviceId)
-					val newSession = UserSession(userId, deviceId).start()
+						single.DbUser(userId).linkWithDeviceWithId(deviceId)
+					val newSession = DbUserSession(userId, deviceId).start()
 					// Returns the session key
 					Result.Success(newSession.key)
 				}
@@ -56,7 +56,7 @@ case class SessionKey(deviceId: Int) extends Resource[AuthorizedContext]
 		else
 		{
 			context.sessionKeyAuthorized { (session, connection) =>
-				UserSession(session.userId, deviceId).end()(connection)
+				DbUserSession(session.userId, deviceId).end()(connection)
 				Result.Empty
 			}
 		}

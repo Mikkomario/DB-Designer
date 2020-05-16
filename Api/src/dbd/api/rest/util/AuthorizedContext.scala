@@ -2,9 +2,9 @@ package dbd.api.rest.util
 
 import scala.math.Ordering.Double.TotalOrdering
 import dbd.api.database.access
-import dbd.api.database.access.many.Languages
+import dbd.api.database.access.many.DbLanguages
 import dbd.api.database.access.single
-import dbd.api.database.access.single.User
+import dbd.api.database.access.single.DbUser
 import dbd.api.model.existing
 import dbd.core.database.ConnectionPool
 import dbd.core.model.enumeration.TaskType
@@ -50,7 +50,7 @@ class AuthorizedContext(request: Request)(implicit serverSettings: ServerSetting
 		{
 			val acceptedCodes = acceptedLanguages.keySet
 			// Maps codes to language ids (if present)
-			val languages = Languages.forIsoCodes(acceptedCodes)
+			val languages = DbLanguages.forIsoCodes(acceptedCodes)
 			// Orders the languages based on assigned weight
 			languages.sortBy { l => -acceptedLanguages(l.isoCode.toLowerCase) }
 		}
@@ -75,7 +75,7 @@ class AuthorizedContext(request: Request)(implicit serverSettings: ServerSetting
 				val (email, password) = basicAuth
 				
 				ConnectionPool.tryWith { implicit connection =>
-					User.tryAuthenticate(email, password) match
+					DbUser.tryAuthenticate(email, password) match
 					{
 						// Performs the operation on authorized user id
 						case Some(userId) => f(userId, connection)
@@ -98,7 +98,7 @@ class AuthorizedContext(request: Request)(implicit serverSettings: ServerSetting
 	def deviceKeyAuthorized(f: (existing.DeviceKey, Connection) => Result) =
 	{
 		tokenAuthorized("device authentication key", f) { (token, connection) =>
-			access.single.DeviceKey.matching(token)(connection)
+			access.single.DbDeviceKey.matching(token)(connection)
 		}
 	}
 	
@@ -110,7 +110,7 @@ class AuthorizedContext(request: Request)(implicit serverSettings: ServerSetting
 	def sessionKeyAuthorized(f: (existing.UserSession, Connection) => Result) =
 	{
 		tokenAuthorized("session key", f) { (token, connection) =>
-			access.single.UserSession.matching(token)(connection)
+			access.single.DbUserSession.matching(token)(connection)
 		}
 	}
 	
@@ -140,7 +140,7 @@ class AuthorizedContext(request: Request)(implicit serverSettings: ServerSetting
 							f(key.userId, true, connection)
 						else
 						{
-							access.single.DeviceKey(key.id).invalidate()(connection)
+							access.single.DbDeviceKey(key.id).invalidate()(connection)
 							Result.Failure(Unauthorized,
 								"The key you specified cannot be used for this resource. " +
 									"Also, your key has now been invalidated and can no longer be used.")
@@ -166,7 +166,7 @@ class AuthorizedContext(request: Request)(implicit serverSettings: ServerSetting
 		sessionKeyAuthorized { (session, connection) =>
 			implicit val c: Connection = connection
 			// Makes sure the user belongs to the target organization
-			single.User(session.userId).membershipIdInOrganizationWithId(organizationId).pull match
+			single.DbUser(session.userId).membershipIdInOrganizationWithId(organizationId).pull match
 			{
 				case Some(membershipId) => f(session, membershipId, connection)
 				case None => Result.Failure(Unauthorized, "You're not a member of this organization")
@@ -191,7 +191,7 @@ class AuthorizedContext(request: Request)(implicit serverSettings: ServerSetting
 		authorizedInOrganization(organizationId) { (session, membershipId, connection) =>
 			implicit val c: Connection = connection
 			// Makes sure the user has a right to perform the required task
-			if (single.Membership(membershipId).allows(task))
+			if (single.DbMembership(membershipId).allows(task))
 				f(session, membershipId, connection)
 			else
 				Result.Failure(Forbidden,

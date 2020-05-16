@@ -1,8 +1,8 @@
 package dbd.core.database.model
 
 import dbd.core.database.Tables
-import dbd.core.model.existing
-import dbd.core.model.partial.NewDatabaseConfiguration
+import dbd.core.model.existing.database
+import dbd.core.model.partial.database.NewDatabaseConfiguration
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.vault.database.Connection
 import utopia.vault.nosql.factory.{Deprecatable, LinkedStorableFactory}
@@ -13,14 +13,14 @@ import utopia.vault.sql.Insert
  * @author Mikko Hilpinen
  * @since 29.1.2020, v0.1
  */
-object Database extends LinkedStorableFactory[existing.Database, existing.DatabaseConfiguration] with Deprecatable
+object Database extends LinkedStorableFactory[database.Database, database.DatabaseConfiguration] with Deprecatable
 {
 	// IMPLEMENTED	--------------------------
 	
 	override def childFactory = DatabaseConfiguration
 	
-	override def apply(model: Model[Constant], child: existing.DatabaseConfiguration) =
-		table.requirementDeclaration.validate(model).toTry.map { valid => existing.Database(valid("id").getInt, child) }
+	override def apply(model: Model[Constant], child: database.DatabaseConfiguration) =
+		table.requirementDeclaration.validate(model).toTry.map { valid => database.Database(valid("id").getInt, child) }
 	
 	override def nonDeprecatedCondition = DatabaseConfiguration.nonDeprecatedCondition
 	
@@ -40,6 +40,6 @@ object Database extends LinkedStorableFactory[existing.Database, existing.Databa
 		// Inserts a new database row, then configuration for that database
 		val databaseId = Insert(table, Model.empty).generatedIntKeys.head
 		val newConfig = DatabaseConfiguration.insert(databaseId, data)
-		existing.Database(databaseId, newConfig)
+		database.Database(databaseId, newConfig)
 	}
 }

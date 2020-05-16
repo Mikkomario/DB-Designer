@@ -4,7 +4,7 @@ import dbd.client.controller.{ClassDisplayManager, Icons}
 import dbd.client.dialog.EditLinkDialog
 import dbd.client.model.{DisplayedClass, DisplayedLink}
 import dbd.client.vc.GroupHeader
-import dbd.core.model.existing.Class
+import dbd.core.model.existing.database.Class
 import utopia.genesis.shape.shape2D.Direction2D
 import utopia.reflection.component.Refreshable
 import utopia.reflection.component.context.ColorContext

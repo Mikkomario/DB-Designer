@@ -26,7 +26,7 @@ object MyInvitations extends Resource[AuthorizedContext]
 		context.sessionKeyAuthorized { (session, connection) =>
 			implicit val c: Connection = connection
 			// Reads invitations from DB
-			val pendingInvitations = single.User(session.userId).receivedInvitations.pending
+			val pendingInvitations = single.DbUser(session.userId).receivedInvitations.pending
 			Result.Success(pendingInvitations.map { _.toModel })
 		}
 	}

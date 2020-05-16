@@ -1,8 +1,8 @@
 package dbd.client.model
 
-import dbd.core.model.existing.{Attribute, Class, ClassInfo}
+import dbd.core.model.existing.database
+import dbd.core.model.existing.database.{Attribute, ClassInfo}
 import dbd.core.model.template.ClassLike
-
 import utopia.flow.util.CollectionExtensions._
 
 object ParentOrSubClass
@@ -18,7 +18,7 @@ object ParentOrSubClass
 	 * @param link A link from the parent class to a sub-class
 	 * @return Wrapped sub class
 	 */
-	def subClass(parent: Class, link: ChildLink) = ParentOrSubClass(Right(parent, link))
+	def subClass(parent: database.Class, link: ChildLink) = ParentOrSubClass(Right(parent, link))
 	
 	/**
 	 * @param parent The parent class
@@ -33,7 +33,7 @@ object ParentOrSubClass
  * @author Mikko Hilpinen
  * @since 26.1.2020, v0.1
  */
-case class ParentOrSubClass(data: Either[DisplayedClass, (Class, ChildLink)])
+case class ParentOrSubClass(data: Either[DisplayedClass, (database.Class, ChildLink)])
 	extends ClassLike[ClassInfo, Attribute, ParentOrSubClass]
 {
 	// COMPUTED	------------------------

@@ -1,7 +1,7 @@
 package dbd.api.rest.resource.organization
 
 import dbd.api.database.access.many
-import dbd.api.database.access.single.Language
+import dbd.api.database.access.single.DbLanguage
 import dbd.api.rest.util.AuthorizedContext
 import dbd.core.model.post.NewOrganization
 import utopia.access.http.Method.Post
@@ -32,9 +32,9 @@ object Organizations extends Resource[AuthorizedContext]
 			context.handlePost(NewOrganization) { newOrganization =>
 				implicit val c: Connection = connection
 				// Checks that language id is valid, then inserts the new organization
-				if (Language(newOrganization.languageId).isDefined)
+				if (DbLanguage(newOrganization.languageId).isDefined)
 				{
-					val organizationId = many.Organizations.insert(newOrganization.name, newOrganization.languageId, session.userId)
+					val organizationId = many.DbOrganizations.insert(newOrganization.name, newOrganization.languageId, session.userId)
 					Result.Success(organizationId, Created)
 				}
 				else

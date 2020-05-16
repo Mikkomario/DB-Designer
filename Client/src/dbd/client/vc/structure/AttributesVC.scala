@@ -3,8 +3,8 @@ package dbd.client.vc.structure
 import dbd.client.controller.{ClassDisplayManager, Icons}
 import dbd.client.dialog.EditAttributeDialog
 import dbd.client.vc.GroupHeader
-import dbd.core.model.existing.Attribute
-import dbd.core.model.partial.NewAttribute
+import dbd.core.model.existing.database.Attribute
+import dbd.core.model.partial.database.NewAttribute
 import utopia.flow.datastructure.mutable.PointerWithEvents
 import utopia.genesis.shape.Axis.X
 import utopia.genesis.shape.shape2D.Direction2D

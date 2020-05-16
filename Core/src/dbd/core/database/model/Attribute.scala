@@ -5,12 +5,13 @@ import java.time.Instant
 import utopia.flow.generic.ValueConversions._
 import dbd.core.database.Tables
 import dbd.core.model.existing
+import dbd.core.model.existing.database
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.vault.model.immutable.StorableWithFactory
 import utopia.vault.nosql.factory.{Deprecatable, LinkedStorableFactory, RowFactoryWithTimestamps}
 
-object Attribute extends LinkedStorableFactory[existing.Attribute, existing.AttributeConfiguration] with Deprecatable
-	with RowFactoryWithTimestamps[existing.Attribute]
+object Attribute extends LinkedStorableFactory[database.Attribute, database.AttributeConfiguration] with Deprecatable
+	with RowFactoryWithTimestamps[database.Attribute]
 {
 	// IMPLEMENTED	-----------------------
 	
@@ -20,8 +21,8 @@ object Attribute extends LinkedStorableFactory[existing.Attribute, existing.Attr
 	
 	override def childFactory = AttributeConfiguration
 	
-	override def apply(model: Model[Constant], child: existing.AttributeConfiguration) =
-		table.requirementDeclaration.validate(model).toTry.map { valid => existing.Attribute(valid("id").getInt,
+	override def apply(model: Model[Constant], child: database.AttributeConfiguration) =
+		table.requirementDeclaration.validate(model).toTry.map { valid => database.Attribute(valid("id").getInt,
 			valid("classID").getInt, child, valid("deletedAfter").instant) }
 	
 	override def table = Tables.attribute
@@ -68,7 +69,7 @@ object Attribute extends LinkedStorableFactory[existing.Attribute, existing.Attr
  * @since 11.1.2020, v0.1
  */
 case class Attribute(id: Option[Int] = None, classId: Option[Int] = None, deletedAfter: Option[Instant] = None)
-	extends StorableWithFactory[existing.Attribute]
+	extends StorableWithFactory[database.Attribute]
 {
 	// IMPLEMENTED	-----------------------
 	

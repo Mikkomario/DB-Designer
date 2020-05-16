@@ -29,7 +29,7 @@ object MyOrganizations extends Resource[AuthorizedContext]
 		context.sessionKeyAuthorized { (session, connection) =>
 			implicit val c: Connection = connection
 			// Reads organizations data and returns it as an array
-			val organizations = single.User(session.userId).memberships.myOrganizations
+			val organizations = single.DbUser(session.userId).memberships.myOrganizations
 			Result.Success(organizations.map { _.toModel })
 		}
 	}

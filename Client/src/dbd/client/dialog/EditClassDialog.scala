@@ -1,7 +1,7 @@
 package dbd.client.dialog
 
-import dbd.core.model.existing.ClassInfo
-import dbd.core.model.partial.NewClassInfo
+import dbd.core.model.existing.database.ClassInfo
+import dbd.core.model.partial.database.NewClassInfo
 import utopia.reflection.component.context.ButtonContext
 import utopia.reflection.component.swing.{Switch, TextField}
 import utopia.reflection.shape.LengthExtensions._

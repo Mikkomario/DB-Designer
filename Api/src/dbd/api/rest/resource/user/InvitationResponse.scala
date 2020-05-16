@@ -3,7 +3,8 @@ package dbd.api.rest.resource.user
 import dbd.api.database.access.single
 import dbd.api.rest.util.AuthorizedContext
 import dbd.core.model.combined
-import dbd.core.model.combined.InvitationWithResponse
+import dbd.core.model.combined.organization
+import dbd.core.model.combined.organization.InvitationWithResponse
 import dbd.core.model.post.NewInvitationResponse
 import utopia.access.http.Method.Post
 import utopia.access.http.Status.{Forbidden, NotFound, Unauthorized}
@@ -34,7 +35,7 @@ case class InvitationResponse(invitationId: Int) extends Resource[AuthorizedCont
 			context.handlePost(NewInvitationResponse) { newResponse =>
 				// Makes sure the invitation exists, hasn't been answered or expired yet and is targeted for this user
 				implicit val c: Connection = connection
-				val accessInvitation = single.Invitation(invitationId)
+				val accessInvitation = single.DbInvitation(invitationId)
 				accessInvitation.pull match
 				{
 					case Some(invitation) =>
@@ -42,7 +43,7 @@ case class InvitationResponse(invitationId: Int) extends Resource[AuthorizedCont
 						{
 							case Right(recipientId) => recipientId == session.userId
 							case Left(recipientEmail) =>
-								val myEmail = single.User(session.userId).settings.map { _.email }
+								val myEmail = single.DbUser(session.userId).settings.map { _.email }
 								myEmail.contains(recipientEmail)
 						}
 						if (isForThisUser)
@@ -57,7 +58,7 @@ case class InvitationResponse(invitationId: Int) extends Resource[AuthorizedCont
 										// If there was a response, will not create a new one
 										if (earlierResponse.wasAccepted == newResponse.wasAccepted &&
 											earlierResponse.wasBlocked == newResponse.wasBlocked)
-											Result.Success(combined.InvitationWithResponse(invitation, earlierResponse).toModel)
+											Result.Success(organization.InvitationWithResponse(invitation, earlierResponse).toModel)
 										else
 											Result.Failure(Forbidden, "You've already responded to this invitation")
 									case None =>
@@ -65,11 +66,11 @@ case class InvitationResponse(invitationId: Int) extends Resource[AuthorizedCont
 										val savedResponse = accessInvitation.response.insert(newResponse, session.userId)
 										// Adds this user to the organization (if the invitation was accepted)
 										if (savedResponse.wasAccepted)
-											single.Organization(invitation.organizationId).memberships.insert(
+											single.DbOrganization(invitation.organizationId).memberships.insert(
 												session.userId, invitation.startingRole,
 												invitation.creatorId.getOrElse(session.userId))
 										// Returns the original invitation, along with the posted response
-										Result.Success(combined.InvitationWithResponse(invitation, savedResponse).toModel)
+										Result.Success(organization.InvitationWithResponse(invitation, savedResponse).toModel)
 								}
 							}
 						}

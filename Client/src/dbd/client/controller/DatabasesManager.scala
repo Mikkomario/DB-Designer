@@ -5,8 +5,8 @@ import dbd.client.database.DatabaseSelection
 import dbd.client.model.template.DatabaseSelectionData
 import dbd.core.database
 import dbd.core.database.{ConnectionPool, Databases}
-import dbd.core.model.existing.{Database, DatabaseConfiguration}
-import dbd.core.model.partial.NewDatabaseConfiguration
+import dbd.core.model.existing.database.{Database, DatabaseConfiguration}
+import dbd.core.model.partial.database.NewDatabaseConfiguration
 import dbd.core.util.Log
 import utopia.flow.datastructure.mutable.PointerWithEvents
 import utopia.reflection.component.input.SelectableWithPointers

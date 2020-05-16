@@ -1,6 +1,6 @@
 package dbd.client.model
 
-import dbd.core.model.partial.{NewClassInfo, NewLinkConfiguration}
+import dbd.core.model.partial.database.{NewClassInfo, NewLinkConfiguration}
 
 /**
  * Contains resulting data on sub-class edit

@@ -6,8 +6,9 @@ import dbd.core.database
 import dbd.core.database.{ConnectionPool, Database}
 import dbd.core.model.enumeration.LinkEndRole
 import dbd.core.model.enumeration.LinkEndRole.{Origin, Target}
-import dbd.core.model.existing.{Attribute, Class, Link}
-import dbd.core.model.partial.{NewAttribute, NewAttributeConfiguration, NewClass, NewClassInfo, NewLinkConfiguration, NewSubClass}
+import dbd.core.model.existing
+import dbd.core.model.existing.database.{Attribute, Link}
+import dbd.core.model.partial.database.{NewAttribute, NewAttributeConfiguration, NewClass, NewClassInfo, NewLinkConfiguration, NewSubClass}
 import dbd.core.util.Log
 import utopia.flow.datastructure.mutable.PointerWithEvents
 import utopia.flow.event.Changing
@@ -259,7 +260,7 @@ class ClassDisplayManager(initialDatabaseId: Int)(implicit exc: ExecutionContext
 	 * @param classToEdit Targeted class
 	 * @param editedInfo New info for the class
 	 */
-	def editClass(classToEdit: Class, editedInfo: NewClassInfo): Unit = editClass { implicit connection =>
+	def editClass(classToEdit: existing.database.Class, editedInfo: NewClassInfo): Unit = editClass { implicit connection =>
 		classToEdit.update(database.Class(classToEdit.id).info.update(editedInfo)) }
 	
 	/**
@@ -361,14 +362,14 @@ class ClassDisplayManager(initialDatabaseId: Int)(implicit exc: ExecutionContext
 		}
 	}
 	
-	private def editAttributes[R](classId: Int)(databaseAction: Connection => R)(modifyClass: (Class, R) => Class) =
+	private def editAttributes[R](classId: Int)(databaseAction: Connection => R)(modifyClass: (existing.database.Class, R) => existing.database.Class) =
 	{
 		// Finds targeted class, performs database modification + class modification and finally updates class in displays
 		content.findMap { _.classForId(classId) }.foreach { classToEdit => editClass { connection =>
 			modifyClass(classToEdit.classData, databaseAction(connection)) } }
 	}
 	
-	private def editClass(databaseAction: Connection => Class) =
+	private def editClass(databaseAction: Connection => existing.database.Class) =
 	{
 		ConnectionPool.tryWith(databaseAction) match
 		{
@@ -385,7 +386,7 @@ class ClassDisplayManager(initialDatabaseId: Int)(implicit exc: ExecutionContext
 		}
 	}
 	
-	private def pairData(classData: Vector[Class], linkData: Vector[Link]) =
+	private def pairData(classData: Vector[existing.database.Class], linkData: Vector[Link]) =
 	{
 		val (regularLinks, childLinks) = linkData.divideBy { _.isOwned }
 		

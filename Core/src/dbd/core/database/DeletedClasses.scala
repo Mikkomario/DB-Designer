@@ -5,6 +5,7 @@ import java.time.Instant
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.sql.Extensions._
 import dbd.core.model.existing
+import dbd.core.model.existing.database
 import utopia.vault.database.Connection
 import utopia.vault.nosql.access.ManyModelAccess
 
@@ -13,7 +14,7 @@ import utopia.vault.nosql.access.ManyModelAccess
   * @author Mikko Hilpinen
   * @since 19.2.2020, v0.1
   */
-object DeletedClasses extends ManyModelAccess[existing.Class]
+object DeletedClasses extends ManyModelAccess[database.Class]
 {
 	// IMPLEMENTED	------------------------------
 	
@@ -33,7 +34,7 @@ object DeletedClasses extends ManyModelAccess[existing.Class]
 	
 	// NESTED	---------------------------------
 	
-	class DeletedClassesInDatabase(databaseId: Int) extends ManyModelAccess[existing.Class]
+	class DeletedClassesInDatabase(databaseId: Int) extends ManyModelAccess[database.Class]
 	{
 		// IMPLEMENTED	-------------------------
 		

@@ -1,6 +1,7 @@
 package dbd.client.model
 
-import dbd.core.model.existing.{Attribute, Class, ClassInfo, Link}
+import dbd.core.model.existing.database
+import dbd.core.model.existing.database.{Attribute, ClassInfo, Link}
 import dbd.core.model.template.ClassLike
 import utopia.flow.util.CollectionExtensions._
 
@@ -12,7 +13,7 @@ import utopia.flow.util.CollectionExtensions._
  * @param links Links from this class to other classes or from other classes to this one (paired with the other class)
  * @param isExpanded Whether the class display should be expanded (default = false)
  */
-case class DisplayedClass(classData: Class, links: Vector[DisplayedLink] = Vector(),
+case class DisplayedClass(classData: database.Class, links: Vector[DisplayedLink] = Vector(),
 						  childLinks: Vector[ChildLink] = Vector(), isExpanded: Boolean = false)
 	extends ClassLike[ClassInfo, Attribute, DisplayedClass]
 {
@@ -46,7 +47,7 @@ case class DisplayedClass(classData: Class, links: Vector[DisplayedLink] = Vecto
 	/**
 	 * @return All classes that belong to this class hierarchy
 	 */
-	def classes: Vector[Class] = classData +: children.flatMap { _.classes }
+	def classes: Vector[database.Class] = classData +: children.flatMap { _.classes }
 	
 	/**
 	 * @return A shrinked copy of this class hierarchy
@@ -111,7 +112,7 @@ case class DisplayedClass(classData: Class, links: Vector[DisplayedLink] = Vecto
 	 * @return All classes in this hierarchy that can be linked from specified class. Returns an empty vector if
 	 *         the specified class belongs to this hierarchy and all hierarchy classes otherwise.
 	 */
-	def classesLinkableFrom(classId: Int): Vector[Class] =
+	def classesLinkableFrom(classId: Int): Vector[database.Class] =
 	{
 		// The class hierarchy containing specified class cannot be linked, other classes can be linked freely
 		if (containsClassWithId(classId))
@@ -156,14 +157,14 @@ case class DisplayedClass(classData: Class, links: Vector[DisplayedLink] = Vecto
 	 * @param newClass New class state to display
 	 * @return A copy of this display with specified class
 	 */
-	def withClass(newClass: Class) = copy(classData = newClass)
+	def withClass(newClass: database.Class) = copy(classData = newClass)
 	
 	/**
 	 * Edits a class specification in this hierarchy
 	 * @param newClassVersion A new class specification
 	 * @return A modified version of this hierarchy
 	 */
-	def edited(newClassVersion: Class): DisplayedClass =
+	def edited(newClassVersion: database.Class): DisplayedClass =
 	{
 		// Either updates this class or one of the children
 		if (classId == newClassVersion.id)
@@ -257,7 +258,7 @@ case class DisplayedClass(classData: Class, links: Vector[DisplayedLink] = Vecto
 	 * @return All classes in this hierarchy that use the specified attribute in a mapping link
 	 *         (class owning specified attribute is not included)
 	 */
-	def classesUsingAttributeInLink(attribute: Attribute): Vector[Class] =
+	def classesUsingAttributeInLink(attribute: Attribute): Vector[database.Class] =
 	{
 		// Only returns classes in this hierarchy, and doesn't include attribute class itself
 		if (attribute.classId != classId && links.exists { _.mappingKeyAttributeId.contains(attribute.id) })
@@ -271,7 +272,7 @@ case class DisplayedClass(classData: Class, links: Vector[DisplayedLink] = Vecto
 	 * @return All classes in this hierarchy that are affected by the specified class. This includes all classes that
 	 *         link to specified class, as well as all sub-classes of the specified class.
 	 */
-	def classesAffectedByClassWithId(classId: Int): Vector[Class] =
+	def classesAffectedByClassWithId(classId: Int): Vector[database.Class] =
 	{
 		// If this hierarchy contains the specified class, lists all classes under that class
 		if (this.classId == classId)
@@ -291,7 +292,7 @@ case class DisplayedClass(classData: Class, links: Vector[DisplayedLink] = Vecto
 	 * @param classId A class id
 	 * @return A list of that classes sub-classes within this hierarchy
 	 */
-	def subClassesOfClassWithId(classId: Int): Vector[Class] =
+	def subClassesOfClassWithId(classId: Int): Vector[database.Class] =
 	{
 		if (this.classId == classId)
 			children.flatMap { _.classes }
@@ -303,7 +304,7 @@ case class DisplayedClass(classData: Class, links: Vector[DisplayedLink] = Vecto
 	 * @param classIds A set of class ids
 	 * @return All classes in this hierarchy that reference any of the specified classes
 	 */
-	def classesLinkingAnyOf(classIds: Set[Int]): Vector[Class] =
+	def classesLinkingAnyOf(classIds: Set[Int]): Vector[database.Class] =
 	{
 		val childResult = children.flatMap { _.classesLinkingAnyOf(classIds) }
 		if (links.exists { link => classIds.contains(link.otherClass.id) })

@@ -1,6 +1,6 @@
 package dbd.client.model
 
-import dbd.core.model.existing.Link
+import dbd.core.model.existing.database.Link
 import dbd.core.model.template.LinkLike
 
 /**

@@ -1,12 +1,13 @@
 package dbd.api.rest.resource.organization
 
-import dbd.api.database.access.many.Languages
+import dbd.api.database.access.many.DbLanguages
 import dbd.api.database.access.single
 import dbd.api.rest.util.AuthorizedContext
 import dbd.core.model.enumeration.DescriptionRole
 import dbd.core.model.enumeration.TaskType.DocumentOrganization
-import dbd.core.model.existing.OrganizationDescription
-import dbd.core.model.partial.OrganizationDescriptionData
+import dbd.core.model.existing
+import dbd.core.model.existing.description.OrganizationDescription
+import dbd.core.model.partial.description.OrganizationDescriptionData
 import dbd.core.model.post.NewDescription
 import utopia.access.http.Method.{Get, Put}
 import utopia.access.http.Status.{BadRequest, NotFound}
@@ -46,7 +47,7 @@ case class OrganizationDescriptions(organizationId: Int) extends Resource[Author
 				}
 				else
 				{
-					val availableLanguages = Languages.all
+					val availableLanguages = DbLanguages.all
 					Result.Failure(BadRequest,
 						s"Please specify an Accept-Language header with one or more of following options: [${
 							availableLanguages.map { _.isoCode }.mkString(", ")}]")
@@ -61,11 +62,11 @@ case class OrganizationDescriptions(organizationId: Int) extends Resource[Author
 				context.handlePost(NewDescription) { newDescription =>
 					implicit val c: Connection = connection
 					// Makes sure language id is valid
-					if (single.Language(newDescription.languageId).isDefined)
+					if (single.DbLanguage(newDescription.languageId).isDefined)
 					{
 						// Updates the organization's descriptions accordingly
-						val insertedDescriptions = single.Organization(organizationId).descriptions.update(newDescription,
-							session.userId).map { case (linkId, description) => OrganizationDescription(
+						val insertedDescriptions = single.DbOrganization(organizationId).descriptions.update(newDescription,
+							session.userId).map { case (linkId, description) => existing.description.OrganizationDescription(
 							linkId, OrganizationDescriptionData(organizationId, description)) }.toVector
 						// Returns new version of organization's descriptions (in specified language)
 						val otherDescriptions =
@@ -96,7 +97,7 @@ case class OrganizationDescriptions(organizationId: Int) extends Resource[Author
 		languageIds.headOption match
 		{
 			case Some(languageId) =>
-				val readDescriptions = single.Organization(organizationId).descriptions.inLanguageWithId(languageId).all
+				val readDescriptions = single.DbOrganization(organizationId).descriptions.inLanguageWithId(languageId).all
 				val missingRoles = DescriptionRole.values.toSet -- readDescriptions.map { _.description.role }.toSet
 				if (missingRoles.nonEmpty)
 					readDescriptions ++ inLanguages(languageIds.tail, missingRoles)
@@ -114,7 +115,7 @@ case class OrganizationDescriptions(organizationId: Int) extends Resource[Author
 		languageIds.headOption match
 		{
 			case Some(languageId) =>
-				val readDescriptions = single.Organization(organizationId).descriptions.inLanguageWithId(
+				val readDescriptions = single.DbOrganization(organizationId).descriptions.inLanguageWithId(
 					languageId)(remainingRoles)
 				val newRemainingRoles = remainingRoles -- readDescriptions.map { _.description.role }
 				if (remainingRoles.nonEmpty)

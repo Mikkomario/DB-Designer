@@ -3,7 +3,7 @@ package dbd.client.vc.structure
 import dbd.client.controller.{ClassDisplayManager, Icons}
 import dbd.client.dialog.{DeleteQuestionDialog, EditClassDialog, EditSubClassDialog}
 import dbd.client.model.ParentOrSubClass
-import dbd.core.model.existing.{Attribute, Class}
+import dbd.core.model.existing.database.{Attribute, Class}
 import dbd.core.model.template.ClassLike
 import dbd.core.util.Log
 import utopia.flow.util.CollectionExtensions._

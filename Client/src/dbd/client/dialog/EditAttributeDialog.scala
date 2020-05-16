@@ -3,8 +3,9 @@ package dbd.client.dialog
 import dbd.client.controller.Icons
 import dbd.client.view.Fields
 import dbd.core.model.enumeration.AttributeType
-import dbd.core.model.partial.NewAttributeConfiguration
-import dbd.core.model.existing.Attribute
+import dbd.core.model.existing.database.Attribute
+import dbd.core.model.partial.database
+import dbd.core.model.partial.database.NewAttributeConfiguration
 import utopia.reflection.component.context.ButtonContext
 import utopia.reflection.component.swing.{Switch, TextField}
 import utopia.reflection.localization.DisplayFunction
@@ -61,7 +62,7 @@ class EditAttributeDialog(attributeToEdit: Option[Attribute] = None)
 				typeSelectionField.value match
 				{
 					case Some(newType) =>
-						val newConfig = NewAttributeConfiguration(newName, newType, optionalSwitch.isOn, searchKeySwitch.isOn)
+						val newConfig = database.NewAttributeConfiguration(newName, newType, optionalSwitch.isOn, searchKeySwitch.isOn)
 						if (!attributeToEdit.exists { _.configuration ~== newConfig })
 							Right(Some(newConfig))
 						else

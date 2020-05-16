@@ -3,8 +3,9 @@ package dbd.core.database
 import java.time.Instant
 
 import utopia.flow.generic.ValueConversions._
-import dbd.core.model.existing
-import dbd.core.model.partial.NewDatabaseConfiguration
+import dbd.core.model.existing.database
+import dbd.core.model.existing.database.DatabaseConfiguration
+import dbd.core.model.partial.database.NewDatabaseConfiguration
 import utopia.vault.database.Connection
 import utopia.vault.model.enumeration.ComparisonOperator.Larger
 import utopia.vault.nosql.access.{NonDeprecatedAccess, SingleIdModelAccess, SingleModelAccess, UniqueAccess}
@@ -15,7 +16,7 @@ import utopia.vault.sql.Where
  * @author Mikko Hilpinen
  * @since 29.1.2020, v0.1
  */
-object Database extends SingleModelAccess[existing.Database] with NonDeprecatedAccess[existing.Database, Option[existing.Database]]
+object Database extends SingleModelAccess[database.Database] with NonDeprecatedAccess[database.Database, Option[database.Database]]
 {
 	// IMPLEMENTED	-------------------
 	
@@ -46,7 +47,7 @@ object Database extends SingleModelAccess[existing.Database] with NonDeprecatedA
 	 * Used for accessing a single database's data
 	 * @param databaseId Id of targeted database
 	 */
-	class SingleDatabase(databaseId: Int) extends SingleIdModelAccess[existing.Database](databaseId, Database.this.factory)
+	class SingleDatabase(databaseId: Int) extends SingleIdModelAccess[database.Database](databaseId, Database.this.factory)
 	{
 		// COMPUTED	--------------------
 		
@@ -71,8 +72,8 @@ object Database extends SingleModelAccess[existing.Database] with NonDeprecatedA
 		/**
 		  * Accesses an individual database's current configuration
 		  */
-		object Configuration extends SingleModelAccess[existing.DatabaseConfiguration]
-			with UniqueAccess[existing.DatabaseConfiguration]
+		object Configuration extends SingleModelAccess[DatabaseConfiguration]
+			with UniqueAccess[DatabaseConfiguration]
 		{
 			// IMPLEMENTED	------------
 			
@@ -107,8 +108,8 @@ object Database extends SingleModelAccess[existing.Database] with NonDeprecatedA
 		  * Access an individual database's configuration at certain time point
 		  * @param readTime Targeted time point
 		  */
-		class ConfigurationHistory(readTime: Instant) extends SingleModelAccess[existing.DatabaseConfiguration]
-			with UniqueAccess[existing.DatabaseConfiguration]
+		class ConfigurationHistory(readTime: Instant) extends SingleModelAccess[DatabaseConfiguration]
+			with UniqueAccess[DatabaseConfiguration]
 		{
 			// IMPLEMENTED	--------------
 			

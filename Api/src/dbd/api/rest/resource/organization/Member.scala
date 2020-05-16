@@ -1,7 +1,7 @@
 package dbd.api.rest.resource.organization
 
 import dbd.api.database.access.single
-import dbd.api.database.access.many.UserRoles
+import dbd.api.database.access.many.DbUserRoles
 import dbd.api.rest.util.AuthorizedContext
 import dbd.core.model.enumeration.TaskType.RemoveMember
 import dbd.core.model.enumeration.UserRole.Owner
@@ -41,25 +41,25 @@ case class Member(organizationId: Int, userId: Option[Int]) extends Resource[Aut
 			{
 				case Some(targetUserId) =>
 					// Finds targeted membership id
-					single.User(targetUserId).membershipIdInOrganizationWithId(organizationId).pull match
+					single.DbUser(targetUserId).membershipIdInOrganizationWithId(organizationId).pull match
 					{
 						case Some(targetMembershipId) =>
 							// Checks the roles of the active and targeted user. Targeted user can only be removed if they
 							// have a role lower than the active user's
-							val activeUserRoles = single.Membership(membershipId).roles.toSet
-							val targetUserRoles = single.Membership(targetMembershipId).roles.toSet
+							val activeUserRoles = single.DbMembership(membershipId).roles.toSet
+							val targetUserRoles = single.DbMembership(targetMembershipId).roles.toSet
 							if (activeUserRoles.forall(targetUserRoles.contains))
 								Result.Failure(Forbidden, s"User $targetUserId has same or higher role as you do")
 							else
 							{
-								val managedRoles = UserRoles.belowOrEqualTo(activeUserRoles)
+								val managedRoles = DbUserRoles.belowOrEqualTo(activeUserRoles)
 								targetUserRoles.find { !managedRoles.contains(_) } match
 								{
 									case Some(conflictingRole) => Result.Failure(Forbidden,
 										s"You don't have the right to remove members of role ${conflictingRole.id}")
 									case None =>
 										// If rights are OK, ends the targeted membership
-										single.Membership(targetMembershipId).end()
+										single.DbMembership(targetMembershipId).end()
 										Result.Empty
 								}
 							}
@@ -68,19 +68,19 @@ case class Member(organizationId: Int, userId: Option[Int]) extends Resource[Aut
 				case None =>
 					// A user may freely remove themselves from an organization, except that the owner must leave
 					// another owner behind
-					if (single.Membership(membershipId).hasRole(Owner))
+					if (single.DbMembership(membershipId).hasRole(Owner))
 					{
-						if (single.Organization(organizationId).memberships.withRole(Owner).forall { _.id == membershipId })
+						if (single.DbOrganization(organizationId).memberships.withRole(Owner).forall { _.id == membershipId })
 							Result.Failure(Forbidden, "You must assign another user as organization owner before you leave.")
 						else
 						{
-							single.Membership(membershipId).end()
+							single.DbMembership(membershipId).end()
 							Result.Empty
 						}
 					}
 					else
 					{
-						single.Membership(membershipId).end()
+						single.DbMembership(membershipId).end()
 						Result.Empty
 					}
 			}

@@ -7,8 +7,9 @@ import dbd.client.model.{ChildLink, EditSubClassResult}
 import dbd.client.view.Fields
 import dbd.core.model.enumeration.LinkEndRole.{Origin, Target}
 import dbd.core.model.enumeration.LinkType
-import dbd.core.model.existing.{Attribute, Class}
-import dbd.core.model.partial.{NewClassInfo, NewLinkConfiguration, NewSubClass}
+import dbd.core.model.existing.database.{Attribute, Class}
+import dbd.core.model.partial.database
+import dbd.core.model.partial.database.{NewClassInfo, NewLinkConfiguration, NewSubClass}
 import dbd.core.model.template.ClassLike
 import utopia.flow.datastructure.mutable.PointerWithEvents
 import utopia.reflection.component.context.ButtonContext
@@ -238,13 +239,13 @@ class EditSubClassDialog(parent: Class, editedChildLink: Option[ChildLink], clas
 												else
 													linkToEdit.targetClassId -> linkToEdit.originClassId
 											}
-											val newLinkConfig = NewLinkConfiguration(linkType, originClassId,
+											val newLinkConfig = database.NewLinkConfiguration(linkType, originClassId,
 												targetClassId, nameInOrigin, nameInTarget, isOwned = true, mapKey.map { _.id })
 											val updatedLinkConfig = if (newLinkConfig ~== linkToEdit.configuration)
 												None else Some(newLinkConfig)
 											Right(Some(Left(EditSubClassResult(updatedLinkConfig, updatedClassInfo))))
 										// Case: New sub-class added
-										case None => Right(Some(Right(Right(NewSubClass(newClassInfo, linkType, parent.id,
+										case None => Right(Some(Right(Right(database.NewSubClass(newClassInfo, linkType, parent.id,
 											nameInParent, nameInChild)))))
 									}
 								case None => Left(classNameField, "Please specify the name of the new class")
@@ -259,7 +260,7 @@ class EditSubClassDialog(parent: Class, editedChildLink: Option[ChildLink], clas
 											val linkIds = Map(linkType.fixedOwner -> parent.id,
 												linkType.fixedChild -> adoptedClass.classId)
 											// Case: Existing class adopted
-											Right(Some(Right(Left(NewLinkConfiguration(linkType, linkIds(Origin),
+											Right(Some(Right(Left(database.NewLinkConfiguration(linkType, linkIds(Origin),
 												linkIds(Target), nameInOrigin, nameInTarget, isOwned = true,
 												mapKey.map { _.id })))))
 										case None => Left(adoptField, "Please select the class to adopt")

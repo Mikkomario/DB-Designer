@@ -4,7 +4,7 @@ import dbd.client.controller.{ClassDisplayManager, Icons}
 import dbd.client.dialog.{DeleteQuestionDialog, EditLinkDialog}
 import dbd.client.model.DisplayedLink
 import dbd.core.model.enumeration.LinkTypeCategory.{ManyToMany, ManyToOne, OneToOne}
-import dbd.core.model.existing.Class
+import dbd.core.model.existing.database.Class
 import utopia.genesis.image.Image
 import utopia.reflection.component.Refreshable
 import utopia.reflection.component.context.ColorContext

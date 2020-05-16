@@ -1,8 +1,9 @@
 package dbd.core.database
 
 import utopia.flow.generic.ValueConversions._
-import dbd.core.model.existing
-import dbd.core.model.partial.NewLinkConfiguration
+import dbd.core.model.existing.database
+import dbd.core.model.existing.database.LinkConfiguration
+import dbd.core.model.partial.database.NewLinkConfiguration
 import utopia.vault.database.Connection
 import utopia.vault.nosql.access.{NonDeprecatedAccess, SingleIdModelAccess, SingleModelAccess}
 import utopia.vault.sql.Where
@@ -12,7 +13,7 @@ import utopia.vault.sql.Where
  * @author Mikko Hilpinen
  * @since 19.1.2020, v0.1
  */
-object Link extends SingleModelAccess[existing.Link] with NonDeprecatedAccess[existing.Link, Option[existing.Link]]
+object Link extends SingleModelAccess[database.Link] with NonDeprecatedAccess[database.Link, Option[database.Link]]
 {
 	// IMPLEMENTED	------------------------
 	
@@ -53,7 +54,7 @@ object Link extends SingleModelAccess[existing.Link] with NonDeprecatedAccess[ex
 		
 		// NESTED	------------------------
 		
-		object Configuration extends SingleModelAccess[existing.LinkConfiguration]
+		object Configuration extends SingleModelAccess[LinkConfiguration]
 		{
 			// IMPLEMENTED	----------------
 			

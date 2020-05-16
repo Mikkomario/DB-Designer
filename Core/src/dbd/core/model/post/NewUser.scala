@@ -1,6 +1,6 @@
 package dbd.core.model.post
 
-import dbd.core.model.partial.UserSettingsData
+import dbd.core.model.partial.user.UserSettingsData
 import utopia.flow.generic.ValueConversions._
 import utopia.flow.datastructure.immutable.{Model, ModelDeclaration, ModelValidationFailedException, Value}
 import utopia.flow.datastructure.template

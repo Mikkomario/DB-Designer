@@ -1,6 +1,6 @@
 package dbd.mysql.model.existing
 
-import dbd.core.model.existing.AttributeConfiguration
+import dbd.core.model.existing.database.AttributeConfiguration
 import dbd.mysql.model.template.ColumnAttributeLinkLike
 
 /**

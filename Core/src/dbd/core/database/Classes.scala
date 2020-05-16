@@ -1,7 +1,8 @@
 package dbd.core.database
 
-import dbd.core.model.existing
-import dbd.core.model.partial.NewClass
+import dbd.core.model.existing.database
+import dbd.core.model.existing.database.ClassInfo
+import dbd.core.model.partial.database.NewClass
 import utopia.vault.database.Connection
 import utopia.vault.nosql.access.NonDeprecatedAccess
 
@@ -10,7 +11,7 @@ import utopia.vault.nosql.access.NonDeprecatedAccess
  * @author Mikko Hilpinen
  * @since 11.1.2020, v0.1
  */
-object Classes extends ChangedModelsAccess[existing.Class, existing.ClassInfo] with NonDeprecatedAccess[existing.Class, Vector[existing.Class]]
+object Classes extends ChangedModelsAccess[database.Class, ClassInfo] with NonDeprecatedAccess[database.Class, Vector[database.Class]]
 {
 	// IMPLEMENTED	--------------------
 	
@@ -45,7 +46,7 @@ object Classes extends ChangedModelsAccess[existing.Class, existing.ClassInfo] w
 	
 	// NESTED	------------------------
 	
-	class ClassesInDatabase(databaseId: Int) extends ChangedModelsAccess[existing.Class, existing.ClassInfo]
+	class ClassesInDatabase(databaseId: Int) extends ChangedModelsAccess[database.Class, ClassInfo]
 	{
 		// IMPLEMENTED	----------------
 		
@@ -83,7 +84,7 @@ object Classes extends ChangedModelsAccess[existing.Class, existing.ClassInfo] w
 			val insertedInfo = Class(newClassId).info.update(newClass.info)
 			val insertedAttributes = newClass.attributes.map { att => Class(newClassId).attributes.insert(att) }
 			
-			existing.Class(newClassId, databaseId, insertedInfo, insertedAttributes)
+			database.Class(newClassId, databaseId, insertedInfo, insertedAttributes)
 		}
 	}
 }

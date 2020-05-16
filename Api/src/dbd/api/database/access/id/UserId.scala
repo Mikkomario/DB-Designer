@@ -1,6 +1,6 @@
 package dbd.api.database.access.id
 
-import dbd.api.database.model.user.UserSettings
+import dbd.api.database.model.user.UserSettingsModel
 import utopia.vault.database.Connection
 import utopia.vault.sql.{Select, Where}
 
@@ -17,7 +17,7 @@ object UserId
 	  * @return User id matching specified user name
 	  */
 	def forName(userName: String)(implicit connection: Connection) =
-		userIdFromSettings(UserSettings.withName(userName))
+		userIdFromSettings(UserSettingsModel.withName(userName))
 	
 	/**
 	  * @param email User email address
@@ -25,11 +25,11 @@ object UserId
 	  * @return User id matching specified user email address
 	  */
 	def forEmail(email: String)(implicit connection: Connection) =
-		userIdFromSettings(UserSettings.withEmail(email))
+		userIdFromSettings(UserSettingsModel.withEmail(email))
 	
-	private def userIdFromSettings(searchModel: UserSettings)(implicit connection: Connection) =
+	private def userIdFromSettings(searchModel: UserSettingsModel)(implicit connection: Connection) =
 	{
-		connection(Select(UserSettings.table, UserSettings.userIdAttName) +
-			Where(searchModel.toCondition && UserSettings.nonDeprecatedCondition)).firstValue.int
+		connection(Select(UserSettingsModel.table, UserSettingsModel.userIdAttName) +
+			Where(searchModel.toCondition && UserSettingsModel.nonDeprecatedCondition)).firstValue.int
 	}
 }

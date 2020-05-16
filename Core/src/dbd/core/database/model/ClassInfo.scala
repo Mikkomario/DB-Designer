@@ -5,13 +5,14 @@ import java.time.Instant
 import utopia.flow.generic.ValueConversions._
 import dbd.core.database.Tables
 import dbd.core.model.existing
-import dbd.core.model.partial.NewClassInfo
+import dbd.core.model.existing.database
+import dbd.core.model.partial.database.NewClassInfo
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.vault.nosql.factory.{Deprecatable, RowFactoryWithTimestamps, StorableFactoryWithValidation}
 import utopia.vault.model.immutable.StorableWithFactory
 
-object ClassInfo extends StorableFactoryWithValidation[existing.ClassInfo] with Deprecatable
-	with RowFactoryWithTimestamps[existing.ClassInfo]
+object ClassInfo extends StorableFactoryWithValidation[database.ClassInfo] with Deprecatable
+	with RowFactoryWithTimestamps[database.ClassInfo]
 {
 	// ATTRIBUTES	----------------------------
 	
@@ -24,7 +25,7 @@ object ClassInfo extends StorableFactoryWithValidation[existing.ClassInfo] with 
 	
 	override def table = Tables.classInfo
 	
-	override protected def fromValidatedModel(model: Model[Constant]) = existing.ClassInfo(model("id").getInt,
+	override protected def fromValidatedModel(model: Model[Constant]) = database.ClassInfo(model("id").getInt,
 		model("classId").getInt, model("name").getString, model("isMutable").getBoolean)
 	
 	
@@ -62,7 +63,7 @@ object ClassInfo extends StorableFactoryWithValidation[existing.ClassInfo] with 
 case class ClassInfo(id: Option[Int] = None, classId: Option[Int] = None, name: Option[String] = None,
 					 isMutable: Option[Boolean] = None, deprecatedAfter: Option[Instant] = None,
 					 created: Option[Instant] = None)
-	extends StorableWithFactory[existing.ClassInfo]
+	extends StorableWithFactory[database.ClassInfo]
 {
 	override def factory = ClassInfo
 	

@@ -34,12 +34,12 @@ case class DeviceKey(deviceId: Int) extends Resource[AuthorizedContext]
 			context.basicAuthorized { (userId, connection) =>
 				implicit val c: Connection = connection
 				// Makes sure this device exists
-				if (single.Device(deviceId).isDefined)
+				if (single.DbDevice(deviceId).isDefined)
 				{
 					// Registers a new connection between the user and this device, if there wasn't one already
-					single.User(userId).linkWithDeviceWithId(deviceId)
+					single.DbUser(userId).linkWithDeviceWithId(deviceId)
 					// Gets and returns the new device authentication key
-					val key = single.Device(deviceId).authenticationKey.assignToUserWithId(userId).key
+					val key = single.DbDevice(deviceId).authenticationKey.assignToUserWithId(userId).key
 					Result.Success(key)
 				}
 				else
@@ -51,7 +51,7 @@ case class DeviceKey(deviceId: Int) extends Resource[AuthorizedContext]
 		{
 			context.sessionKeyAuthorized { (session, connection) =>
 				implicit val c: Connection = connection
-				single.Device(session.deviceId).authenticationKey.releaseFromUserWithId(session.userId)
+				single.DbDevice(session.deviceId).authenticationKey.releaseFromUserWithId(session.userId)
 				Empty
 			}
 		}

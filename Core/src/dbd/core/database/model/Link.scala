@@ -5,12 +5,13 @@ import java.time.Instant
 import dbd.core.database.Tables
 import utopia.flow.generic.ValueConversions._
 import dbd.core.model.existing
+import dbd.core.model.existing.database
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.vault.model.immutable.StorableWithFactory
 import utopia.vault.nosql.factory.{Deprecatable, LinkedStorableFactory, RowFactoryWithTimestamps}
 
-object Link extends LinkedStorableFactory[existing.Link, existing.LinkConfiguration] with Deprecatable
-	with RowFactoryWithTimestamps[existing.Link]
+object Link extends LinkedStorableFactory[database.Link, database.LinkConfiguration] with Deprecatable
+	with RowFactoryWithTimestamps[database.Link]
 {
 	// ATTRIBUTES	---------------------------
 	
@@ -26,9 +27,9 @@ object Link extends LinkedStorableFactory[existing.Link, existing.LinkConfigurat
 	
 	override def childFactory = LinkConfiguration
 	
-	override def apply(model: Model[Constant], child: existing.LinkConfiguration) =
+	override def apply(model: Model[Constant], child: database.LinkConfiguration) =
 		table.requirementDeclaration.validate(model).toTry.map { valid =>
-			existing.Link(valid("id").getInt, valid("databaseId").getInt, child, valid(deletedAfterVarName).instant)
+			database.Link(valid("id").getInt, valid("databaseId").getInt, child, valid(deletedAfterVarName).instant)
 		}
 	
 	override def nonDeprecatedCondition = childFactory.nonDeprecatedCondition && notDeletedCondition
@@ -74,7 +75,7 @@ object Link extends LinkedStorableFactory[existing.Link, existing.LinkConfigurat
  * @since 19.1.2020, v0.1
  */
 case class Link(id: Option[Int] = None, databaseId: Option[Int] = None, deletedAfter: Option[Instant] = None)
-	extends StorableWithFactory[existing.Link]
+	extends StorableWithFactory[database.Link]
 {
 	override def factory = Link
 	

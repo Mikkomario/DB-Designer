@@ -5,6 +5,7 @@ import java.time.Instant
 import utopia.flow.util.CollectionExtensions._
 import dbd.core.database.Tables
 import dbd.core.model.existing
+import dbd.core.model.existing.database
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.model.immutable.{Result, Storable}
 import utopia.vault.nosql.factory.{Deprecatable, FromResultFactory}
@@ -12,7 +13,7 @@ import utopia.vault.util.ErrorHandling
 
 import scala.util.{Failure, Success}
 
-object Class extends FromResultFactory[existing.Class] with Deprecatable
+object Class extends FromResultFactory[database.Class] with Deprecatable
 {
 	// IMPLEMENTED	------------------------------
 	
@@ -33,7 +34,7 @@ object Class extends FromResultFactory[existing.Class] with Deprecatable
 				ClassInfo(baseRow).flatMap { classInfo =>
 					// Parses attribute rows
 					attributeRows.tryMap { Attribute(_) }.map { attributes =>
-						existing.Class(id.getInt, valid("databaseId").getInt, classInfo, attributes,
+						database.Class(id.getInt, valid("databaseId").getInt, classInfo, attributes,
 							valid("deletedAfter").instant)
 					}
 				}

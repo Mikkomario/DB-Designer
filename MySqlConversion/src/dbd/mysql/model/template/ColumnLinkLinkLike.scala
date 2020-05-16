@@ -1,6 +1,6 @@
 package dbd.mysql.model.template
 
-import dbd.core.model.existing.LinkConfiguration
+import dbd.core.model.existing.database.LinkConfiguration
 
 /**
  * Common trait for models that link columns and links

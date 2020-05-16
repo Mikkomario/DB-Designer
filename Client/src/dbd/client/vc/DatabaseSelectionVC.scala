@@ -4,7 +4,7 @@ import dbd.core.model.enumeration.NamingConvention._
 import dbd.client.controller.{DatabasesManager, Icons}
 import dbd.client.dialog.EditDatabaseDialog
 import dbd.client.view.Fields
-import dbd.core.model.existing.Database
+import dbd.core.model.existing.database.Database
 import utopia.reflection.component.context.ColorContext
 import utopia.reflection.component.input.SelectableWithPointers
 import utopia.reflection.component.swing.button.ImageButton

@@ -1,6 +1,6 @@
 package dbd.api.database.access.id
 
-import dbd.api.database.model.organization.Organization
+import dbd.api.database.model.organization.OrganizationModel
 import utopia.flow.datastructure.immutable.Value
 import utopia.vault.nosql.access.ManyIdAccess
 
@@ -24,5 +24,5 @@ object OrganizationIds extends ManyIdAccess[Int]
 	
 	// COMPUTED	------------------------
 	
-	private def factory = Organization
+	private def factory = OrganizationModel
 }

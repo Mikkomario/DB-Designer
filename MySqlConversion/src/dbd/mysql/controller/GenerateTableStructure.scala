@@ -8,7 +8,8 @@ import utopia.flow.util.CollectionExtensions._
 import dbd.core.database.Database
 import dbd.core.model.enumeration.AttributeType.IntType
 import dbd.core.model.enumeration.LinkTypeCategory.ManyToMany
-import dbd.core.model.existing.{Attribute, Class, Link}
+import dbd.core.model.existing
+import dbd.core.model.existing.database.{Attribute, Link}
 import dbd.mysql.model.VersionNumber
 import dbd.mysql.model.existing.{Release, Table}
 import dbd.mysql.model.partial.{NewColumn, NewColumnAttributeLink, NewColumnLinkLink, NewForeignKey, NewIndex, NewRelease, NewTable}
@@ -75,7 +76,7 @@ object GenerateTableStructure
 	}
 	
 	// Converts class names to underscore style and makes sure each one is unique
-	private def classNames(classes: Vector[Class]) =
+	private def classNames(classes: Vector[existing.database.Class]) =
 		makeUnique(classes.toMultiMap { _.name.toUnderscore } { _.id })
 	
 	private def makeUnique(originalData: Map[String, Seq[Int]]) =
@@ -118,7 +119,7 @@ object GenerateTableStructure
 		parts.map { _.take(maxLettersPerPart) }.reduce { _ + _ }
 	}
 	
-	private def classToTable(classToConvert: Class, tableName: String, namePrefix: String, useDeprecation: Boolean) =
+	private def classToTable(classToConvert: existing.database.Class, tableName: String, namePrefix: String, useDeprecation: Boolean) =
 	{
 		val attNames = attributeNames(classToConvert.attributes)
 		NewTable(classToConvert.id, tableName, useDeprecation, classToConvert.isMutable,

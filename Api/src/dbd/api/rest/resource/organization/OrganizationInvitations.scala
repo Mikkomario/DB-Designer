@@ -4,7 +4,7 @@ import dbd.api.database.access.id.UserId
 import dbd.api.database.access.single
 import dbd.api.rest.util.AuthorizedContext
 import dbd.core.model.enumeration.TaskType.InviteMembers
-import dbd.core.model.existing.Invitation
+import dbd.core.model.existing.organization.Invitation
 import dbd.core.model.post.NewInvitation
 import utopia.access.http.Method.Post
 import utopia.access.http.Status.{BadRequest, Forbidden, NotImplemented}
@@ -42,7 +42,7 @@ case class OrganizationInvitations(organizationId: Int) extends Resource[Authori
 					case Success(validInvitation) =>
 						implicit val c: Connection = connection
 						// Makes sure the user has a right to give the specified role to another user
-						if (single.Membership(membershipId).canPromoteTo(validInvitation.startingRole))
+						if (single.DbMembership(membershipId).canPromoteTo(validInvitation.startingRole))
 						{
 							// Finds the user that is being invited (if registered)
 							val recipientEmail = validInvitation.recipientEmail
@@ -50,14 +50,14 @@ case class OrganizationInvitations(organizationId: Int) extends Resource[Authori
 							
 							// Checks whether the user already is a member of this organization
 							if (recipientUserId.exists { userId =>
-								single.User(userId).isMemberInOrganizationWithId(organizationId) })
+								single.DbUser(userId).isMemberInOrganizationWithId(organizationId) })
 								Result.Success(invitationSendResultModel(wasInvitationSend = false,
 									description = "The user was already a member of this organization"))
 							else
 							{
 								// Makes sure the user hasn't blocked this organization from sending invites
 								// And that there are no pending invitations for this user
-								val accessInvitations = single.Organization(organizationId).invitations
+								val accessInvitations = single.DbOrganization(organizationId).invitations
 								val blockedInvitations = accessInvitations.blocked
 								val isBlocked = blockedInvitations.exists { i =>
 									recipientUserId match
