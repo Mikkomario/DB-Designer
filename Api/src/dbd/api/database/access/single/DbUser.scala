@@ -1,9 +1,9 @@
 package dbd.api.database.access.single
 
-import dbd.api.database.model.user
 import dbd.api.database.access.id.UserId
 import dbd.api.database.access.many.InvitationsAccess
 import dbd.api.database.factory.organization.MembershipWithRolesFactory
+import dbd.api.database.factory.user.UserFactory
 import dbd.api.database.model.description.OrganizationDescriptionModel
 import dbd.api.database.model.organization.{MembershipModel, RoleRightModel}
 import dbd.api.database.model.user.{UserAuthModel, UserDeviceModel, UserSettingsModel}
@@ -29,7 +29,7 @@ object DbUser extends SingleModelAccess[existing.user.User]
 {
 	// IMPLEMENTED	---------------------
 	
-	override def factory = user.UserModel
+	override def factory = UserFactory
 	
 	override def globalCondition = Some(factory.nonDeprecatedCondition)
 	
@@ -62,7 +62,18 @@ object DbUser extends SingleModelAccess[existing.user.User]
 	
 	class SingleUser(userId: Int) extends SingleIdModelAccess(userId, DbUser.factory)
 	{
+		// IMPLEMENTED	-----------------
+		
+		override val factory = DbUser.factory
+		
+		
 		// COMPUTED	---------------------
+		
+		/**
+		  * @param connection DB Connection
+		  * @return This user's data, along with linked data
+		  */
+		def withLinks(implicit connection: Connection) = pull.map { base => factory.complete(base) }
 		
 		/**
 		  * @param connection DB Connection (implicit)

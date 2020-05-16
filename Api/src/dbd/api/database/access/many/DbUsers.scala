@@ -1,11 +1,12 @@
 package dbd.api.database.access.many
 
 import dbd.api.database.access.single.{DbDevice, DbLanguage}
-import dbd.api.database.model.user.{UserModel, UserDeviceModel, UserLanguageModel, UserSettingsModel}
+import dbd.api.database.factory.user.UserFactory
+import dbd.api.database.model.user.{UserDeviceModel, UserLanguageModel, UserModel, UserSettingsModel}
 import dbd.core.model.combined.user.UserWithLinks
 import dbd.core.model.error.{AlreadyUsedException, IllegalPostModelException}
 import dbd.core.model.existing.user
-import dbd.core.model.{combined, existing}
+import dbd.core.model.combined
 import dbd.core.model.post.NewUser
 import utopia.vault.database.Connection
 import utopia.vault.nosql.access.ManyModelAccess
@@ -21,7 +22,7 @@ object DbUsers extends ManyModelAccess[user.User]
 {
 	// IMPLEMENTED	--------------------------
 	
-	override def factory = UserModel
+	override def factory = UserFactory
 	
 	override def globalCondition = Some(factory.nonDeprecatedCondition)
 	
@@ -86,7 +87,7 @@ object DbUsers extends ManyModelAccess[user.User]
 			if (idsAreValid)
 			{
 				// Inserts new user data
-				val user = factory.insert(newUser.settings, newUser.password)
+				val user = UserModel.insert(newUser.settings, newUser.password)
 				newUser.languageIds.foreach { languageId => UserLanguageModel.insert(user.id, languageId) }
 				// Links user with device (uses existing or a new device)
 				val deviceId = newUser.device match
@@ -97,7 +98,7 @@ object DbUsers extends ManyModelAccess[user.User]
 				}
 				UserDeviceModel.insert(user.id, deviceId)
 				// Returns inserted user
-				Success(combined.user.UserWithLinks(user, newUser.languageIds, Vector(deviceId)))
+				Success(UserWithLinks(user, newUser.languageIds, Vector(deviceId)))
 			}
 			else
 				Failure(new IllegalPostModelException("device_id and language_id must point to existing data"))
