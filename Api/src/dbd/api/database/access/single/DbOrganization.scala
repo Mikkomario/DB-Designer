@@ -9,10 +9,10 @@ import dbd.api.database.model.organization.{DeletionCancelModel, DeletionModel, 
 import dbd.core.model.combined.organization.DeletionWithCancellations
 import dbd.core.model.enumeration.UserRole
 import dbd.core.model.existing.organization.Membership
-import dbd.core.model.partial.organization.{DeletionCancelData, InvitationData, MembershipData}
+import dbd.core.model.partial.organization.{DeletionCancelData, DeletionData, InvitationData, MembershipData}
 import utopia.flow.util.TimeExtensions._
 import utopia.vault.database.Connection
-import utopia.vault.nosql.access.ManyModelAccess
+import utopia.vault.nosql.access.{ManyModelAccess, ManyRowModelAccess}
 import utopia.vault.sql.{Select, Where}
 
 /**
@@ -65,7 +65,7 @@ object DbOrganization
 		
 		// NESTED	-------------------------------
 		
-		object Memberships extends ManyModelAccess[Membership]
+		object Memberships extends ManyRowModelAccess[Membership]
 		{
 			// COMPUTED	---------------------------
 			
@@ -153,6 +153,19 @@ object DbOrganization
 			  * @return An access point to pending deletions (those not cancelled)
 			  */
 			def pending = Pending
+			
+			
+			// OTHER	--------------------------
+			
+			/**
+			  * Inserts a new deletion for this organization
+			  * @param creatorId Id of the user starting the deletion process
+			  * @param actualizationDelay Delay before actualizing this deletion
+			  * @param connection DB Connection (implicit)
+			  * @return Newly inserted deletion
+			  */
+			def insert(creatorId: Int, actualizationDelay: Period)(implicit connection: Connection) =
+				DeletionModel.insert(DeletionData(organizationId, creatorId, Instant.now() + actualizationDelay))
 			
 			
 			// NESTED	--------------------------
