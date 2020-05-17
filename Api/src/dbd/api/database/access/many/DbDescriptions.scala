@@ -11,7 +11,7 @@ import dbd.core.model.post.NewDescription
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.Storable
-import utopia.vault.nosql.access.ManyModelAccess
+import utopia.vault.sql.Condition
 import utopia.vault.sql.Extensions._
 
 /**
@@ -98,34 +98,136 @@ object DbDescriptions
 	
 	case class DescriptionsOfMany(targetIds: Set[Int], factory: DescriptionLinkFactory[DescriptionLink],
 								  modelFactory: DescriptionLinkModelFactory[Storable, PartialDescriptionLinkData])
-		extends ManyModelAccess[DescriptionLink]
+		extends DescriptionLinksAccess[DescriptionLink]
 	{
 		// IMPLEMENTED	---------------------
 		
-		override val globalCondition = Some(modelFactory.targetIdColumn.in(targetIds) && factory.nonDeprecatedCondition)
+		// Alters the condition based on the number of targeted items
+		override val globalCondition =
+		{
+			if (targetIds.isEmpty)
+				Some(Condition.alwaysFalse)
+			else
+			{
+				val baseCondition =
+				{
+					if (targetIds.size == 1)
+						modelFactory.withTargetId(targetIds.head).toCondition
+					else
+						modelFactory.targetIdColumn.in(targetIds)
+				}
+				Some(baseCondition && factory.nonDeprecatedCondition)
+			}
+		}
+		
+		
+		// OTHER	-------------------------
+		
+		/**
+		  * Reads descriptions for these items using the specified languages. Only up to one description per
+		  * role per target is read.
+		  * @param languageIds Ids of the targeted languages, from most preferred to least preferred (less preferred
+		  *                    language ids are used when no results can be found with the more preferred options)
+		  * @param connection DB Connection (implicit)
+		  * @return Read descriptions, grouped by target id
+		  */
+		def inLanguages(languageIds: Seq[Int])(implicit connection: Connection): Map[Int, Vector[DescriptionLink]] =
+		{
+			languageIds.headOption match
+			{
+				case Some(languageId: Int) =>
+					// In the first iteration, reads all descriptions. After that divides into sub-groups
+					val readDescriptions = inLanguageWithId(languageId).all.groupBy { _.targetId }
+					// Reads the rest of the data using recursion
+					readRemaining(languageIds, DescriptionRole.values.toSet, this, readDescriptions)
+				case None => Map()
+			}
+		}
+		
+		/**
+		  * Reads descriptions for these items using the specified languages. Only up to one description per
+		  * role per target is read.
+		  * @param languageIds Ids of the targeted languages, from most preferred to least preferred (less preferred
+		  *                    language ids are used when no results can be found with the more preferred options)
+		  * @param roles Description roles that are read (will not target roles outside this set)
+		  * @param connection DB Connection (implicit)
+		  * @return Read descriptions, grouped by target id
+		  */
+		def inLanguages(languageIds: Seq[Int], roles: Set[DescriptionRole])
+					   (implicit connection: Connection): Map[Int, Vector[DescriptionLink]] =
+		{
+			if (languageIds.isEmpty || targetIds.isEmpty || roles.isEmpty)
+				Map()
+			else
+				inLanguages(targetIds, languageIds, roles)
+		}
+		
+		// Language ids must not be empty (neither should any other parameter)
+		private def inLanguages(remainingTargetIds: Set[Int], languageIds: Seq[Int], remainingRoles: Set[DescriptionRole])(
+			implicit connection: Connection): Map[Int, Vector[DescriptionLink]] =
+		{
+			// Reads descriptions in target languages until either all description types have been read or all language
+			// options exhausted
+			val languageId = languageIds.head
+			val newAccessPoint = subGroup(remainingTargetIds)
+			// Target id -> Descriptions
+			val readDescriptions = newAccessPoint.inLanguageWithId(languageId)(remainingRoles).groupBy { _.targetId }
+			
+			// Reads the rest of the descriptions recursively
+			readRemaining(languageIds, remainingRoles, newAccessPoint, readDescriptions)
+		}
+		
+		// Continues read through recursion, if possible. Utilizes (and includes) existing read results.
+		// LanguageIds and roles should be passed as they were at the start of the last read
+		private def readRemaining(languageIds: Seq[Int],
+								  remainingRoles: Set[DescriptionRole], lastAccessPoint: DescriptionsOfMany,
+								  lastReadResults: Map[Int, Vector[DescriptionLink]])
+								 (implicit connection: Connection): Map[Int, Vector[DescriptionLink]] =
+		{
+			val remainingLanguageIds = languageIds.tail
+			if (remainingLanguageIds.nonEmpty)
+			{
+				// Groups the remaining items based on the remaining roles without a description
+				// Remaining roles -> target ids
+				val remainingRolesWithTargets = lastReadResults.groupMap { case (_, descriptions) =>
+					remainingRoles -- descriptions.map { _.description.role } } { case (targetId, _) => targetId }
+					.filter { _._1.nonEmpty }
+				
+				// Performs additional queries for each remaining role group (provided there are languages left)
+				if (remainingRolesWithTargets.isEmpty)
+					lastReadResults
+				else
+				{
+					val recursiveReadResults = remainingRolesWithTargets.map { case (roles, targetIds) =>
+						lastAccessPoint.inLanguages(targetIds.toSet, remainingLanguageIds, roles) }
+						.reduce { _ ++ _ }
+					lastReadResults ++ recursiveReadResults
+				}
+			}
+			else
+				lastReadResults
+		}
+		
+		// Accesses a sub-group of these descriptions
+		private def subGroup(remainingTargetIds: Set[Int]) =
+		{
+			if (remainingTargetIds == targetIds)
+				this
+			else
+				copy(targetIds = remainingTargetIds)
+		}
 	}
 	
 	case class DescriptionsOfSingle(targetId: Int, factory: DescriptionLinkFactory[DescriptionLink],
 									modelFactory: DescriptionLinkModelFactory[Storable, PartialDescriptionLinkData])
-		extends ManyModelAccess[DescriptionLink]
+		extends DescriptionLinksAccess[DescriptionLink]
 	{
-		// COMPUTED	------------------------
-		
-		private def descriptionFactory = factory.childFactory
-		
-		
 		// IMPLEMENTED	--------------------
 		
 		override val globalCondition = Some(modelFactory.withTargetId(targetId).toCondition && factory.nonDeprecatedCondition)
 		
 		
-		// OTHER	------------------------
-		
-		/**
-		  * @param languageId Id of targeted language
-		  * @return An access point to a subset of these descriptions. Only contains desriptions written in that language.
-		  */
-		def inLanguageWithId(languageId: Int) = DescriptionsInLanguage(languageId)
+		// OTHER	-------------------------
 		
 		/**
 		  * Updates possibly multiple descriptions for this item (will replace old description versions)
@@ -184,7 +286,6 @@ object DbDescriptions
 			modelFactory.nowDeprecated.updateWhere(mergeCondition(descriptionCondition), Some(factory.target)) > 0
 		}
 		
-		// TODO: Add multi-target versions of these methods
 		/**
 		  * @param languageIds Ids of the targeted languages (in order from most to least preferred)
 		  * @param connection DB Connection (implicit)
@@ -229,52 +330,6 @@ object DbDescriptions
 						readDescriptions
 				case None => Vector()
 			}
-		}
-		
-		
-		// NESTED	-------------------------
-		
-		case class DescriptionsInLanguage(languageId: Int) extends ManyModelAccess[DescriptionLink]
-		{
-			// IMPLEMENTED	-----------------
-			
-			override def factory = DescriptionsOfSingle.this.factory
-			
-			override val globalCondition = Some(DescriptionsOfSingle.this.mergeCondition(
-				descriptionFactory.withLanguageId(languageId).toCondition))
-			
-			
-			// OTHER	---------------------
-			
-			/**
-			  * @param role Targeted description role
-			  * @param connection Db Connection
-			  * @return Description for that role for this item in targeted language
-			  */
-			def apply(role: DescriptionRole)(implicit connection: Connection): Option[DescriptionLink] =
-				apply(Set(role)).headOption
-			
-			/**
-			  * @param roles Targeted description roles
-			  * @param connection DB Connection (implicit)
-			  * @return Recorded descriptions for those roles (in this language & target)
-			  */
-			def apply(roles: Set[DescriptionRole])(implicit connection: Connection) =
-			{
-				if (roles.nonEmpty)
-					read(Some(descriptionFactory.descriptionRoleIdColumn.in(roles.map { _.id })))
-				else
-					Vector()
-			}
-			
-			/**
-			  * Reads descriptions of this item, except those in excluded description roles
-			  * @param excludedRoles Excluded description roles
-			  * @param connection DB Connection (implicit)
-			  * @return Read description links
-			  */
-			def forRolesOutside(excludedRoles: Set[DescriptionRole])(implicit connection: Connection) =
-				apply(DescriptionRole.values.toSet -- excludedRoles)
 		}
 	}
 }

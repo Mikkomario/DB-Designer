@@ -34,6 +34,7 @@ object MyLanguages extends Resource[AuthorizedContext]
 			
 			if (method == Get)
 			{
+				// Reads language descriptions from the database, uses languages in the accept-language header
 				???
 			}
 			else
