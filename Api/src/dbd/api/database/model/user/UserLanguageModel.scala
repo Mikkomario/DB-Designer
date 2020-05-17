@@ -1,9 +1,13 @@
 package dbd.api.database.model.user
 
 import dbd.api.database.Tables
+import dbd.api.database.factory.user.UserLanguageFactory
+import dbd.core.model.enumeration.LanguageFamiliarity
+import dbd.core.model.existing.user.UserLanguage
+import dbd.core.model.partial.user.UserLanguageData
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
-import utopia.vault.model.immutable.Storable
+import utopia.vault.model.immutable.StorableWithFactory
 
 object UserLanguageModel
 {
@@ -38,12 +42,14 @@ object UserLanguageModel
 	
 	/**
 	  * Inserts a new connection between a user and a language
-	  * @param userId Id of the user
-	  * @param languageId Id of the language
+	  * @param data New user language link to insert
 	  * @return Id of the newly inserted link
 	  */
-	def insert(userId: Int, languageId: Int)(implicit connection: Connection) =
-		apply(None, Some(userId), Some(languageId)).insert().getInt
+	def insert(data: UserLanguageData)(implicit connection: Connection) =
+	{
+		val newId = apply(None, Some(data.userId), Some(data.languageId), Some(data.familiarity)).insert().getInt
+		UserLanguage(newId, data)
+	}
 }
 
 /**
@@ -51,11 +57,14 @@ object UserLanguageModel
   * @author Mikko Hilpinen
   * @since 2.5.2020, v2
   */
-case class UserLanguageModel(id: Option[Int] = None, userId: Option[Int] = None, languageId: Option[Int] = None) extends Storable
+case class UserLanguageModel(id: Option[Int] = None, userId: Option[Int] = None, languageId: Option[Int] = None,
+							 familiarity: Option[LanguageFamiliarity] = None)
+	extends StorableWithFactory[UserLanguage]
 {
 	import UserLanguageModel._
 	
-	override def table = UserLanguageModel.table
+	override def factory = UserLanguageFactory
 	
-	override def valueProperties = Vector("id" -> id, "userId" -> userId, languageIdAttName -> languageId)
+	override def valueProperties = Vector("id" -> id, "userId" -> userId, languageIdAttName -> languageId,
+		"familiarityId" -> familiarity.map { _.id })
 }

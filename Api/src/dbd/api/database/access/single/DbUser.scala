@@ -3,14 +3,18 @@ package dbd.api.database.access.single
 import dbd.api.database.access.id.UserId
 import dbd.api.database.access.many.{DbDescriptions, InvitationsAccess}
 import dbd.api.database.factory.organization.MembershipWithRolesFactory
-import dbd.api.database.factory.user.UserFactory
+import dbd.api.database.factory.user.{FullUserLanguageFactory, UserFactory, UserLanguageFactory}
 import dbd.api.database.model.organization.{MembershipModel, RoleRightModel}
 import dbd.api.database.model.user.{UserAuthModel, UserDeviceModel, UserLanguageModel, UserSettingsModel}
 import dbd.api.util.PasswordHash
+import dbd.core.model.combined.language.DescribedLanguage
 import dbd.core.model.combined.organization.RoleWithRights
-import dbd.core.model.combined.user.MyOrganization
+import dbd.core.model.combined.user.{DescribedUserLanguage, MyOrganization}
+import dbd.core.model.enumeration.LanguageFamiliarity
 import dbd.core.model.existing
 import dbd.core.model.existing.organization.Membership
+import dbd.core.model.existing.user.UserLanguage
+import dbd.core.model.partial.user.UserLanguageData
 import utopia.flow.datastructure.immutable.Value
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
@@ -67,6 +71,11 @@ object DbUser extends SingleModelAccess[existing.user.User]
 		
 		
 		// COMPUTED	---------------------
+		
+		/**
+		  * @return An access point to this user's known languages
+		  */
+		def languages = Languages
 		
 		/**
 		  * @param connection DB Connection
@@ -157,31 +166,76 @@ object DbUser extends SingleModelAccess[existing.user.User]
 			}
 		}
 		
-		/**
-		  * Adds provided languages to those known by this user. Please make sure to only add new language ids.
-		  * @param newLanguageIds Ids of new languages for this user
-		  * @param connection DB Connection (implicit)
-		  */
-		def addLanguagesWithIds(newLanguageIds: Set[Int])(implicit connection: Connection) =
-			newLanguageIds.foreach { languageId => UserLanguageModel.insert(userId, languageId) }
-		
-		/**
-		  * Removes languages from those known by the user
-		  * @param languageIds Ids of the languages to disassociate
-		  * @param connection DB Connection (implicit)
-		  * @return Number of languages removed from this user's known languages
-		  */
-		def removeLanguagesWithIds(languageIds: Set[Int])(implicit connection: Connection) =
-		{
-			if (languageIds.nonEmpty)
-				connection(Delete(UserLanguageModel.table) + Where(UserLanguageModel.withUserId(userId).toCondition &&
-					UserLanguageModel.languageIdColumn.in(languageIds))).updatedRowCount
-			else
-				0
-		}
-		
 		
 		// NESTED	-----------------------
+		
+		object Languages extends ManyModelAccess[UserLanguage]
+		{
+			// IMPLEMENTED	---------------
+			
+			override def factory = UserLanguageFactory
+			
+			override def globalCondition = Some(condition)
+			
+			
+			// COMPUTED	-------------------
+			
+			private def condition = model.withUserId(userId).toCondition
+			
+			private def model = UserLanguageModel
+			
+			/**
+			  * @param connection DB Connection (implicit)
+			  * @return User languages, including language data
+			  */
+			def full(implicit connection: Connection) = FullUserLanguageFactory.getMany(condition)
+			
+			
+			// OTHER	-------------------
+			
+			/**
+			  * @param descriptionLanguageIds Ids of the languages the descriptions are retrieved in
+			  *                               (in order from most to least preferred)
+			  * @param connection DB Connection (implicit)
+			  * @return User language links, including described languages
+			  */
+			def withDescriptionsInLanguages(descriptionLanguageIds: Seq[Int])(implicit connection: Connection) =
+			{
+				// Reads languages, then attaches descriptions
+				val languages = full
+				val languageIds = languages.map { _.languageId }.toSet
+				val languageDescriptions = DbDescriptions.ofLanguagesWithIds(languageIds).inLanguages(descriptionLanguageIds)
+				languages.map { base =>
+					val language = base.language
+					val describedLanguage = DescribedLanguage(language, languageDescriptions.getOrElse(language.id, Set()).toSet)
+					DescribedUserLanguage(base, describedLanguage)
+				}
+			}
+			
+			/**
+			  * Inserts a new user language combination (please make sure to only insert new languages)
+			  * @param languageId Id of the known language
+			  * @param familiarity User's level of familiarity wiht this language
+			  * @param connection DB Connection (implicit)
+			  * @return Newly inserted user langauge link
+			  */
+			def insert(languageId: Int, familiarity: LanguageFamiliarity)(implicit connection: Connection) =
+				model.insert(UserLanguageData(userId, languageId, familiarity))
+			
+			/**
+			  * Removes specified languages from the list of known languages
+			  * @param languageIds Ids of the languages to remove
+			  * @param connection DB Connection (implicit)
+			  * @return Number of removed languages
+			  */
+			def remove(languageIds: Set[Int])(implicit connection: Connection) =
+			{
+				if (languageIds.nonEmpty)
+					connection(Delete(table) + Where(mergeCondition(model.languageIdColumn.in(languageIds)))).updatedRowCount
+				else
+					0
+			}
+		}
 		
 		case class MembershipId(organizationId: Int) extends SingleIdAccess[Int] with UniqueAccess[Int]
 		{

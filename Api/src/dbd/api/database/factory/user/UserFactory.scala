@@ -37,12 +37,12 @@ object UserFactory extends LinkedFactory[user.User, user.UserSettings] with Depr
 	def complete(user: existing.user.User)(implicit connection: Connection) =
 	{
 		// Reads language links
-		val languageIds = DbUser(user.id).languageIds
+		val languages = DbUser(user.id).languages.all
 		// Reads device links
 		val deviceIds = DbUser(user.id).deviceIds
 		
 		// Combines data
-		UserWithLinks(user, languageIds, deviceIds)
+		UserWithLinks(user, languages, deviceIds)
 	}
 }
 

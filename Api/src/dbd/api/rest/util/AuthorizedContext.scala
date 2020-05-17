@@ -12,7 +12,7 @@ import dbd.core.util.Log
 import dbd.core.util.ThreadPool.executionContext
 import utopia.access.http.Status.{BadRequest, Forbidden, InternalServerError, Unauthorized}
 import utopia.bunnymunch.jawn.JsonBunny
-import utopia.flow.datastructure.immutable.Value
+import utopia.flow.datastructure.immutable.{Constant, Model, Value}
 import utopia.flow.generic.FromModelFactory
 import utopia.flow.parse.JsonParser
 import utopia.flow.util.CollectionExtensions._
@@ -22,7 +22,7 @@ import utopia.nexus.rest.BaseContext
 import utopia.nexus.result.Result
 import utopia.vault.database.Connection
 
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 /**
   * This context variation checks user authorization (when required)
@@ -60,6 +60,23 @@ class AuthorizedContext(request: Request)(implicit serverSettings: ServerSetting
 	
 	
 	// OTHER	----------------------------
+	
+	/**
+	  * Reads preferred language ids list either from the Accept-Language header or from the user data
+	  * @param userId Id of targeted user (call by name)
+	  * @param connection DB Connection (implicit)
+	  * @return Ids of the requested languages in order from most to least preferred. Empty only if the user doesn't
+	  *         exist or has no linked languages
+	  */
+	def languageIdListFor(userId: => Int)(implicit connection: Connection) =
+	{
+		// Reads languages list from the headers (if present) or from the user data
+		val languagesFromHeaders = requestedLanguages
+		if (languagesFromHeaders.nonEmpty)
+			languagesFromHeaders.map { _.id }
+		else
+			DbUser(userId).languages.all.sortBy { _.familiarity.orderIndex }.map { _.languageId }
+	}
 	
 	/**
 	  * Performs the provided function if the request has correct basic authorization (email + password)
@@ -260,6 +277,33 @@ class AuthorizedContext(request: Request)(implicit serverSettings: ServerSetting
 				case None => f(Vector(v))
 			}
 	}
+	
+	/**
+	  * Parses request body into a vector of models and handles them using the specified function. Non-vector bodies
+	  * are wrapped in vectors, non-object elements are ignored.
+	  * @param parser Parser function used for parsing models into objects
+	  * @param f Function called if all parsing succeeds
+	  * @tparam A Type of parsed item
+	  * @return Function result or failure in case of parsing failures
+	  */
+	def handleModelArrayPost[A](parser: Model[Constant] => Try[A])(f: Vector[A] => Result) = handleArrayPost { values =>
+		values.flatMap { _.model }.tryMap { parser(_) } match
+		{
+			case Success(parsed) => f(parsed)
+			case Failure(error) => Result.Failure(BadRequest, error.getMessage)
+		}
+	}
+	
+	/**
+	  * Parses request body into a vector of models and handles them using the specified function. Non-vector bodies
+	  * are wrapped in vectors, non-object elements are ignored.
+	  * @param parser Parser used for parsing models into objects
+	  * @param f Function called if all parsing succeeds
+	  * @tparam A Type of parsed item
+	  * @return Function result or failure in case of parsing failures
+	  */
+	def handleModelArrayPost[A](parser: FromModelFactory[A])(f: Vector[A] => Result): Result =
+		handleModelArrayPost[A] { m: Model[Constant] => parser(m) }(f)
 	
 	private def tokenAuthorized[K](keyTypeName: => String, f: (K, Connection) => Result)(
 		testKey: (String, Connection) => Option[K]) =

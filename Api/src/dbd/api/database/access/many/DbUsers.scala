@@ -6,6 +6,7 @@ import dbd.api.database.model.user.{UserDeviceModel, UserLanguageModel, UserMode
 import dbd.core.model.combined.user.UserWithLinks
 import dbd.core.model.error.{AlreadyUsedException, IllegalPostModelException}
 import dbd.core.model.existing.user
+import dbd.core.model.partial.user.UserLanguageData
 import dbd.core.model.post.NewUser
 import utopia.vault.database.Connection
 import utopia.vault.nosql.access.ManyModelAccess
@@ -85,19 +86,23 @@ object DbUsers extends ManyModelAccess[user.User]
 			
 			if (idsAreValid)
 			{
-				// Inserts new user data
-				val user = UserModel.insert(newUser.settings, newUser.password)
-				newUser.languageIds.foreach { languageId => UserLanguageModel.insert(user.id, languageId) }
-				// Links user with device (uses existing or a new device)
-				val deviceId = newUser.device match
-				{
-					case Right(deviceId) => deviceId
-					case Left(deviceData) => DbDevices.insert(deviceData._1, deviceData._2, user.id).targetId
-					
+				// Makes sure all the specified languages are also valid
+				DbLanguage.validateProposedProficiencies(newUser.languages).flatMap { languages =>
+					// Inserts new user data
+					val user = UserModel.insert(newUser.settings, newUser.password)
+					val insertedLanguages = languages.map { case (languageId, familiarity) =>
+						UserLanguageModel.insert(UserLanguageData(user.id, languageId, familiarity)) }
+					// Links user with device (uses existing or a new device)
+					val deviceId = newUser.device match
+					{
+						case Right(deviceId) => deviceId
+						case Left(deviceData) => DbDevices.insert(deviceData._1, deviceData._2, user.id).targetId
+						
+					}
+					UserDeviceModel.insert(user.id, deviceId)
+					// Returns inserted user
+					Success(UserWithLinks(user, insertedLanguages, Vector(deviceId)))
 				}
-				UserDeviceModel.insert(user.id, deviceId)
-				// Returns inserted user
-				Success(UserWithLinks(user, newUser.languageIds, Vector(deviceId)))
 			}
 			else
 				Failure(new IllegalPostModelException("device_id and language_id must point to existing data"))

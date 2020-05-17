@@ -1,13 +1,13 @@
 package dbd.api.rest.resource.organization
 
-import dbd.api.database.access.many.{DbDescriptions, DbLanguages}
+import dbd.api.database.access.many.DbDescriptions
 import dbd.api.database.access.single
 import dbd.api.rest.util.AuthorizedContext
 import dbd.core.model.enumeration.DescriptionRole
 import dbd.core.model.enumeration.TaskType.DocumentOrganization
 import dbd.core.model.post.NewDescription
 import utopia.access.http.Method.{Get, Put}
-import utopia.access.http.Status.{BadRequest, NotFound}
+import utopia.access.http.Status.NotFound
 import utopia.flow.generic.ValueConversions._
 import utopia.nexus.http.Path
 import utopia.nexus.rest.Resource
@@ -33,22 +33,12 @@ case class OrganizationDescriptionsNode(organizationId: Int) extends Resource[Au
 		// In GET request, reads descriptions in requested languages
 		if (context.request.method == Get)
 		{
-			context.authorizedInOrganization(organizationId) { (_, _, connection) =>
+			context.authorizedInOrganization(organizationId) { (session, _, connection) =>
 				implicit val c: Connection = connection
 				// Checks the languages the user wants to use and gathers descriptions in those languages
-				val languages = context.requestedLanguages
-				if (languages.nonEmpty)
-				{
-					val descriptions = DbDescriptions.ofOrganizationWithId(organizationId).inLanguages(languages.map { _.id })
-					Result.Success(descriptions.map { _.toModel })
-				}
-				else
-				{
-					val availableLanguages = DbLanguages.all
-					Result.Failure(BadRequest,
-						s"Please specify an Accept-Language header with one or more of following options: [${
-							availableLanguages.map { _.isoCode }.mkString(", ")}]")
-				}
+				val languages = context.languageIdListFor(session.userId)
+				val descriptions = DbDescriptions.ofOrganizationWithId(organizationId).inLanguages(languages)
+				Result.Success(descriptions.map { _.toModel })
 			}
 		}
 		// In PUT request, updates descriptions based on posted model

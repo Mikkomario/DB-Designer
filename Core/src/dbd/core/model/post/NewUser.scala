@@ -6,32 +6,35 @@ import utopia.flow.datastructure.immutable.{Model, ModelDeclaration, ModelValida
 import utopia.flow.datastructure.template
 import utopia.flow.datastructure.template.Property
 import utopia.flow.generic.{FromModelFactory, ModelConvertible, ModelType, StringType, VectorType}
+import utopia.flow.util.CollectionExtensions._
 
 import scala.util.{Failure, Success}
 
 object NewUser extends FromModelFactory[NewUser]
 {
 	private val schema = ModelDeclaration("settings" -> ModelType, "password" -> StringType,
-		"language_ids" -> VectorType)
+		"languages" -> VectorType)
 	
 	override def apply(model: template.Model[Property]) = schema.validate(model).toTry.flatMap { valid =>
 		UserSettingsData(valid("settings").getModel).flatMap { settings =>
-			// Either device id or device name must be provided
-			val deviceId = valid("device_id").int
-			val deviceData = valid("device").getModel
-			val deviceName = deviceData("name").string.filterNot { _.isEmpty }
-			val languageId = deviceData("language_id").int
-			if (deviceId.isEmpty && (deviceName.isEmpty || languageId.isEmpty))
-				Failure(new ModelValidationFailedException("Either device_id or device with name and language_id must be provided"))
-			else
-			{
-				val deviceIdOrName = deviceId match
+			// Languages must be parseable
+			valid("languages").getVector.tryMap { v => NewLanguageProficiency(v.getModel) }.flatMap { languages =>
+				// Either device id or device name must be provided
+				val deviceId = valid("device_id").int
+				val deviceData = valid("device").getModel
+				val deviceName = deviceData("name").string.filterNot { _.isEmpty }
+				val languageId = deviceData("language_id").int
+				if (deviceId.isEmpty && (deviceName.isEmpty || languageId.isEmpty))
+					Failure(new ModelValidationFailedException("Either device_id or device with name and language_id must be provided"))
+				else
 				{
-					case Some(id) => Right(id)
-					case None => Left(deviceName.get -> languageId.get)
+					val deviceIdOrName = deviceId match
+					{
+						case Some(id) => Right(id)
+						case None => Left(deviceName.get -> languageId.get)
+					}
+					Success(NewUser(settings, valid("password").getString, languages, deviceIdOrName))
 				}
-				Success(NewUser(settings, valid("password").getString,
-					valid("language_ids").getVector.flatMap { _.int }, deviceIdOrName))
 			}
 		}
 	}
@@ -43,11 +46,11 @@ object NewUser extends FromModelFactory[NewUser]
   * @since 2.5.2020, v2
   * @param settings Initial user settings
   * @param password Initial user password
-  * @param languageIds List of ids of the languages known by the user
+  * @param languages List of the languages known by the user (with levels of familiarity)
   * @param device Either Right: Existing device id or Left: Device name + language id
   */
-case class NewUser(settings: UserSettingsData, password: String, languageIds: Vector[Int], device: Either[(String, Int), Int])
-	extends ModelConvertible
+case class NewUser(settings: UserSettingsData, password: String, languages: Vector[NewLanguageProficiency],
+				   device: Either[(String, Int), Int]) extends ModelConvertible
 {
 	override def toModel =
 	{
@@ -58,6 +61,7 @@ case class NewUser(settings: UserSettingsData, password: String, languageIds: Ve
 				val deviceModel = Model(Vector("name" -> deviceNameData._1, "language_id" -> deviceNameData._2))
 				"device" -> deviceModel
 		}
-		Model(Vector("settings" -> settings.toModel, "password" -> password, "language_ids" -> languageIds, deviceData))
+		Model(Vector("settings" -> settings.toModel, "password" -> password, "languages" -> languages.map { _.toModel },
+			deviceData))
 	}
 }
