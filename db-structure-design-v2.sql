@@ -19,6 +19,25 @@ CREATE TABLE `language`
 -- 1 = English
 INSERT INTO `language` (id, iso_code) VALUES (1, 'en');
 
+-- Language familiarity levels (how good a user can be using a language)
+-- Order index is from most preferred to least preferred (Eg. index 1 is more preferred than index 2)
+CREATE TABLE language_familiarity
+(
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    order_index INT NOT NULL,
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+
+)Engine=InnoDB DEFAULT CHARSET=latin1;
+
+-- 1 = Primary language
+-- 2 = Fluent and preferred
+-- 3 = Fluent
+-- 4 = OK
+-- 5 = OK, less preferred
+-- 6 = Knows a little (better than nothing)
+INSERT INTO language_familiarity (id, order_index) VALUES
+    (1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6);
+
 -- Describes individual users
 CREATE TABLE `user`
 (
@@ -68,13 +87,17 @@ CREATE TABLE user_language
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
     language_id INT NOT NULL,
+    familiarity_id INT NOT NULL,
     created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY ul_u_described_user (user_id)
         REFERENCES `user`(id) ON DELETE CASCADE,
 
     FOREIGN KEY ul_l_known_language (language_id)
-        REFERENCES `language`(id) ON DELETE CASCADE
+        REFERENCES `language`(id) ON DELETE CASCADE,
+
+    FOREIGN KEY ul_lf_language_proficiency (familiarity_id)
+        REFERENCES language_familiarity(id) ON DELETE CASCADE
 
 )Engine=InnoDB DEFAULT CHARSET=latin1;
 
@@ -127,6 +150,25 @@ CREATE TABLE language_description
         REFERENCES `language`(id) ON DELETE CASCADE,
 
     FOREIGN KEY ld_d_description_for_language (description_id)
+        REFERENCES description(id) ON DELETE CASCADE
+
+)Engine=InnoDB DEFAULT CHARSET=latin1;
+
+-- Links descriptions with language familiarity levels
+CREATE TABLE language_familiarity_description
+(
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    familiarity_id INT NOT NULL,
+    description_id INT NOT NULL,
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deprecated_after DATETIME,
+
+    INDEX (deprecated_after),
+
+    FOREIGN KEY lfd_lf_described_language_familiarity (familiarity_id)
+        REFERENCES language_familiarity(id) ON DELETE CASCADE,
+
+    FOREIGN KEY lfd_d_description_for_language_familiarity (description_id)
         REFERENCES description(id) ON DELETE CASCADE
 
 )Engine=InnoDB DEFAULT CHARSET=latin1;
