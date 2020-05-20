@@ -21,6 +21,25 @@ import utopia.vault.sql.Extensions._
   */
 object DbDescriptions
 {
+	// COMPUTED	----------------------------
+	
+	/**
+	  * An access point to all language descriptions
+	  */
+	val ofAllLanguages = DescriptionsOfAll(DescriptionLinkFactory.language,
+		DescriptionLinkModel.language)
+	
+	/**
+	  * An access point to all role descriptions
+	  */
+	val ofAllRoles = DescriptionsOfAll(DescriptionLinkFactory.role, DescriptionLinkModel.role)
+	
+	/**
+	  * An access point to all task descriptions
+	  */
+	val ofAllTasks = DescriptionsOfAll(DescriptionLinkFactory.task, DescriptionLinkModel.task)
+	
+	
 	// OTHER	----------------------------
 	
 	/**
@@ -96,9 +115,19 @@ object DbDescriptions
 	
 	// NESTED	----------------------------
 	
+	case class DescriptionsOfAll(factory: DescriptionLinkFactory[DescriptionLink],
+								 modelFactory: DescriptionLinkModelFactory[Storable, PartialDescriptionLinkData])
+		extends DescriptionLinksForManyAccess[DescriptionLink]
+	{
+		override def globalCondition = None
+		
+		override protected def subGroup(remainingTargetIds: Set[Int]) =
+			DescriptionsOfMany(remainingTargetIds, factory, modelFactory)
+	}
+	
 	case class DescriptionsOfMany(targetIds: Set[Int], factory: DescriptionLinkFactory[DescriptionLink],
 								  modelFactory: DescriptionLinkModelFactory[Storable, PartialDescriptionLinkData])
-		extends DescriptionLinksAccess[DescriptionLink]
+		extends DescriptionLinksForManyAccess[DescriptionLink]
 	{
 		// IMPLEMENTED	---------------------
 		
@@ -120,29 +149,16 @@ object DbDescriptions
 			}
 		}
 		
+		override protected def subGroup(remainingTargetIds: Set[Int]) =
+		{
+			if (remainingTargetIds == targetIds)
+				this
+			else
+				copy(targetIds = remainingTargetIds)
+		}
+		
 		
 		// OTHER	-------------------------
-		
-		/**
-		  * Reads descriptions for these items using the specified languages. Only up to one description per
-		  * role per target is read.
-		  * @param languageIds Ids of the targeted languages, from most preferred to least preferred (less preferred
-		  *                    language ids are used when no results can be found with the more preferred options)
-		  * @param connection DB Connection (implicit)
-		  * @return Read descriptions, grouped by target id
-		  */
-		def inLanguages(languageIds: Seq[Int])(implicit connection: Connection): Map[Int, Vector[DescriptionLink]] =
-		{
-			languageIds.headOption match
-			{
-				case Some(languageId: Int) =>
-					// In the first iteration, reads all descriptions. After that divides into sub-groups
-					val readDescriptions = inLanguageWithId(languageId).all.groupBy { _.targetId }
-					// Reads the rest of the data using recursion
-					readRemaining(languageIds, DescriptionRole.values.toSet, this, readDescriptions)
-				case None => Map()
-			}
-		}
 		
 		/**
 		  * Reads descriptions for these items using the specified languages. Only up to one description per
@@ -160,61 +176,6 @@ object DbDescriptions
 				Map()
 			else
 				inLanguages(targetIds, languageIds, roles)
-		}
-		
-		// Language ids must not be empty (neither should any other parameter)
-		private def inLanguages(remainingTargetIds: Set[Int], languageIds: Seq[Int], remainingRoles: Set[DescriptionRole])(
-			implicit connection: Connection): Map[Int, Vector[DescriptionLink]] =
-		{
-			// Reads descriptions in target languages until either all description types have been read or all language
-			// options exhausted
-			val languageId = languageIds.head
-			val newAccessPoint = subGroup(remainingTargetIds)
-			// Target id -> Descriptions
-			val readDescriptions = newAccessPoint.inLanguageWithId(languageId)(remainingRoles).groupBy { _.targetId }
-			
-			// Reads the rest of the descriptions recursively
-			readRemaining(languageIds, remainingRoles, newAccessPoint, readDescriptions)
-		}
-		
-		// Continues read through recursion, if possible. Utilizes (and includes) existing read results.
-		// LanguageIds and roles should be passed as they were at the start of the last read
-		private def readRemaining(languageIds: Seq[Int],
-								  remainingRoles: Set[DescriptionRole], lastAccessPoint: DescriptionsOfMany,
-								  lastReadResults: Map[Int, Vector[DescriptionLink]])
-								 (implicit connection: Connection): Map[Int, Vector[DescriptionLink]] =
-		{
-			val remainingLanguageIds = languageIds.tail
-			if (remainingLanguageIds.nonEmpty)
-			{
-				// Groups the remaining items based on the remaining roles without a description
-				// Remaining roles -> target ids
-				val remainingRolesWithTargets = lastReadResults.groupMap { case (_, descriptions) =>
-					remainingRoles -- descriptions.map { _.description.role } } { case (targetId, _) => targetId }
-					.filter { _._1.nonEmpty }
-				
-				// Performs additional queries for each remaining role group (provided there are languages left)
-				if (remainingRolesWithTargets.isEmpty)
-					lastReadResults
-				else
-				{
-					val recursiveReadResults = remainingRolesWithTargets.map { case (roles, targetIds) =>
-						lastAccessPoint.inLanguages(targetIds.toSet, remainingLanguageIds, roles) }
-						.reduce { _ ++ _ }
-					lastReadResults ++ recursiveReadResults
-				}
-			}
-			else
-				lastReadResults
-		}
-		
-		// Accesses a sub-group of these descriptions
-		private def subGroup(remainingTargetIds: Set[Int]) =
-		{
-			if (remainingTargetIds == targetIds)
-				this
-			else
-				copy(targetIds = remainingTargetIds)
 		}
 	}
 	

@@ -1,6 +1,7 @@
 package dbd.api.rest.servlet
 
 import dbd.api.rest.resource.device.DevicesNode
+import dbd.api.rest.resource.language.LanguagesNode
 import dbd.api.rest.resource.organization.OrganizationsNode
 import dbd.api.rest.resource.user.UsersNode
 import dbd.api.rest.util.AuthorizedContext
@@ -45,8 +46,8 @@ class ApiServlet extends HttpServlet
 	private implicit val serverSettings: ServerSettings = ServerSettings("http://localhost:9999")
 	private implicit val jsonParser: JsonParser = JsonBunny
 	
-	private val handler = new RequestHandler(Vector(UsersNode, DevicesNode, OrganizationsNode), Some(Path("db-designer", "api", "v1")),
-		r => new AuthorizedContext(r))
+	private val handler = new RequestHandler(Vector(UsersNode, DevicesNode, OrganizationsNode, LanguagesNode),
+		Some(Path("db-designer", "api", "v1")), r => new AuthorizedContext(r))
 	
 	
 	// IMPLEMENTED	----------------------------
