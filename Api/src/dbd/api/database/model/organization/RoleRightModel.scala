@@ -1,14 +1,13 @@
 package dbd.api.database.model.organization
 
 import dbd.api.database.Tables
+import dbd.api.database.factory.organization.RoleRightFactory
 import dbd.api.model.existing
 import dbd.core.model.enumeration.{TaskType, UserRole}
-import utopia.flow.datastructure.template.{Model, Property}
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.FromRowModelFactory
 
-object RoleRightModel extends FromRowModelFactory[existing.RoleRight]
+object RoleRightModel
 {
 	// ATTRIBUTES	--------------------------
 	
@@ -23,22 +22,12 @@ object RoleRightModel extends FromRowModelFactory[existing.RoleRight]
 	val taskIdAttName = "taskId"
 	
 	
-	// IMPLEMENTED	--------------------------
+	// COMPUTED	------------------------------
 	
 	/**
 	  * @return Table used by this class/object
 	  */
 	def table = Tables.roleRight
-	
-	override def apply(model: Model[Property]) = table.requirementDeclaration.validate(model).toTry.flatMap { valid =>
-		// Both enumeration values must be parseable
-		UserRole.forId(valid(roleIdAttName).getInt).flatMap { role =>
-			TaskType.forId(valid("taskId").getInt).map { task => existing.RoleRight(valid("id").getInt, role, task) }
-		}
-	}
-	
-	
-	// COMPUTED	------------------------------
 	
 	/**
 	  * @return Column that holds the role id
@@ -78,7 +67,7 @@ case class RoleRightModel(id: Option[Int] = None, role: Option[UserRole] = None,
 	
 	// IMPLEMENTED	----------------------
 	
-	override def factory = RoleRightModel
+	override def factory = RoleRightFactory
 	
 	override def valueProperties = Vector("id" -> id, roleIdAttName -> role.map { _.id }, taskIdAttName -> task.map { _.id })
 }

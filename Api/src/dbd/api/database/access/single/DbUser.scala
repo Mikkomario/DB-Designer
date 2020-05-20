@@ -2,7 +2,7 @@ package dbd.api.database.access.single
 
 import dbd.api.database.access.id.UserId
 import dbd.api.database.access.many.{DbDescriptions, InvitationsAccess}
-import dbd.api.database.factory.organization.MembershipWithRolesFactory
+import dbd.api.database.factory.organization.{MembershipWithRolesFactory, RoleRightFactory}
 import dbd.api.database.factory.user.{FullUserLanguageFactory, UserFactory, UserLanguageFactory, UserSettingsFactory}
 import dbd.api.database.model.organization.{MembershipModel, RoleRightModel}
 import dbd.api.database.model.user.{UserAuthModel, UserDeviceModel, UserLanguageModel, UserModel, UserSettingsModel}
@@ -350,7 +350,7 @@ object DbUser extends SingleModelAccess[existing.user.User]
 					val organizationDescriptions = DbDescriptions.ofOrganizationsWithIds(organizationIds).all
 					// Reads all task links
 					val roleIds = memberships.flatMap { _.roles }.map { _.id }.toSet
-					val roleRights = RoleRightModel.getMany(RoleRightModel.roleIdColumn.in(roleIds))
+					val roleRights = RoleRightFactory.getMany(RoleRightModel.roleIdColumn.in(roleIds))
 					// Groups the information
 					val rolesWithRights = roleRights.groupBy { _.role }.map { case (role, links) =>
 						RoleWithRights(role, links.map { _.task }.toSet) }

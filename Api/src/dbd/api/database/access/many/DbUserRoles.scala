@@ -1,6 +1,8 @@
 package dbd.api.database.access.many
 
+import dbd.api.database.factory.organization.RoleRightFactory
 import dbd.api.database.model.organization.RoleRightModel
+import dbd.core.model.combined.organization.RoleWithRights
 import dbd.core.model.enumeration.{TaskType, UserRole}
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
@@ -14,6 +16,26 @@ import utopia.vault.sql.Extensions._
   */
 object DbUserRoles
 {
+	// COMPUTED	----------------------------
+	
+	/**
+	  * @param connection DB Connection (implicit)
+	  * @return All user roles, along with the allowed task types
+	  */
+	def withRights(implicit connection: Connection) =
+	{
+		// Reads all role rights
+		val rights = RoleRightFactory.getAll().groupBy { _.role }
+		// Combines roles with rights
+		UserRole.values.map { role =>
+			val roleRights = rights.getOrElse(role, Vector()).map { _.task }.toSet
+			RoleWithRights(role, roleRights)
+		}
+	}
+	
+	
+	// OTHER	----------------------------
+	
 	/**
 	  * @param role A user role
 	  * @param connection DB Connection (implicit)

@@ -1,5 +1,6 @@
 package dbd.api.database.access.many
 
+import dbd.api.database.factory.organization.RoleRightFactory
 import dbd.api.database.model.organization.RoleRightModel
 import dbd.core.model.enumeration.UserRole
 import utopia.flow.generic.ValueConversions._
@@ -21,7 +22,7 @@ object DbTaskTypes
 	def forRole(role: UserRole)(implicit connection: Connection) =
 	{
 		// Reads task types from role rights
-		RoleRightModel.getMany(RoleRightModel.withRole(role).toCondition).map { _.task }
+		RoleRightFactory.getMany(RoleRightModel.withRole(role).toCondition).map { _.task }
 	}
 	
 	/**
@@ -36,6 +37,6 @@ object DbTaskTypes
 		else if (roles.size == 1)
 			forRole(roles.head)
 		else
-			RoleRightModel.getMany(RoleRightModel.roleIdColumn.in(roles.map { _.id })).map { _.task }
+			RoleRightFactory.getMany(RoleRightModel.roleIdColumn.in(roles.map { _.id })).map { _.task }
 	}
 }

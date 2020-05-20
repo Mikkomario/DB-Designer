@@ -1,6 +1,7 @@
 package dbd.core.model.combined.organization
 
 import dbd.core.model.enumeration.{TaskType, UserRole}
+import dbd.core.model.template.Extender
 import utopia.flow.datastructure.immutable.Model
 import utopia.flow.generic.ModelConvertible
 import utopia.flow.generic.ValueConversions._
@@ -13,8 +14,10 @@ import utopia.flow.generic.ValueConversions._
   * @param role Described role
   * @param tasks Tasks available to that role
   */
-case class RoleWithRights(role: UserRole, tasks: Set[TaskType]) extends ModelConvertible
+case class RoleWithRights(role: UserRole, tasks: Set[TaskType]) extends Extender[UserRole] with ModelConvertible
 {
+	override def wrapped = role
+	
 	override def toModel = Model(Vector("id" -> role.id,
 		"task_ids" -> tasks.map { _.id }.toVector.sorted))
 }
