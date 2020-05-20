@@ -6,10 +6,12 @@ import dbd.api.rest.resource.user.UsersNode
 import dbd.api.rest.util.AuthorizedContext
 import javax.servlet.annotation.MultipartConfig
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
+import utopia.access.http.Method
 import utopia.access.http.Status.BadRequest
 import utopia.bunnymunch.jawn.JsonBunny
 import utopia.flow.generic.DataType
 import utopia.flow.parse.JsonParser
+import utopia.flow.util.StringExtensions._
 import utopia.nexus.http.{Path, ServerSettings}
 import utopia.nexus.rest.RequestHandler
 import utopia.nexus.servlet.HttpExtensions._
@@ -48,6 +50,15 @@ class ApiServlet extends HttpServlet
 	
 	
 	// IMPLEMENTED	----------------------------
+	
+	override def service(req: HttpServletRequest, resp: HttpServletResponse) =
+	{
+		// Default implementation doesn't support patch, so skips some validations from parent if possible
+		if (Method.values.exists { _.name ~== req.getMethod })
+			handleRequest(req, resp)
+		else
+			super.service(req, resp)
+	}
 	
 	override def doGet(req: HttpServletRequest, resp: HttpServletResponse) = handleRequest(req, resp)
 	

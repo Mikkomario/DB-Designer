@@ -1,7 +1,7 @@
 package dbd.api.database.access.many
 
 import dbd.api.database.access.single.{DbDevice, DbLanguage}
-import dbd.api.database.factory.user.UserFactory
+import dbd.api.database.factory.user.{UserFactory, UserSettingsFactory}
 import dbd.api.database.model.user.{UserDeviceModel, UserLanguageModel, UserModel, UserSettingsModel}
 import dbd.core.model.combined.user.UserWithLinks
 import dbd.core.model.error.{AlreadyUsedException, IllegalPostModelException}
@@ -24,12 +24,16 @@ object DbUsers extends ManyModelAccess[user.User]
 	
 	override def factory = UserFactory
 	
-	override def globalCondition = Some(factory.nonDeprecatedCondition)
+	override def globalCondition = Some(model.nonDeprecatedCondition)
 	
 	
 	// COMPUTED	------------------------------
 	
-	private def settingsFactory = UserSettingsModel
+	private def model = UserModel
+	
+	private def settingsModel = UserSettingsModel
+	
+	private def settingsFactory = UserSettingsFactory
 	
 	
 	// OTHER	-------------------------------
@@ -42,7 +46,7 @@ object DbUsers extends ManyModelAccess[user.User]
 	  */
 	def existsUserWithName(userName: String)(implicit connection: Connection) =
 	{
-		settingsFactory.exists(settingsFactory.withName(userName).toCondition && settingsFactory.nonDeprecatedCondition)
+		settingsFactory.exists(settingsModel.withName(userName).toCondition && settingsModel.nonDeprecatedCondition)
 	}
 	
 	/**
@@ -53,7 +57,7 @@ object DbUsers extends ManyModelAccess[user.User]
 	  */
 	def existsUserWithEmail(email: String)(implicit connection: Connection) =
 	{
-		settingsFactory.exists(settingsFactory.withEmail(email).toCondition && settingsFactory.nonDeprecatedCondition)
+		settingsFactory.exists(settingsModel.withEmail(email).toCondition && settingsModel.nonDeprecatedCondition)
 	}
 	
 	/**

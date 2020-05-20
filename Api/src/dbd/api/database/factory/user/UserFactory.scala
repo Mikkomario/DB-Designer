@@ -2,23 +2,20 @@ package dbd.api.database.factory.user
 
 import dbd.api.database.Tables
 import dbd.api.database.access.single.DbUser
-import dbd.api.database.model.user.UserSettingsModel
 import dbd.core.model.combined.user.UserWithLinks
 import dbd.core.model.existing
 import dbd.core.model.existing.user
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.vault.database.Connection
-import utopia.vault.nosql.factory.{Deprecatable, LinkedFactory}
+import utopia.vault.nosql.factory.LinkedFactory
 
-object UserFactory extends LinkedFactory[user.User, user.UserSettings] with Deprecatable
+object UserFactory extends LinkedFactory[user.User, user.UserSettings]
 {
 	// IMPLEMENTED	-----------------------------------
 	
-	override def nonDeprecatedCondition = UserSettingsModel.nonDeprecatedCondition
-	
 	override def table = Tables.user
 	
-	override def childFactory = UserSettingsModel
+	override def childFactory = UserSettingsFactory
 	
 	override def apply(model: Model[Constant], child: user.UserSettings) =
 		table.requirementDeclaration.validate(model).toTry.map { valid =>

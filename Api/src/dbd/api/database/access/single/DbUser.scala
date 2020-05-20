@@ -3,18 +3,19 @@ package dbd.api.database.access.single
 import dbd.api.database.access.id.UserId
 import dbd.api.database.access.many.{DbDescriptions, InvitationsAccess}
 import dbd.api.database.factory.organization.MembershipWithRolesFactory
-import dbd.api.database.factory.user.{FullUserLanguageFactory, UserFactory, UserLanguageFactory}
+import dbd.api.database.factory.user.{FullUserLanguageFactory, UserFactory, UserLanguageFactory, UserSettingsFactory}
 import dbd.api.database.model.organization.{MembershipModel, RoleRightModel}
-import dbd.api.database.model.user.{UserAuthModel, UserDeviceModel, UserLanguageModel, UserSettingsModel}
+import dbd.api.database.model.user.{UserAuthModel, UserDeviceModel, UserLanguageModel, UserModel, UserSettingsModel}
 import dbd.api.util.PasswordHash
 import dbd.core.model.combined.language.DescribedLanguage
 import dbd.core.model.combined.organization.RoleWithRights
 import dbd.core.model.combined.user.{DescribedUserLanguage, MyOrganization}
 import dbd.core.model.enumeration.LanguageFamiliarity
+import dbd.core.model.error.AlreadyUsedException
 import dbd.core.model.existing
 import dbd.core.model.existing.organization.Membership
-import dbd.core.model.existing.user.UserLanguage
-import dbd.core.model.partial.user.UserLanguageData
+import dbd.core.model.existing.user.{UserLanguage, UserSettings}
+import dbd.core.model.partial.user.{UserLanguageData, UserSettingsData}
 import utopia.flow.datastructure.immutable.Value
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
@@ -22,6 +23,8 @@ import utopia.vault.model.enumeration.BasicCombineOperator.Or
 import utopia.vault.nosql.access.{ManyModelAccess, SingleIdAccess, SingleIdModelAccess, SingleModelAccess, UniqueAccess}
 import utopia.vault.sql.{Delete, Select, Where}
 import utopia.vault.sql.Extensions._
+
+import scala.util.{Failure, Success}
 
 /**
   * Used for accessing individual user's data
@@ -34,7 +37,12 @@ object DbUser extends SingleModelAccess[existing.user.User]
 	
 	override def factory = UserFactory
 	
-	override def globalCondition = Some(factory.nonDeprecatedCondition)
+	override def globalCondition = Some(model.nonDeprecatedCondition)
+	
+	
+	// COMPUTED	-------------------------
+	
+	private def model = UserModel
 	
 	
 	// OTHER	-------------------------
@@ -109,14 +117,9 @@ object DbUser extends SingleModelAccess[existing.user.User]
 		}
 		
 		/**
-		  * @param connection DB Connection (implicit)
-		  * @return Current settings for this user
+		  * @return An access point to this user's current settings
 		  */
-		def settings(implicit connection: Connection) =
-		{
-			val settingsFactory = UserSettingsModel
-			settingsFactory.get(settingsFactory.withUserId(userId).toCondition && settingsFactory.nonDeprecatedCondition)
-		}
+		def settings = Settings
 		
 		/**
 		  * @param connection DB Connection (implicit), used for reading user email address
@@ -168,6 +171,43 @@ object DbUser extends SingleModelAccess[existing.user.User]
 		
 		
 		// NESTED	-----------------------
+		
+		object Settings extends SingleModelAccess[UserSettings] with UniqueAccess[UserSettings]
+		{
+			// IMPLEMENTED	---------------
+			
+			override def condition = model.withUserId(userId).toCondition && model.nonDeprecatedCondition
+			
+			override def factory = UserSettingsFactory
+			
+			
+			// COMPUTED	-------------------
+			
+			private def model = UserSettingsModel
+			
+			
+			// OTHER	-------------------
+			
+			/**
+			  * Updates this user's current settings
+			  * @param newSettings New user settings version
+			  * @param connection DB Connection (implicit)
+			  * @return Newly inserted settings. Failure if the email address is reserved for another user.
+			  */
+			def update(newSettings: UserSettingsData)(implicit connection: Connection) =
+			{
+				// Makes sure the email address is still available (or belongs to this user)
+				if (UserId.forEmail(newSettings.email).forall { _ == userId })
+				{
+					// Deprecates the old settings
+					model.nowDeprecated.updateWhere(condition)
+					// Inserts new settings
+					Success(model.insert(userId, newSettings))
+				}
+				else
+					Failure(new AlreadyUsedException(s"Email address ${newSettings.email} is already in use by another user"))
+			}
+		}
 		
 		object Languages extends ManyModelAccess[UserLanguage]
 		{

@@ -3,15 +3,15 @@ package dbd.api.database.model.user
 import java.time.Instant
 
 import dbd.api.database.Tables
+import dbd.api.database.factory.user.UserSettingsFactory
 import dbd.core.model.existing.user
 import dbd.core.model.partial.user.UserSettingsData
-import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.{Deprecatable, FromValidatedRowModelFactory}
+import utopia.vault.nosql.factory.Deprecatable
 
-object UserSettingsModel extends FromValidatedRowModelFactory[user.UserSettings] with Deprecatable
+object UserSettingsModel extends Deprecatable
 {
 	// ATTRIBUTES	----------------------------------
 	
@@ -21,14 +21,22 @@ object UserSettingsModel extends FromValidatedRowModelFactory[user.UserSettings]
 	val userIdAttName = "userId"
 	
 	
+	// COMPUTED	--------------------------------------
+	
+	/**
+	  * @return Table used by this model
+	  */
+	def table = Tables.userSettings
+	
+	/**
+	  * @return A model that has just been marked as deprecated
+	  */
+	def nowDeprecated = apply(deprecatedAfter = Some(Instant.now()))
+	
+	
 	// IMPLEMENTED	----------------------------------
 	
 	override val nonDeprecatedCondition = table("deprecatedAfter").isNull
-	
-	override def table = Tables.userSettings
-	
-	override protected def fromValidatedModel(model: Model[Constant]) = user.UserSettings(model("id").getInt,
-		model(userIdAttName).getInt, UserSettingsData(model("name").getString, model("email").getString))
 	
 	
 	// OTHER	--------------------------------------
@@ -76,7 +84,7 @@ case class UserSettingsModel(id: Option[Int] = None, userId: Option[Int] = None,
 {
 	import UserSettingsModel._
 	
-	override def factory = UserSettingsModel
+	override def factory = UserSettingsFactory
 	
 	override def valueProperties = Vector("id" -> id, userIdAttName -> userId, "name" -> name, "email" -> email,
 		"deprecatedAfter" -> deprecatedAfter)

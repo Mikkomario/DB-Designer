@@ -6,8 +6,9 @@ import dbd.core.model.existing
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.Storable
+import utopia.vault.nosql.factory.Deprecatable
 
-object UserModel
+object UserModel extends Deprecatable
 {
 	// COMPUTED	-------------------------------------
 	
@@ -15,6 +16,11 @@ object UserModel
 	  * @return Table used by this model
 	  */
 	def table = Tables.user
+	
+	
+	// IMPLEMENTED	---------------------------------
+	
+	override def nonDeprecatedCondition = UserSettingsModel.nonDeprecatedCondition
 	
 	
 	// OTHER	-------------------------------------
