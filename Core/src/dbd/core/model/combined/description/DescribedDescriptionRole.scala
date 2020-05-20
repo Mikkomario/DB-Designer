@@ -17,11 +17,15 @@ case class DescribedDescriptionRole(role: DescriptionRole, descriptions: Set[Des
 	// or something to interpret the ids)
 	override def toModel =
 	{
-		val descriptionProperties: Vector[(String, Value)] = descriptions.toVector.map { link =>
-			val valueModel = Model(Vector("text" -> link.description.text, "language_id" -> link.description.languageId,
-				"role_id" -> link.description.role.id))
-			link.description.role.jsonKey -> valueModel
-		}
+		val descriptionProperties = descriptions.groupBy { _.description.role }.map { case (role, links) =>
+			val valueModels = links.map { link => Model(Vector(
+				"text" -> link.description.text, "language_id" -> link.description.languageId, "role_id" -> role.id)) }
+			// Adds the properties either in singular (Eg. name: {...} or plural Eg. names: [...]) format
+			if (valueModels.size == 1)
+				role.jsonKey -> (valueModels.head: Value)
+			else
+				role.jsonKeyPlural -> (valueModels.toVector: Value)
+		}.toVector
 		Model(("id" -> (role.id: Value)) +: descriptionProperties)
 	}
 }

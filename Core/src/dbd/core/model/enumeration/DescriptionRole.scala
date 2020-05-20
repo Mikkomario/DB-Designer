@@ -19,6 +19,11 @@ sealed trait DescriptionRole
 	  * @return Key that describes this description role in json context
 	  */
 	def jsonKey: String
+	
+	/**
+	  * @return Key that describes this description role in json context, when there are multiple values described
+	  */
+	def jsonKeyPlural: String
 }
 
 object DescriptionRole
@@ -31,6 +36,8 @@ object DescriptionRole
 		override def id = 1
 		
 		override def jsonKey = "name"
+		
+		override def jsonKeyPlural = "names"
 	}
 	
 	/**
