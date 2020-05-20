@@ -24,6 +24,12 @@ object DbDescriptions
 	// COMPUTED	----------------------------
 	
 	/**
+	  * An access point to all description role descriptions
+	  */
+	val ofAllDescriptionRoles = DescriptionsOfAll(DescriptionLinkFactory.descriptionRole,
+		DescriptionLinkModel.descriptionRole)
+	
+	/**
 	  * An access point to all language descriptions
 	  */
 	val ofAllLanguages = DescriptionsOfAll(DescriptionLinkFactory.language,

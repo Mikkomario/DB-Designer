@@ -135,6 +135,25 @@ CREATE TABLE description
 
 )Engine=InnoDB DEFAULT CHARSET=latin1;
 
+-- Links descriptions with description roles
+CREATE TABLE description_role_description
+(
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    role_id INT NOT NULL,
+    description_id INT NOT NULL,
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deprecated_after DATETIME,
+
+    INDEX (deprecated_after),
+
+    FOREIGN KEY drd_dr_described_role (role_id)
+        REFERENCES description_role(id) ON DELETE CASCADE,
+
+    FOREIGN KEY drd_d_description_for_role (description_id)
+        REFERENCES description(id) ON DELETE CASCADE
+
+)Engine=InnoDB DEFAULT CHARSET=latin1;
+
 -- Links descriptions with languages
 CREATE TABLE language_description
 (

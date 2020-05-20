@@ -54,6 +54,11 @@ object DescriptionLinkFactory
 	// ATTRIBUTES	------------------------------
 	
 	/**
+	  * Description role description factory
+	  */
+	val descriptionRole = apply(DescriptionLinkModel.descriptionRole)
+	
+	/**
 	  * Device description factory
 	  */
 	val device = apply(DescriptionLinkModel.device)

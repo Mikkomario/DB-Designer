@@ -48,6 +48,11 @@ trait DescriptionLinkModel[+E, +F <: DescriptionLinkFactory[E]] extends Storable
 object DescriptionLinkModel
 {
 	/**
+	  * Description role links model factory
+	  */
+	val descriptionRole = DescriptionLinkModelFactory(Tables.descriptionRoleDescription, "roleId")
+	
+	/**
 	  * Device description links model factory
 	  */
 	val device = DescriptionLinkModelFactory(Tables.deviceDescription, "deviceId")

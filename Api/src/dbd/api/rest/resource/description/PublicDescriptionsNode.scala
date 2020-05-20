@@ -1,14 +1,15 @@
-package dbd.api.rest.resource.language
+package dbd.api.rest.resource.description
 
-import dbd.api.database.access.many.{DbDescriptions, DbLanguages}
+import dbd.api.database.access.many.DescriptionLinksForManyAccess
 import dbd.api.database.access.single.DbUser
 import dbd.api.rest.util.AuthorizedContext
 import dbd.core.database.ConnectionPool
-import dbd.core.model.combined.language.DescribedLanguage
+import dbd.core.model.existing.description.DescriptionLink
 import dbd.core.util.Log
 import dbd.core.util.ThreadPool.executionContext
 import utopia.access.http.Method.Get
 import utopia.access.http.Status.InternalServerError
+import utopia.flow.generic.ModelConvertible
 import utopia.flow.generic.ValueConversions._
 import utopia.nexus.http.Path
 import utopia.nexus.rest.Resource
@@ -19,17 +20,43 @@ import utopia.vault.database.Connection
 import scala.util.{Failure, Success}
 
 /**
-  * Used for accessing all specified languages
+  * Used for accessing item descriptions without requiring authorization
   * @author Mikko Hilpinen
   * @since 20.5.2020, v2
   */
-object LanguagesNode extends Resource[AuthorizedContext]
+trait PublicDescriptionsNode[Item, Combined <: ModelConvertible] extends Resource[AuthorizedContext]
 {
+	// ABSTRACT	------------------------------------
+	
+	/**
+	  * @param connection DB Connection (implicit)
+	  * @return All returned items
+	  */
+	protected def items(implicit connection: Connection): Vector[Item]
+	
+	/**
+	  * @return An access point to the descriptions of the returned items
+	  */
+	protected def descriptionsAccess: DescriptionLinksForManyAccess[DescriptionLink]
+	
+	/**
+	  * @param item An item
+	  * @return The item's id
+	  */
+	protected def idOf(item: Item): Int
+	
+	/**
+	  * Combines items with their descriptions
+	  * @param item An item
+	  * @param descriptions Descriptions for that item
+	  * @return A combined item
+	  */
+	protected def combine(item: Item, descriptions: Set[DescriptionLink]): Combined
+	
+	
 	// IMPLEMENTED	--------------------------------
 	
-	override val name = "languages"
-	
-	override val allowedMethods = Vector(Get)
+	override def allowedMethods = Vector(Get)
 	
 	override def toResponse(remainingPath: Option[Path])(implicit context: AuthorizedContext) =
 	{
@@ -59,7 +86,7 @@ object LanguagesNode extends Resource[AuthorizedContext]
 	}
 	
 	override def follow(path: Path)(implicit context: AuthorizedContext) = Error(message = Some(
-		"Languages doesn't currently contain any sub-nodes"))
+		s"$name doesn't currently contain any sub-nodes"))
 	
 	
 	// OTHER	---------------------------------
@@ -70,15 +97,12 @@ object LanguagesNode extends Resource[AuthorizedContext]
 		val descriptions =
 		{
 			if (languageIds.isEmpty)
-				DbDescriptions.ofAllLanguages.all.groupBy { _.targetId }
+				descriptionsAccess.all.groupBy { _.targetId }
 			else
-				DbDescriptions.ofAllLanguages.inLanguages(languageIds)
+				descriptionsAccess.inLanguages(languageIds)
 		}
-		// Reads all languages
-		val languages = DbLanguages.all
-		// Combines languages with descriptions and returns them in response
-		val combined = languages.map { language => DescribedLanguage(language,
-			descriptions.getOrElse(language.id, Set()).toSet) }
+		// Reads all items and combines them with descriptions. Then returns them in response
+		val combined = items.map { item => combine(item, descriptions.getOrElse(idOf(item), Set()).toSet) }
 		Result.Success(combined.map { _.toModel })
 	}
 }

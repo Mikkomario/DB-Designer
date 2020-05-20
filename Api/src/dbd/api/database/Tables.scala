@@ -10,6 +10,21 @@ object Tables
 	// COMPUTED	--------------------------------
 	
 	/**
+	  * @return Table that contains descriptions of various things
+	  */
+	def description = apply("description")
+	
+	/**
+	  * @return Table that contains description role enumeration values
+	  */
+	def descriptionRole = apply("description_role")
+	
+	/**
+	  * @return Table that contains links between description roles and their descriptions
+	  */
+	def descriptionRoleDescription = apply("description_role_description")
+	
+	/**
 	  * @return Table that contains registered languages
 	  */
 	def language = apply("language")
@@ -58,11 +73,6 @@ object Tables
 	  * @return Table that links users with the devices they are using
 	  */
 	def userDevice = apply("client_device_user")
-	
-	/**
-	  * @return Table that contains descriptions of various things
-	  */
-	def description = apply("description")
 	
 	/**
 	  * @return A table that contains links between devices and their descriptions
