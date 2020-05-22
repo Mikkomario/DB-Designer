@@ -1,6 +1,6 @@
 package dbd.client.model
 
-import dbd.mysql.model.existing.Release
+import dbd.core.model.existing.mysql.Release
 
 /**
   * A model that contains all displayed data concerning a release (actual or upcoming)

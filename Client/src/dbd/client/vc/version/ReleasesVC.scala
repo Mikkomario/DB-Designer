@@ -1,13 +1,14 @@
 package dbd.client.vc.version
 
+import dbd.api.controller
+import dbd.api.controller.GenerateTableStructure
+import dbd.api.database.ConnectionPool
 import utopia.flow.util.CollectionExtensions._
 import dbd.client.controller.ReadReleaseData
 import dbd.client.dialog.PublishReleaseDialog
 import utopia.reflection.shape.LengthExtensions._
 import dbd.client.model.DisplayedRelease
-import dbd.core.database.ConnectionPool
 import dbd.core.util.Log
-import dbd.mysql.controller.GenerateTableStructure
 import utopia.genesis.shape.shape2D.Direction2D.Up
 import utopia.reflection.component.Refreshable
 import utopia.reflection.component.context.ColorContext
@@ -78,7 +79,7 @@ class ReleasesVC(initialDatabaseId: Int) extends StackableAwtComponentWrapperWra
 			new PublishReleaseDialog(releaseManager.content.findMap { _.release }.map { _.versionNumber })
 				.display(window).foreach { _.foreach { newVersionNumber =>
 				ConnectionPool.tryWith { implicit connection =>
-					GenerateTableStructure(targetedDatabaseId, newVersionNumber)
+					controller.GenerateTableStructure(targetedDatabaseId, newVersionNumber)
 				}.failure.foreach { Log(_, "Failed to upload a new release") }
 			
 				// Once data has been uploaded, updates view

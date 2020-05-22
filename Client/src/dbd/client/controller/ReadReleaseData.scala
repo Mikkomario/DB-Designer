@@ -1,8 +1,7 @@
 package dbd.client.controller
 
+import dbd.api.database.access.many.database.{DbClasses, DbReleases}
 import dbd.client.model.{ChangedItems, DisplayedRelease}
-import dbd.core.database.Classes
-import dbd.mysql.database.Releases
 import utopia.vault.database.Connection
 
 /**
@@ -20,10 +19,10 @@ object ReadReleaseData
 	  */
 	def forDatabaseWithId(databaseId: Int)(implicit connection: Connection) =
 	{
-		val classAccess = Classes.inDatabaseWithId(databaseId)
+		val classAccess = DbClasses.inDatabaseWithId(databaseId)
 		
 		// Finds the latest release (TODO: Later add more releases)
-		Releases.forDatabaseWithId(databaseId).latest match
+		DbReleases.forDatabaseWithId(databaseId).latest match
 		{
 			case Some(latestRelease) =>
 				val latestReleaseTime = latestRelease.released

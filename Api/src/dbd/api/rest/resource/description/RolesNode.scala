@@ -1,6 +1,7 @@
 package dbd.api.rest.resource.description
 
-import dbd.api.database.access.many.{DbDescriptions, DbUserRoles}
+import dbd.api.database.access.many.description.DbDescriptions
+import dbd.api.database.access.many.user.DbUserRoles
 import dbd.api.rest.util.AuthorizedContext
 import dbd.core.model.combined.organization.DescribedRole
 import utopia.access.http.Method.Get

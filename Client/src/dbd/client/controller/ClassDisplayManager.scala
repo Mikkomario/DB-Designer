@@ -1,9 +1,11 @@
 package dbd.client.controller
 
+import dbd.api.database.ConnectionPool
+import dbd.api.database.access.many.database.DbLinks
+import dbd.api.database.access.single.user.DbLink
+import dbd.api.database.access.single.database.{DbClass, DbDatabase}
 import dbd.client.model.{ChildLink, DisplayedClass, DisplayedLink, EditSubClassResult}
 import utopia.flow.util.CollectionExtensions._
-import dbd.core.database
-import dbd.core.database.{ConnectionPool, Database}
 import dbd.core.model.enumeration.LinkEndRole
 import dbd.core.model.enumeration.LinkEndRole.{Origin, Target}
 import dbd.core.model.existing
@@ -69,7 +71,7 @@ class ClassDisplayManager(initialDatabaseId: Int)(implicit exc: ExecutionContext
 	private def dataFromDB =
 	{
 		ConnectionPool.tryWith { implicit connection =>
-			val dbAccess = Database(_databaseId)
+			val dbAccess = DbDatabase(_databaseId)
 			val classes = dbAccess.classes.all
 			val links = dbAccess.links.all
 			pairData(classes, links)
@@ -177,7 +179,7 @@ class ClassDisplayManager(initialDatabaseId: Int)(implicit exc: ExecutionContext
 	def addNewClass(newClass: NewClass) =
 	{
 		// Inserts a new class to DB and then to the end of displayed classes list
-		ConnectionPool.tryWith { implicit connection => Database(_databaseId).classes.insert(newClass) } match
+		ConnectionPool.tryWith { implicit connection => DbDatabase(_databaseId).classes.insert(newClass) } match
 		{
 			case Success(newClass) => content = content :+ DisplayedClass(newClass, isExpanded = true)
 			case Failure(error) => Log(error, s"Failed to insert class $newClass to DB")
@@ -198,8 +200,8 @@ class ClassDisplayManager(initialDatabaseId: Int)(implicit exc: ExecutionContext
 	{
 		// Inserts the new class to DB, then adds a link between the two classes
 		ConnectionPool.tryWith { implicit connection =>
-			val newClass = Database(_databaseId).classes.insert(NewClass(newSubClass.classInfo))
-			newClass -> Database(_databaseId).links.insert(newSubClass.toNewLinkConfiguration(newClass.id))
+			val newClass = DbDatabase(_databaseId).classes.insert(NewClass(newSubClass.classInfo))
+			newClass -> DbDatabase(_databaseId).links.insert(newSubClass.toNewLinkConfiguration(newClass.id))
 		} match
 		{
 			case Success(newData) =>
@@ -217,7 +219,7 @@ class ClassDisplayManager(initialDatabaseId: Int)(implicit exc: ExecutionContext
 		// Deletes the class and all its children from DB
 		val classIdsToDelete = classToDelete.classIds
 		ConnectionPool.tryWith { implicit connection =>
-			classIdsToDelete.foreach { cId => database.Class(cId).markDeleted() }
+			classIdsToDelete.foreach { cId => DbClass(cId).markDeleted() }
 		} match
 		{
 			case Success(_) =>
@@ -261,7 +263,7 @@ class ClassDisplayManager(initialDatabaseId: Int)(implicit exc: ExecutionContext
 	 * @param editedInfo New info for the class
 	 */
 	def editClass(classToEdit: existing.database.Class, editedInfo: NewClassInfo): Unit = editClass { implicit connection =>
-		classToEdit.update(database.Class(classToEdit.id).info.update(editedInfo)) }
+		classToEdit.update(DbClass(classToEdit.id).info.update(editedInfo)) }
 	
 	/**
 	 * Edits a sub-class and its link based on an edit result
@@ -282,7 +284,7 @@ class ClassDisplayManager(initialDatabaseId: Int)(implicit exc: ExecutionContext
 	def addNewAttribute(classId: Int, attribute: NewAttribute): Unit =
 	{
 		// Inserts attribute data to DB, then updates this view
-		editAttributes(classId) { implicit connection => database.Class(classId).attributes.insert(attribute) } { _ + _ }
+		editAttributes(classId) { implicit connection => DbClass(classId).attributes.insert(attribute) } { _ + _ }
 	}
 	
 	/**
@@ -294,7 +296,7 @@ class ClassDisplayManager(initialDatabaseId: Int)(implicit exc: ExecutionContext
 	{
 		// Updates attribute data to DB, then updates this view
 		editAttributes(attribute.classId) { implicit connection =>
-			database.Class(attribute.classId).attribute(attribute.id).configuration.update(edit) } { _.update(_) }
+			DbClass(attribute.classId).attribute(attribute.id).configuration.update(edit) } { _.update(_) }
 	}
 	
 	/**
@@ -305,9 +307,9 @@ class ClassDisplayManager(initialDatabaseId: Int)(implicit exc: ExecutionContext
 	{
 		// Deletes attribute from DB, then from this class
 		editAttributes(attribute.classId) { implicit connection =>
-			database.Class(attribute.classId).attribute(attribute.id).markDeleted()
+			DbClass(attribute.classId).attribute(attribute.id).markDeleted()
 			// Also deletes all links using specified attribute as a mapping key
-			database.Links.usingAttributeWithId(attribute.id).markDeleted()
+			DbLinks.usingAttributeWithId(attribute.id).markDeleted()
 		} { (c, _) => c - attribute }
 	}
 	
@@ -319,7 +321,7 @@ class ClassDisplayManager(initialDatabaseId: Int)(implicit exc: ExecutionContext
 	{
 		// Inserts the new link to database, then updates displayed classes
 		ConnectionPool.tryWith { implicit connection =>
-			Database(_databaseId).links.insert(link)
+			DbDatabase(_databaseId).links.insert(link)
 		} match
 		{
 			case Success(newLink) => displaysWithLinkAdded(content, newLink).foreach { content = _ }
@@ -334,8 +336,7 @@ class ClassDisplayManager(initialDatabaseId: Int)(implicit exc: ExecutionContext
 	 */
 	def editLink(link: Link, newConfiguration: NewLinkConfiguration) =
 	{
-		ConnectionPool.tryWith { implicit connection =>
-			database.Link(link.id).configuration.update(newConfiguration)
+		ConnectionPool.tryWith { implicit connection => DbLink(link.id).configuration.update(newConfiguration)
 		} match
 		{
 			case Success(updatedConfiguration) =>
@@ -353,8 +354,7 @@ class ClassDisplayManager(initialDatabaseId: Int)(implicit exc: ExecutionContext
 	 */
 	def deleteLink(linkToDelete: Link) =
 	{
-		ConnectionPool.tryWith { implicit connection =>
-			database.Link(linkToDelete.id).markDeleted()
+		ConnectionPool.tryWith { implicit connection => DbLink(linkToDelete.id).markDeleted()
 		} match
 		{
 			case Success(wasDeleted) => if (wasDeleted) content = currentDisplaysWithoutLink(linkToDelete)

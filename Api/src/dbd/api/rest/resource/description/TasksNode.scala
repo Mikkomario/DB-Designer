@@ -1,6 +1,6 @@
 package dbd.api.rest.resource.description
 
-import dbd.api.database.access.many.DbDescriptions
+import dbd.api.database.access.many.description.DbDescriptions
 import dbd.api.rest.util.AuthorizedContext
 import dbd.core.model.combined.organization.DescribedTask
 import dbd.core.model.enumeration.TaskType

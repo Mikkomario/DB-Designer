@@ -1,8 +1,8 @@
 package dbd.client.main
 
+import dbd.api.database.ConnectionPool
 import utopia.flow.util.CollectionExtensions._
 import dbd.client.vc.MainVC
-import dbd.core.database.ConnectionPool
 import dbd.core.util.Log
 import utopia.genesis.generic.GenesisDataType
 import utopia.reflection.container.swing.window.Frame

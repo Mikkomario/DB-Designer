@@ -1,7 +1,7 @@
 package dbd.api.rest.resource.user
 
-import dbd.api.database.access.many.DbOrganizations
-import dbd.api.database.access.single.DbUser
+import dbd.api.database.access.many.user.DbOrganizations
+import dbd.api.database.access.single.user.DbUser
 import dbd.api.rest.util.AuthorizedContext
 import utopia.access.http.Method.Get
 import utopia.flow.generic.ValueConversions._

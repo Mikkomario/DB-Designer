@@ -1,6 +1,7 @@
 package dbd.api.rest.resource.user
 
 import dbd.api.database.access.single
+import dbd.api.database.access.single.user.{DbInvitation, DbOrganization, DbUser}
 import dbd.api.rest.util.AuthorizedContext
 import dbd.core.model.combined
 import dbd.core.model.combined.organization
@@ -35,7 +36,7 @@ case class InvitationResponseNode(invitationId: Int) extends Resource[Authorized
 			context.handlePost(NewInvitationResponse) { newResponse =>
 				// Makes sure the invitation exists, hasn't been answered or expired yet and is targeted for this user
 				implicit val c: Connection = connection
-				val accessInvitation = single.DbInvitation(invitationId)
+				val accessInvitation = DbInvitation(invitationId)
 				accessInvitation.pull match
 				{
 					case Some(invitation) =>
@@ -43,7 +44,7 @@ case class InvitationResponseNode(invitationId: Int) extends Resource[Authorized
 						{
 							case Right(recipientId) => recipientId == session.userId
 							case Left(recipientEmail) =>
-								val myEmail = single.DbUser(session.userId).settings.map { _.email }
+								val myEmail = DbUser(session.userId).settings.map { _.email }
 								myEmail.contains(recipientEmail)
 						}
 						if (isForThisUser)
@@ -66,7 +67,7 @@ case class InvitationResponseNode(invitationId: Int) extends Resource[Authorized
 										val savedResponse = accessInvitation.response.insert(newResponse, session.userId)
 										// Adds this user to the organization (if the invitation was accepted)
 										if (savedResponse.wasAccepted)
-											single.DbOrganization(invitation.organizationId).memberships.insert(
+											DbOrganization(invitation.organizationId).memberships.insert(
 												session.userId, invitation.startingRole,
 												invitation.creatorId.getOrElse(session.userId))
 										// Returns the original invitation, along with the posted response

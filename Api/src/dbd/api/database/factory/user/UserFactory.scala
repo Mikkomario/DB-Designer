@@ -1,7 +1,7 @@
 package dbd.api.database.factory.user
 
 import dbd.api.database.Tables
-import dbd.api.database.access.single.DbUser
+import dbd.api.database.access.single.user.DbUser
 import dbd.core.model.combined.user.UserWithLinks
 import dbd.core.model.existing
 import dbd.core.model.existing.user

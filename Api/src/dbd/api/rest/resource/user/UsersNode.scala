@@ -1,8 +1,9 @@
 package dbd.api.rest.resource.user
 
+import dbd.api.database.ConnectionPool
 import dbd.api.database.access.many
+import dbd.api.database.access.many.user.DbUsers
 import dbd.api.rest.util.AuthorizedContext
-import dbd.core.database.ConnectionPool
 import dbd.core.model.error.AlreadyUsedException
 import dbd.core.model.post.NewUser
 import dbd.core.util.{Log, ThreadPool}
@@ -36,7 +37,7 @@ object UsersNode extends Resource[AuthorizedContext]
 			implicit val exc: ExecutionContext = ThreadPool.executionContext
 			// Saves the new user data to DB
 			ConnectionPool.tryWith { implicit connection =>
-				many.DbUsers.tryInsert(newUser) match
+				DbUsers.tryInsert(newUser) match
 				{
 					case Success(userData) =>
 						// Returns a summary of the new data

@@ -1,6 +1,8 @@
 package dbd.api.rest.resource.device
 
 import dbd.api.database.access.single
+import dbd.api.database.access.single.user
+import dbd.api.database.access.single.user.{DbDevice, DbUser}
 import dbd.api.rest.util.AuthorizedContext
 import utopia.access.http.Method.{Delete, Get}
 import utopia.access.http.Status.NotFound
@@ -34,12 +36,12 @@ case class DeviceKeyNode(deviceId: Int) extends Resource[AuthorizedContext]
 			context.basicAuthorized { (userId, connection) =>
 				implicit val c: Connection = connection
 				// Makes sure this device exists
-				if (single.DbDevice(deviceId).isDefined)
+				if (DbDevice(deviceId).isDefined)
 				{
 					// Registers a new connection between the user and this device, if there wasn't one already
-					single.DbUser(userId).linkWithDeviceWithId(deviceId)
+					DbUser(userId).linkWithDeviceWithId(deviceId)
 					// Gets and returns the new device authentication key
-					val key = single.DbDevice(deviceId).authenticationKey.assignToUserWithId(userId).key
+					val key = user.DbDevice(deviceId).authenticationKey.assignToUserWithId(userId).key
 					Result.Success(key)
 				}
 				else
@@ -51,7 +53,7 @@ case class DeviceKeyNode(deviceId: Int) extends Resource[AuthorizedContext]
 		{
 			context.sessionKeyAuthorized { (session, connection) =>
 				implicit val c: Connection = connection
-				single.DbDevice(session.deviceId).authenticationKey.releaseFromUserWithId(session.userId)
+				user.DbDevice(session.deviceId).authenticationKey.releaseFromUserWithId(session.userId)
 				Empty
 			}
 		}

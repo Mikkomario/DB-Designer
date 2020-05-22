@@ -1,12 +1,20 @@
 package dbd.api.database
 
+import dbd.core.util.ThreadPool
+import utopia.vault.model.immutable.Table
+
 /**
   * Used for accessing various tables in DB Designer project (api-side)
   * @author Mikko Hilpinen
   * @since 2.5.2020, v2
   */
-object Tables
+object Tables extends utopia.vault.database.Tables(ConnectionPool)(ThreadPool.executionContext)
 {
+	// ATTRIBUTES	----------------------
+	
+	private val dbName = "db_designer"
+	
+	
 	// COMPUTED	--------------------------------
 	
 	/**
@@ -144,8 +152,87 @@ object Tables
 	  */
 	def invitationResponse = apply("invitation_response")
 	
+	/**
+	  * @return Table that contains registered databases
+	  */
+	def database = apply("database")
+	
+	/**
+	  * @return Table that contains database configurations
+	  */
+	def databaseConfiguration = apply("database_configuration")
+	
+	/**
+	  * @return Table that contains classes
+	  */
+	def classTable = apply("class")
+	
+	/**
+	  * @return Table that contains class attributes
+	  */
+	def attribute = apply("attribute")
+	
+	/**
+	  * @return Table that contains base class info
+	  */
+	def classInfo = apply("class_info")
+	
+	/**
+	  * @return Table that contains configurations for class attributes
+	  */
+	def attributeConfiguration = apply("attribute_configuration")
+	
+	/**
+	  * @return Table that contains links between classes
+	  */
+	def link = apply("link")
+	
+	/**
+	  * @return Table that contains configurations for links between classes
+	  */
+	def linkConfiguration = apply("link_configuration")
+	
+	/**
+	  * @return Table that contains database releases
+	  */
+	def release = apply("database_release")
+	
+	/**
+	  * @return Table that contains released tables
+	  */
+	def table = apply("table_release")
+	
+	/**
+	  * @return Table that contains released column data
+	  */
+	def column = apply("column_release")
+	
+	/**
+	  * @return Table that contains links between columns, attributes and indices
+	  */
+	def columnAttributeLink = apply("column_attribute_link")
+	
+	/**
+	  * @return Table that contains links between columns, links and foreign keys
+	  */
+	def columnLinkLink = apply("column_link_link")
+	
+	/**
+	  * @return Table that contains released index data
+	  */
+	def index = apply("index_release")
+	
+	/**
+	  * @return Table that contains released foreign key data
+	  */
+	def foreignKey = apply("foreign_key_release")
+	
 	
 	// OTHER	-------------------------------
 	
-	private def apply(tableName: String) = dbd.core.database.Tables(tableName)
+	/**
+	  * @param tableName Name of targeted table
+	  * @return a cached table
+	  */
+	def apply(tableName: String): Table = apply(dbName, tableName)
 }

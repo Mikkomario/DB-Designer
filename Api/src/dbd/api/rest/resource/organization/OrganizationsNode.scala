@@ -1,6 +1,7 @@
 package dbd.api.rest.resource.organization
 
 import dbd.api.database.access.many
+import dbd.api.database.access.many.user.DbOrganizations
 import dbd.api.database.access.single.DbLanguage
 import dbd.api.rest.util.AuthorizedContext
 import dbd.core.model.post.NewOrganization
@@ -34,7 +35,7 @@ object OrganizationsNode extends Resource[AuthorizedContext]
 				// Checks that language id is valid, then inserts the new organization
 				if (DbLanguage(newOrganization.languageId).isDefined)
 				{
-					val organizationId = many.DbOrganizations.insert(newOrganization.name, newOrganization.languageId, session.userId)
+					val organizationId = DbOrganizations.insert(newOrganization.name, newOrganization.languageId, session.userId)
 					Result.Success(organizationId, Created)
 				}
 				else

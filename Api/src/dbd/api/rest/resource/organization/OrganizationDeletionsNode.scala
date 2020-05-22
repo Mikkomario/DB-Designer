@@ -1,6 +1,6 @@
 package dbd.api.rest.resource.organization
 
-import dbd.api.database.access.single.DbOrganization
+import dbd.api.database.access.single.user.DbOrganization
 import dbd.api.rest.util.AuthorizedContext
 import dbd.core.model.enumeration.TaskType.CancelOrganizationDeletion
 import utopia.access.http.Method.Delete

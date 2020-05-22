@@ -1,6 +1,6 @@
 package dbd.api.rest.resource.description
 
-import dbd.api.database.access.many.{DbDescriptions, DbLanguages}
+import dbd.api.database.access.many.description.{DbDescriptions, DbLanguages}
 import dbd.core.model.combined.language.DescribedLanguage
 import dbd.core.model.existing.description.DescriptionLink
 import dbd.core.model.existing.language.Language

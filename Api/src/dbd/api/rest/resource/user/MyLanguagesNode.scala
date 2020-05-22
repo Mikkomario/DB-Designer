@@ -1,6 +1,7 @@
 package dbd.api.rest.resource.user
 
-import dbd.api.database.access.single.{DbLanguage, DbUser}
+import dbd.api.database.access.single.DbLanguage
+import dbd.api.database.access.single.user.DbUser
 import dbd.api.rest.util.AuthorizedContext
 import dbd.core.model.post.NewLanguageProficiency
 import utopia.access.http.Method.{Delete, Get, Post, Put}

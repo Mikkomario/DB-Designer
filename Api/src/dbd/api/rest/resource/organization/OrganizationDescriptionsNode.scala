@@ -1,6 +1,6 @@
 package dbd.api.rest.resource.organization
 
-import dbd.api.database.access.many.DbDescriptions
+import dbd.api.database.access.many.description.DbDescriptions
 import dbd.api.database.access.single
 import dbd.api.rest.util.AuthorizedContext
 import dbd.core.model.enumeration.DescriptionRole

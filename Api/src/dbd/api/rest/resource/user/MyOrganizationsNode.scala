@@ -1,6 +1,7 @@
 package dbd.api.rest.resource.user
 
 import dbd.api.database.access.single
+import dbd.api.database.access.single.user.DbUser
 import dbd.api.rest.resource.ResourceWithChildren
 import dbd.api.rest.util.AuthorizedContext
 import utopia.access.http.Method.Get
@@ -29,7 +30,7 @@ object MyOrganizationsNode extends ResourceWithChildren[AuthorizedContext]
 		context.sessionKeyAuthorized { (session, connection) =>
 			implicit val c: Connection = connection
 			// Reads organizations data and returns it as an array
-			val organizations = single.DbUser(session.userId).memberships.myOrganizations
+			val organizations = DbUser(session.userId).memberships.myOrganizations
 			Result.Success(organizations.map { _.toModel })
 		}
 	}

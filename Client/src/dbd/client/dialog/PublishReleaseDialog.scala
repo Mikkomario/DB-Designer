@@ -1,7 +1,7 @@
 package dbd.client.dialog
 
+import dbd.core.util.VersionNumber
 import utopia.reflection.localization.LocalString._
-import dbd.mysql.model.VersionNumber
 import utopia.reflection.component.swing.label.TextLabel
 import utopia.reflection.component.swing.{FilterDocument, TextField}
 import utopia.reflection.text.Regex

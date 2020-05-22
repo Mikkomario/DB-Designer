@@ -11,6 +11,7 @@ import utopia.vault.database.Connection
 import utopia.vault.model.immutable.StorableWithFactory
 import utopia.vault.nosql.factory.{FromRowFactoryWithTimestamps, FromValidatedRowModelFactory}
 
+@deprecated("This will be replaced with a local status", "v2")
 object DatabaseSelection extends FromValidatedRowModelFactory[existing.DatabaseSelection]
 	with FromRowFactoryWithTimestamps[existing.DatabaseSelection]
 {
@@ -44,6 +45,7 @@ object DatabaseSelection extends FromValidatedRowModelFactory[existing.DatabaseS
   * @author Mikko Hilpinen
   * @since 1.2.2020, v0.1
   */
+@deprecated("This will be replaced with a local status", "v2")
 case class DatabaseSelection(id: Option[Int] = None, selectedDatabaseId: Option[Int] = None,
 							 created: Option[Instant] = None) extends StorableWithFactory[existing.DatabaseSelection]
 {

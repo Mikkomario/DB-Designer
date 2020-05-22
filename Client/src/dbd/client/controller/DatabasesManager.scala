@@ -1,10 +1,11 @@
 package dbd.client.controller
 
+import dbd.api.database.ConnectionPool
+import dbd.api.database.access.many.database.DbDatabases
+import dbd.api.database.access.single.database.DbDatabase
 import utopia.flow.util.CollectionExtensions._
 import dbd.client.database.DatabaseSelection
 import dbd.client.model.template.DatabaseSelectionData
-import dbd.core.database
-import dbd.core.database.{ConnectionPool, Databases}
 import dbd.core.model.existing.database.{Database, DatabaseConfiguration}
 import dbd.core.model.partial.database.NewDatabaseConfiguration
 import dbd.core.util.Log
@@ -27,18 +28,18 @@ class DatabasesManager(implicit exc: ExecutionContext) extends SelectableWithPoi
 	{
 		// Reads all databases from the DB
 		ConnectionPool.tryWith { implicit connection =>
-			val databases = Databases.all
+			val databases = DbDatabases.all
 			// If there are no databases in DB, has to insert one
 			if (databases.isEmpty)
 			{
-				val newDB = Databases.insert(NewDatabaseConfiguration("my_first_db"))
+				val newDB = DbDatabases.insert(NewDatabaseConfiguration("my_first_db"))
 				Vector(newDB) -> newDB
 			}
 			else
 			{
 				// Checks which database was last selected (or configured)
 				val latestDB = DatabaseSelection.latest.flatMap { s => databases.find {
-					_.id == s.selectedDatabaseId } }.orElse { database.Database.lastConfigured }.getOrElse(databases.head)
+					_.id == s.selectedDatabaseId } }.orElse { DbDatabase.lastConfigured }.getOrElse(databases.head)
 				
 				databases -> latestDB
 			}
@@ -72,7 +73,7 @@ class DatabasesManager(implicit exc: ExecutionContext) extends SelectableWithPoi
 	  */
 	def addNewDatabase(newConfig: NewDatabaseConfiguration) =
 	{
-		ConnectionPool.tryWith { implicit connection => Databases.insert(newConfig) } match
+		ConnectionPool.tryWith { implicit connection => DbDatabases.insert(newConfig) } match
 		{
 			case Success(newDB) =>
 				content :+= newDB
@@ -88,7 +89,7 @@ class DatabasesManager(implicit exc: ExecutionContext) extends SelectableWithPoi
 	  */
 	def editDatabase(databaseId: Int, newConfig: NewDatabaseConfiguration) =
 	{
-		ConnectionPool.tryWith { implicit connection => database.Database(databaseId).configuration.update(newConfig) } match {
+		ConnectionPool.tryWith { implicit connection => DbDatabase(databaseId).configuration.update(newConfig) } match {
 			case Success(savedConfig) =>
 				content = content.mapFirstWhere { _.id == databaseId } { _.copy(configuration = savedConfig) }
 			case Failure(error) => Log(error, "Failed to edit database configuration")

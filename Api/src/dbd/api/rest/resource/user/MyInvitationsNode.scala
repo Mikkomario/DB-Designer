@@ -1,6 +1,7 @@
 package dbd.api.rest.resource.user
 
 import dbd.api.database.access.single
+import dbd.api.database.access.single.user.DbUser
 import dbd.api.rest.util.AuthorizedContext
 import utopia.access.http.Method.Get
 import utopia.flow.generic.ValueConversions._
@@ -26,7 +27,7 @@ object MyInvitationsNode extends Resource[AuthorizedContext]
 		context.sessionKeyAuthorized { (session, connection) =>
 			implicit val c: Connection = connection
 			// Reads invitations from DB
-			val pendingInvitations = single.DbUser(session.userId).receivedInvitations.pending
+			val pendingInvitations = DbUser(session.userId).receivedInvitations.pending
 			Result.Success(pendingInvitations.map { _.toModel })
 		}
 	}

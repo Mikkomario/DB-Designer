@@ -1,6 +1,6 @@
 package dbd.api.rest.resource.description
 
-import dbd.api.database.access.many.DbDescriptions
+import dbd.api.database.access.many.description.DbDescriptions
 import dbd.core.model.combined.description.DescribedDescriptionRole
 import dbd.core.model.enumeration.DescriptionRole
 import dbd.core.model.existing.description.DescriptionLink

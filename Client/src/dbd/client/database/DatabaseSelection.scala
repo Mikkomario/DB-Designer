@@ -11,6 +11,7 @@ import utopia.vault.nosql.access.SingleModelAccessById
   * @author Mikko Hilpinen
   * @since 1.2.2020, v0.1
   */
+@deprecated("This accessor will be removed", "v2")
 object DatabaseSelection extends SingleModelAccessById[existing.DatabaseSelection, Int]
 {
 	// IMPLEMENTED	----------------------------

@@ -1,6 +1,6 @@
 package dbd.api.rest.resource.user
 
-import dbd.api.database.access.single.DbUser
+import dbd.api.database.access.single.user.DbUser
 import dbd.api.rest.resource.ResourceWithChildren
 import dbd.api.rest.util.AuthorizedContext
 import dbd.core.util.Log

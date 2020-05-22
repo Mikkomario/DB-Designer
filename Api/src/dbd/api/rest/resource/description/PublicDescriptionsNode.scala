@@ -1,9 +1,9 @@
 package dbd.api.rest.resource.description
 
-import dbd.api.database.access.many.DescriptionLinksForManyAccess
-import dbd.api.database.access.single.DbUser
+import dbd.api.database.ConnectionPool
+import dbd.api.database.access.many.description.DescriptionLinksForManyAccess
+import dbd.api.database.access.single.user.DbUser
 import dbd.api.rest.util.AuthorizedContext
-import dbd.core.database.ConnectionPool
 import dbd.core.model.existing.description.DescriptionLink
 import dbd.core.util.Log
 import dbd.core.util.ThreadPool.executionContext

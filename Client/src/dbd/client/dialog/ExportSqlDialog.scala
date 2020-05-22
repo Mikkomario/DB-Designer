@@ -3,21 +3,21 @@ package dbd.client.dialog
 import java.nio.file.Path
 import java.time.format.DateTimeFormatter
 
+import dbd.api.database.ConnectionPool
+import dbd.api.database.access.many.database.DbReleases
+import dbd.api.database.access.single
+import dbd.api.database.access.single.database.{DbDatabase, DbRelease}
 import dbd.client.view.Fields
+import dbd.core.model.combined.mysql.ReleasesComparison
 
 import scala.language.existentials
-import dbd.mysql.database
 import utopia.flow.util.CollectionExtensions._
 import dbd.core.model.enumeration.NamingConvention._
-import dbd.core.database.{ConnectionPool, Database}
 import dbd.core.model.error.NoDataFoundException
-import dbd.core.util.Log
-import dbd.mysql.controller.SqlWriter
-import dbd.mysql.database.Releases
-import dbd.mysql.model.change.ReleasesComparison
+import dbd.core.model.existing.mysql.Release
+import dbd.core.util.{Log, SqlWriter}
 import utopia.flow.util.TimeExtensions._
 import utopia.flow.util.FileExtensions._
-import dbd.mysql.model.existing.Release
 import utopia.flow.datastructure.mutable.PointerWithEvents
 import utopia.reflection.component.swing.TabSelection
 import utopia.reflection.localization.{DisplayFunction, LocalString, LocalizedString}
@@ -91,7 +91,7 @@ class ExportSqlDialog(release: Release) extends InputDialog[Unit]
 	// ATTRIBUTES	-----------------------
 	
 	private val previousReleases = ConnectionPool.tryWith { implicit connection =>
-		Releases.forDatabaseWithId(release.databaseId).before(release.released, 25)
+		DbReleases.forDatabaseWithId(release.databaseId).before(release.released, 25)
 	} match
 	{
 		case Success(releases) => releases
@@ -172,7 +172,7 @@ class ExportSqlDialog(release: Release) extends InputDialog[Unit]
 		val sourceVersion = if (selectedMode == Changes) baseVersionSelectDD.flatMap { _.value } else None
 		
 		val generatedPath = ConnectionPool.tryWith { implicit connection =>
-			val dbConfigAccess = Database(release.databaseId).configuration
+			val dbConfigAccess = DbDatabase(release.databaseId).configuration
 			dbConfigAccess.during(release.released).orElse(dbConfigAccess).map { dbConfiguration =>
 				// Generates file name & path
 				val databaseName = dbConfiguration.name.toUnderscore
@@ -189,11 +189,11 @@ class ExportSqlDialog(release: Release) extends InputDialog[Unit]
 				{
 					// Exports sql file
 					exportFilePath.createParentDirectories().flatMap { _ =>
-						val tables = database.Release(release.id).tables
+						val tables = DbRelease(release.id).tables
 						val sql = sourceVersion match
 						{
 							case Some(source) =>
-								val oldTables = database.Release(source.id).tables
+								val oldTables = DbRelease(source.id).tables
 								ReleasesComparison(release.databaseId, oldTables, tables).toSql(databaseName,
 									source.versionNumber.toString, release.versionNumber.toString)
 							case None => SqlWriter(databaseName, tables)

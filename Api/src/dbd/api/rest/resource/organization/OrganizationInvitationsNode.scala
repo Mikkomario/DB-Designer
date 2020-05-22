@@ -2,6 +2,7 @@ package dbd.api.rest.resource.organization
 
 import dbd.api.database.access.id.UserId
 import dbd.api.database.access.single
+import dbd.api.database.access.single.user.{DbMembership, DbOrganization, DbUser}
 import dbd.api.rest.util.AuthorizedContext
 import dbd.core.model.enumeration.TaskType.InviteMembers
 import dbd.core.model.existing.organization.Invitation
@@ -42,7 +43,7 @@ case class OrganizationInvitationsNode(organizationId: Int) extends Resource[Aut
 					case Success(validInvitation) =>
 						implicit val c: Connection = connection
 						// Makes sure the user has a right to give the specified role to another user
-						if (single.DbMembership(membershipId).canPromoteTo(validInvitation.startingRole))
+						if (DbMembership(membershipId).canPromoteTo(validInvitation.startingRole))
 						{
 							// Finds the user that is being invited (if registered)
 							val recipientEmail = validInvitation.recipientEmail
@@ -50,14 +51,14 @@ case class OrganizationInvitationsNode(organizationId: Int) extends Resource[Aut
 							
 							// Checks whether the user already is a member of this organization
 							if (recipientUserId.exists { userId =>
-								single.DbUser(userId).isMemberInOrganizationWithId(organizationId) })
+								DbUser(userId).isMemberInOrganizationWithId(organizationId) })
 								Result.Success(invitationSendResultModel(wasInvitationSend = false,
 									description = "The user was already a member of this organization"))
 							else
 							{
 								// Makes sure the user hasn't blocked this organization from sending invites
 								// And that there are no pending invitations for this user
-								val accessInvitations = single.DbOrganization(organizationId).invitations
+								val accessInvitations = DbOrganization(organizationId).invitations
 								val blockedInvitations = accessInvitations.blocked
 								val isBlocked = blockedInvitations.exists { i =>
 									recipientUserId match
