@@ -7,4 +7,5 @@ import dbd.core.model.template.DatabaseConfigurationLike
  * @author Mikko Hilpinen
  * @since 28.1.2020, v0.1
  */
+@deprecated("Replaced with DatabaseConfigurationData", "v2")
 case class NewDatabaseConfiguration(name: String) extends DatabaseConfigurationLike

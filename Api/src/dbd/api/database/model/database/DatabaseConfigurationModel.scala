@@ -3,30 +3,22 @@ package dbd.api.database.model.database
 import java.time.Instant
 
 import dbd.api.database.Tables
+import dbd.api.database.factory.database.DatabaseConfigurationFactory
 import dbd.core.model.existing.database
-import dbd.core.model.partial.database.NewDatabaseConfiguration
-import utopia.flow.datastructure.immutable.{Constant, Model}
+import dbd.core.model.existing.database.DatabaseConfiguration
+import dbd.core.model.partial.database.DatabaseConfigurationData
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.model.immutable.StorableWithFactory
-import utopia.vault.nosql.factory.{Deprecatable, FromRowFactoryWithTimestamps, FromValidatedRowModelFactory}
 
-object DatabaseConfigurationModel extends FromValidatedRowModelFactory[database.DatabaseConfiguration] with Deprecatable
-	with FromRowFactoryWithTimestamps[database.DatabaseConfiguration]
+object DatabaseConfigurationModel
 {
-	// IMPLEMENTED	---------------------
-	
-	override def table = Tables.databaseConfiguration
-	
-	override protected def fromValidatedModel(model: Model[Constant]) = database.DatabaseConfiguration(
-		model("id").getInt, model("databaseId").getInt, model("name").getString)
-	
-	override def nonDeprecatedCondition = table("deprecatedAfter").isNull
-	
-	override def creationTimePropertyName = "created"
-	
-	
 	// COMPUTED	-------------------------
+	
+	/**
+	  * @return Table used by this model
+	  */
+	def table = Tables.databaseConfiguration
 	
 	/**
 	  * @return A model that has just been marked as deprecated
@@ -55,10 +47,10 @@ object DatabaseConfigurationModel extends FromValidatedRowModelFactory[database.
 	 * @param connection DB connection (implicit)
 	 * @return Newly inserted config
 	 */
-	def insert(databaseId: Int, data: NewDatabaseConfiguration)(implicit connection: Connection) =
+	def insert(databaseId: Int, data: DatabaseConfigurationData)(implicit connection: Connection) =
 	{
-		val newId = apply(None, Some(databaseId), Some(data.name), Some(Instant.now())).insert().getInt
-		database.DatabaseConfiguration(newId, databaseId, data.name)
+		val newId = apply(None, Some(databaseId), Some(data.name), data.creatorId, Some(Instant.now())).insert().getInt
+		DatabaseConfiguration(newId, databaseId, data)
 	}
 }
 
@@ -68,11 +60,12 @@ object DatabaseConfigurationModel extends FromValidatedRowModelFactory[database.
  * @since 28.1.2020, v0.1
  */
 case class DatabaseConfigurationModel(id: Option[Int] = None, databaseId: Option[Int] = None, name: Option[String] = None,
-									  created: Option[Instant] = None, deprecatedAfter: Option[Instant] = None)
+									  creatorId: Option[Int] = None, created: Option[Instant] = None,
+									  deprecatedAfter: Option[Instant] = None)
 	extends StorableWithFactory[database.DatabaseConfiguration]
 {
-	override def factory = DatabaseConfigurationModel
+	override def factory = DatabaseConfigurationFactory
 	
 	override def valueProperties = Vector("id" -> id, "databaseId" -> databaseId, "name" -> name, "created" -> created,
-		"deprecatedAfter" -> deprecatedAfter)
+		"deprecatedAfter" -> deprecatedAfter, "creatorId" -> creatorId)
 }

@@ -1,7 +1,6 @@
 package dbd.client.dialog
 
-import dbd.core.model.partial.database.NewDatabaseConfiguration
-import dbd.core.model.template.DatabaseConfigurationLike
+import dbd.core.model.partial.database.DatabaseConfigurationData
 import utopia.reflection.component.swing.TextField
 import utopia.reflection.shape.LengthExtensions._
 
@@ -10,8 +9,8 @@ import utopia.reflection.shape.LengthExtensions._
   * @author Mikko Hilpinen
   * @since 1.2.2020, v0.1
   */
-class EditDatabaseDialog(databaseToEdit: Option[DatabaseConfigurationLike] = None, newDBName: Option[String] = None)
-	extends InputDialog[Option[NewDatabaseConfiguration]]
+class EditDatabaseDialog(databaseToEdit: Option[DatabaseConfigurationData] = None, newDBName: Option[String] = None)
+	extends InputDialog[Option[DatabaseConfigurationData]]
 {
 	// ATTRIBUTES	-----------------------
 	
@@ -36,7 +35,7 @@ class EditDatabaseDialog(databaseToEdit: Option[DatabaseConfigurationLike] = Non
 				if (databaseToEdit.exists { _.name == dbName })
 					Right(None)
 				else
-					Right(Some(NewDatabaseConfiguration(dbName)))
+					Right(Some(DatabaseConfigurationData(dbName))) // TODO: Set creator id
 			case None => Left(nameField, "Please specify database name first")
 		}
 	}

@@ -7,7 +7,8 @@ import utopia.flow.util.CollectionExtensions._
 import dbd.client.database.DatabaseSelection
 import dbd.client.model.template.DatabaseSelectionData
 import dbd.core.model.existing.database.{Database, DatabaseConfiguration}
-import dbd.core.model.partial.database.NewDatabaseConfiguration
+import dbd.core.model.partial.database.DatabaseData.NewDatabaseData
+import dbd.core.model.partial.database.{DatabaseConfigurationData, DatabaseData, NewDatabaseConfiguration}
 import dbd.core.util.Log
 import utopia.flow.datastructure.mutable.PointerWithEvents
 import utopia.reflection.component.input.SelectableWithPointers
@@ -20,6 +21,7 @@ import scala.util.{Failure, Success}
   * @author Mikko Hilpinen
   * @since 1.2.2020, v0.1
   */
+@deprecated("This class will be replaced with an api-interface. Currently out of order.", "v2")
 class DatabasesManager(implicit exc: ExecutionContext) extends SelectableWithPointers[Database, Vector[Database]]
 {
 	// ATTRIBUTES	-----------------------
@@ -32,7 +34,8 @@ class DatabasesManager(implicit exc: ExecutionContext) extends SelectableWithPoi
 			// If there are no databases in DB, has to insert one
 			if (databases.isEmpty)
 			{
-				val newDB = DbDatabases.insert(NewDatabaseConfiguration("my_first_db"))
+				// FIXME: Should have a creator id and owner organization id set (this will be moved to api side anyway)
+				val newDB = DbDatabases.insert(DatabaseData(???, DatabaseConfigurationData("my_first_db")))
 				Vector(newDB) -> newDB
 			}
 			else
@@ -49,8 +52,9 @@ class DatabasesManager(implicit exc: ExecutionContext) extends SelectableWithPoi
 			case Success(data) => new PointerWithEvents[Vector[Database]](data._1) -> new PointerWithEvents(data._2)
 			case Failure(error) =>
 				Log(error, "Failed to read databases from DB")
-				new PointerWithEvents[Vector[Database]](Vector()) -> new PointerWithEvents(Database(-1,
-					DatabaseConfiguration(-1, -1, "Failed to Load")))
+				// FIXME: This is probably not a valid way of handling this problem. Resolve when moving to api
+				new PointerWithEvents[Vector[Database]](Vector()) -> new PointerWithEvents(Database(-1, DatabaseData(-1,
+					DatabaseConfiguration(-1, -1, DatabaseConfigurationData("Failed to Load")))))
 		}
 	}
 	
@@ -69,16 +73,16 @@ class DatabasesManager(implicit exc: ExecutionContext) extends SelectableWithPoi
 	
 	/**
 	  * Adds a new database to the DB
-	  * @param newConfig First configuration for the new DB
+	  * @param newDB New database data
 	  */
-	def addNewDatabase(newConfig: NewDatabaseConfiguration) =
+	def addNewDatabase(newDB: NewDatabaseData) =
 	{
-		ConnectionPool.tryWith { implicit connection => DbDatabases.insert(newConfig) } match
+		ConnectionPool.tryWith { implicit connection => DbDatabases.insert(newDB) } match
 		{
 			case Success(newDB) =>
 				content :+= newDB
 				select(newDB)
-			case Failure(error) => Log(error, s"Failed to insert a new database with config: $newConfig")
+			case Failure(error) => Log(error, s"Failed to insert a new database with data: $newDB")
 		}
 	}
 	
@@ -87,11 +91,11 @@ class DatabasesManager(implicit exc: ExecutionContext) extends SelectableWithPoi
 	  * @param databaseId Id of target database
 	  * @param newConfig New configuration for the database
 	  */
-	def editDatabase(databaseId: Int, newConfig: NewDatabaseConfiguration) =
+	def editDatabase(databaseId: Int, newConfig: DatabaseConfigurationData) =
 	{
 		ConnectionPool.tryWith { implicit connection => DbDatabase(databaseId).configuration.update(newConfig) } match {
 			case Success(savedConfig) =>
-				content = content.mapFirstWhere { _.id == databaseId } { _.copy(configuration = savedConfig) }
+				content = content.mapFirstWhere { _.id == databaseId } { _.withConfiguration(savedConfig) }
 			case Failure(error) => Log(error, "Failed to edit database configuration")
 		}
 	}

@@ -1,8 +1,9 @@
 package dbd.api.database.access.many.database
 
-import dbd.api.database.model.database
+import dbd.api.database.factory.database.DatabaseFactory
+import dbd.api.database.model.database.DatabaseModel
 import dbd.core.model.existing.database.Database
-import dbd.core.model.partial.database.NewDatabaseConfiguration
+import dbd.core.model.partial.database.DatabaseData.NewDatabaseData
 import utopia.vault.database.Connection
 import utopia.vault.nosql.access.ManyModelAccess
 
@@ -15,7 +16,7 @@ object DbDatabases extends ManyModelAccess[Database]
 {
 	// IMPLEMENTED	------------------------
 	
-	override def factory = database.DatabaseModel
+	override def factory = DatabaseFactory
 	
 	override def globalCondition = Some(factory.nonDeprecatedCondition)
 	
@@ -28,5 +29,5 @@ object DbDatabases extends ManyModelAccess[Database]
 	  * @param connection DB Connection (implicit)
 	  * @return Newly inserted database
 	  */
-	def insert(newData: NewDatabaseConfiguration)(implicit connection: Connection) = factory.insert(newData)
+	def insert(newData: NewDatabaseData)(implicit connection: Connection) = DatabaseModel.insert(newData)
 }

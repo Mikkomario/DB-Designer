@@ -1,30 +1,28 @@
 package dbd.api.database.model.database
 
+import java.time.Instant
+
 import dbd.api.database.Tables
-import dbd.core.model.existing.database
-import dbd.core.model.partial.database.NewDatabaseConfiguration
-import utopia.flow.datastructure.immutable.{Constant, Model}
+import dbd.api.database.factory.database.DatabaseFactory
+import dbd.core.model.existing.database.Database
+import dbd.core.model.partial.database.DatabaseData.NewDatabaseData
+import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
-import utopia.vault.nosql.factory.{Deprecatable, LinkedFactory}
-import utopia.vault.sql.Insert
+import utopia.vault.model.immutable.StorableWithFactory
 
 /**
  * Used for interacting with databases in DB
  * @author Mikko Hilpinen
  * @since 29.1.2020, v0.1
  */
-object DatabaseModel extends LinkedFactory[database.Database, database.DatabaseConfiguration] with Deprecatable
+object DatabaseModel
 {
-	// IMPLEMENTED	--------------------------
+	// COMPUTED	-------------------------------
 	
-	override def childFactory = DatabaseConfigurationModel
-	
-	override def apply(model: Model[Constant], child: database.DatabaseConfiguration) =
-		table.requirementDeclaration.validate(model).toTry.map { valid => database.Database(valid("id").getInt, child) }
-	
-	override def nonDeprecatedCondition = DatabaseConfigurationModel.nonDeprecatedCondition
-	
-	override def table = Tables.database
+	/**
+	  * @return Table used by this model
+	  */
+	def table = Tables.database
 	
 	
 	// OTHER	-------------------------------
@@ -35,11 +33,20 @@ object DatabaseModel extends LinkedFactory[database.Database, database.DatabaseC
 	 * @param connection DB Connection (implicit)
 	 * @return Newly inserted database
 	 */
-	def insert(data: NewDatabaseConfiguration)(implicit connection: Connection) =
+	def insert(data: NewDatabaseData)(implicit connection: Connection) =
 	{
 		// Inserts a new database row, then configuration for that database
-		val databaseId = Insert(table, Model.empty).generatedIntKeys.head
-		val newConfig = DatabaseConfigurationModel.insert(databaseId, data)
-		database.Database(databaseId, newConfig)
+		val databaseId = apply(None, Some(data.ownerOrganizationId), data.creatorId).insert().getInt
+		val newConfig = DatabaseConfigurationModel.insert(databaseId, data.configuration)
+		Database(databaseId, data.copy(configuration = newConfig))
 	}
+}
+
+case class DatabaseModel(id: Option[Int] = None, ownerOrganizationId: Option[Int] = None, creatorId: Option[Int] = None,
+						 deletedAfter: Option[Instant] = None) extends StorableWithFactory[Database]
+{
+	override def factory = DatabaseFactory
+	
+	override def valueProperties = Vector("id" -> id, "ownerId" -> ownerOrganizationId, "creatorId" -> creatorId,
+		"deletedAfter" -> deletedAfter)
 }

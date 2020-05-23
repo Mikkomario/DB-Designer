@@ -5,6 +5,7 @@ import dbd.client.controller.{DatabasesManager, Icons}
 import dbd.client.dialog.EditDatabaseDialog
 import dbd.client.view.Fields
 import dbd.core.model.existing.database.Database
+import dbd.core.model.partial.database.DatabaseData
 import utopia.reflection.component.context.ColorContext
 import utopia.reflection.component.input.SelectableWithPointers
 import utopia.reflection.component.swing.button.ImageButton
@@ -74,7 +75,9 @@ class DatabaseSelectionVC(implicit parentContext: ColorContext)
 	{
 		parentWindow.foreach { window =>
 			new EditDatabaseDialog(newDBName = initialDBName).display(window).foreach { _.foreach { newConfig =>
-				dataManager.addNewDatabase(newConfig)
+				// FIXME: Set owner organization id
+				val newDB = DatabaseData(???, newConfig)
+				dataManager.addNewDatabase(newDB)
 			} }
 		}
 	}

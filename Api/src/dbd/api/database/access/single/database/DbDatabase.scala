@@ -3,15 +3,15 @@ package dbd.api.database.access.single.database
 import java.time.Instant
 
 import dbd.api.database.access.many.database.{DbClasses, DbLinks}
-import dbd.api.database.model.database.{DatabaseConfigurationModel, DatabaseModel}
+import dbd.api.database.factory.database.{DatabaseConfigurationFactory, DatabaseFactory}
+import dbd.api.database.model.database.DatabaseConfigurationModel
 import dbd.core.model.existing.database
 import dbd.core.model.existing.database.DatabaseConfiguration
-import dbd.core.model.partial.database.NewDatabaseConfiguration
+import dbd.core.model.partial.database.DatabaseConfigurationData
 import utopia.flow.generic.ValueConversions._
 import utopia.vault.database.Connection
 import utopia.vault.model.enumeration.ComparisonOperator.Larger
 import utopia.vault.nosql.access.{NonDeprecatedAccess, SingleIdModelAccess, SingleModelAccess, UniqueAccess}
-import utopia.vault.sql.Where
 
 /**
  * An access point for individual databases
@@ -22,7 +22,7 @@ object DbDatabase extends SingleModelAccess[database.Database] with NonDeprecate
 {
 	// IMPLEMENTED	-------------------
 	
-	override def factory = DatabaseModel
+	override def factory = DatabaseFactory
 	
 	
 	// COMPUTED	-----------------------
@@ -31,7 +31,7 @@ object DbDatabase extends SingleModelAccess[database.Database] with NonDeprecate
 	  * @param connection Implicit DB connection
 	  * @return The last configured database from the DB
 	  */
-	def lastConfigured(implicit connection: Connection) = first(DatabaseConfigurationModel.defaultOrdering)
+	def lastConfigured(implicit connection: Connection) = first(DatabaseConfigurationFactory.defaultOrdering)
 	
 	
 	// OTHER	-----------------------
@@ -79,9 +79,14 @@ object DbDatabase extends SingleModelAccess[database.Database] with NonDeprecate
 		{
 			// IMPLEMENTED	------------
 			
-			override def factory = DatabaseConfigurationModel
+			override def factory = DatabaseConfigurationFactory
 			
-			override val condition = factory.withDatabaseId(databaseId).toCondition && factory.nonDeprecatedCondition
+			override val condition = model.withDatabaseId(databaseId).toCondition && factory.nonDeprecatedCondition
+			
+			
+			// COMPUTED	----------------
+			
+			private def model = DatabaseConfigurationModel
 			
 			
 			// OTHER	----------------
@@ -98,11 +103,11 @@ object DbDatabase extends SingleModelAccess[database.Database] with NonDeprecate
 			  * @param connection DB Connection
 			  * @return Newly inserted configuration
 			  */
-			def update(newData: NewDatabaseConfiguration)(implicit connection: Connection) =
+			def update(newData: DatabaseConfigurationData)(implicit connection: Connection) =
 			{
 				// Deprecates the old version and inserts the new one
-				connection(factory.nowDeprecated.toUpdateStatement() + globalCondition.map { Where(_) })
-				factory.insert(databaseId, newData)
+				model.nowDeprecated.updateWhere(condition)
+				model.insert(databaseId, newData)
 			}
 		}
 		
@@ -115,11 +120,16 @@ object DbDatabase extends SingleModelAccess[database.Database] with NonDeprecate
 		{
 			// IMPLEMENTED	--------------
 			
-			override val condition = factory.withDatabaseId(databaseId).toCondition && (
+			override val condition = model.withDatabaseId(databaseId).toCondition && (
 				factory.createdBeforeCondition(readTime, isInclusive = true),
-				factory.nonDeprecatedCondition || factory.withDeprecationTime(readTime).toConditionWithOperator(Larger))
+				factory.nonDeprecatedCondition || model.withDeprecationTime(readTime).toConditionWithOperator(Larger))
 			
-			override def factory = DatabaseConfigurationModel
+			override def factory = DatabaseConfigurationFactory
+			
+			
+			// COMPUTED	------------------
+			
+			private def model = DatabaseConfigurationModel
 		}
 	}
 }
