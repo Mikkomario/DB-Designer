@@ -5,6 +5,7 @@ package dbd.core.model.template
  * @author Mikko Hilpinen
  * @since 28.1.2020, v0.1
  */
+@deprecated("This will be removed during beta", "v2")
 trait DatabaseConfigurationLike
 {
 	/**
