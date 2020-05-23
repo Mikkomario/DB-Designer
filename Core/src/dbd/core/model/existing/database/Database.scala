@@ -1,6 +1,6 @@
 package dbd.core.model.existing.database
 
-import dbd.core.model.existing.Stored
+import dbd.core.model.existing.StoredModelConvertible
 import dbd.core.model.partial.database.DatabaseData
 
 /**
@@ -9,7 +9,7 @@ import dbd.core.model.partial.database.DatabaseData
  * @since 29.1.2020, v0.1
  */
 case class Database(id: Int, data: DatabaseData[DatabaseConfiguration])
-	extends Stored[DatabaseData[DatabaseConfiguration]]
+	extends StoredModelConvertible[DatabaseData[DatabaseConfiguration]]
 {
 	/**
 	  * @param newConfiguration A new configuration for this database

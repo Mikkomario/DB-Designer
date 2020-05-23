@@ -4,13 +4,16 @@ import java.time.{Instant, Period}
 
 import dbd.api.database.access.many.description.DbDescriptions
 import dbd.api.database.access.many.user.{InvitationsAccess, OrganizationDeletionsAccess}
-import dbd.api.database.model.organization
+import dbd.api.database.factory.database.{DatabaseConfigurationFactory, DatabaseFactory}
+import dbd.api.database.model.database.DatabaseModel
 import dbd.api.database.model.organization.{DeletionModel, MemberRoleModel, MembershipModel}
 import dbd.core.model.enumeration.UserRole
+import dbd.core.model.existing.database.Database
 import dbd.core.model.existing.organization.Membership
 import dbd.core.model.partial.organization.{DeletionData, InvitationData, MembershipData}
 import utopia.flow.util.TimeExtensions._
 import utopia.vault.database.Connection
+import utopia.vault.model.enumeration.ComparisonOperator.Larger
 import utopia.vault.nosql.access.ManyRowModelAccess
 import utopia.vault.sql.{Select, Where}
 
@@ -21,11 +24,6 @@ import utopia.vault.sql.{Select, Where}
   */
 object DbOrganization
 {
-	// COMPUTED	----------------------------
-	
-	private def factory = organization.OrganizationModel
-	
-	
 	// OTHER	----------------------------
 	
 	/**
@@ -60,6 +58,11 @@ object DbOrganization
 		  * @return An access point to descriptions of this organization
 		  */
 		def descriptions = DbDescriptions.ofOrganizationWithId(organizationId)
+		
+		/**
+		  * @return An access point to the databases that belong to this organization
+		  */
+		def databases = Databases
 		
 		
 		// NESTED	-------------------------------
@@ -115,7 +118,7 @@ object DbOrganization
 		{
 			// IMPLEMENTED	------------------------
 			
-			override val globalCondition = Some(factory.withOrganizationId(organizationId).toCondition)
+			override def globalCondition = Some(factory.withOrganizationId(organizationId).toCondition)
 			
 			
 			// OTHER	---------------------------
@@ -141,7 +144,7 @@ object DbOrganization
 		{
 			// IMPLEMENTED	----------------------
 			
-			override val globalCondition = Some(DeletionModel.withOrganizationId(organizationId).toCondition)
+			override def globalCondition = Some(DeletionModel.withOrganizationId(organizationId).toCondition)
 			
 			
 			// OTHER	--------------------------
@@ -155,6 +158,44 @@ object DbOrganization
 			  */
 			def insert(creatorId: Int, actualizationDelay: Period)(implicit connection: Connection) =
 				DeletionModel.insert(DeletionData(organizationId, creatorId, Instant.now() + actualizationDelay))
+		}
+		
+		object Databases extends ManyRowModelAccess[Database]
+		{
+			// IMPLEMENTED	----------------------
+			
+			override def factory = DatabaseFactory
+			
+			override def globalCondition = Some(organizationLinkCondition &&
+				factory.nonDeprecatedCondition)
+			
+			
+			// COMPUTED	--------------------------
+			
+			private def organizationLinkCondition = DatabaseModel.withOwnerOrganizationId(organizationId).toCondition
+			
+			
+			// OTHER	---------------------------
+			
+			/**
+			  * @param threshold A time threshold
+			  * @param connection DB Connection
+			  * @return Databases that were either created or modified after the specified time threshold
+			  */
+			def createdOrModifiedAfter(threshold: Instant)(implicit connection: Connection) =
+				find(DatabaseConfigurationFactory.createdAfterCondition(threshold))
+			
+			/**
+			  * @param threshold A time threshold
+			  * @param connection DB Connection
+			  * @return Databases that were deleted after the specified time threshold
+			  */
+			def deletedAfter(threshold: Instant)(implicit connection: Connection) =
+			{
+				factory.getMany(organizationLinkCondition &&
+					DatabaseModel.withDeleted(threshold).toConditionWithOperator(Larger) &&
+					DatabaseConfigurationFactory.nonDeprecatedCondition)
+			}
 		}
 	}
 }

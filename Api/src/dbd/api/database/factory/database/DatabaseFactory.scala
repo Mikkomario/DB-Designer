@@ -6,7 +6,7 @@ import dbd.core.model.existing.database.{Database, DatabaseConfiguration}
 import dbd.core.model.partial.database.DatabaseData
 import utopia.flow.datastructure.immutable.{Constant, Model}
 import utopia.flow.generic.ValueUnwraps._
-import utopia.vault.nosql.factory.{Deprecatable, LinkedFactory}
+import utopia.vault.nosql.factory.{Deprecatable, FromRowFactoryWithTimestamps, LinkedFactory}
 
 /**
  * Used for reading database (model) data from the database
@@ -14,14 +14,17 @@ import utopia.vault.nosql.factory.{Deprecatable, LinkedFactory}
  * @since 29.1.2020, v0.1
  */
 object DatabaseFactory extends LinkedFactory[Database, DatabaseConfiguration] with Deprecatable
+	with FromRowFactoryWithTimestamps[Database]
 {
 	// IMPLEMENTED	--------------------------
+	
+	override def creationTimePropertyName = "created"
 	
 	override def childFactory = DatabaseConfigurationFactory
 	
 	override def apply(model: Model[Constant], child: database.DatabaseConfiguration) =
 		table.requirementDeclaration.validate(model).toTry.map { valid => database.Database(valid("id"),
-			DatabaseData(valid("ownerId"), child, valid("creatorId"))) }
+			DatabaseData(valid("ownerId"), child, valid("creatorId"), valid("created"))) }
 	
 	override def nonDeprecatedCondition = childFactory.nonDeprecatedCondition
 	

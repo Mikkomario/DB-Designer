@@ -28,7 +28,8 @@ case class OrganizationNode(organizationId: Int) extends ResourceWithChildren[Au
 		OrganizationInvitationsNode(organizationId),
 		OrganizationDescriptionsNode(organizationId),
 		OrganizationMembersNode(organizationId),
-		OrganizationDeletionsNode(organizationId)
+		OrganizationDeletionsNode(organizationId),
+		OrganizationDatabasesNode(organizationId)
 	)
 	
 	override def toResponse(remainingPath: Option[Path])(implicit context: AuthorizedContext) =

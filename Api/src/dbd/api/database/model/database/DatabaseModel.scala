@@ -28,6 +28,18 @@ object DatabaseModel
 	// OTHER	-------------------------------
 	
 	/**
+	  * @param organizationId Id of the organization that owns this database
+	  * @return A model with only organization id set
+	  */
+	def withOwnerOrganizationId(organizationId: Int) = apply(ownerOrganizationId = Some(organizationId))
+	
+	/**
+	  * @param deletionTime A deletion time
+	  * @return A model with only deletion time set
+	  */
+	def withDeleted(deletionTime: Instant) = apply(deletedAfter = Some(deletionTime))
+	
+	/**
 	 * Inserts a new database to the DB
 	 * @param data New database configuration
 	 * @param connection DB Connection (implicit)
@@ -36,17 +48,18 @@ object DatabaseModel
 	def insert(data: NewDatabaseData)(implicit connection: Connection) =
 	{
 		// Inserts a new database row, then configuration for that database
-		val databaseId = apply(None, Some(data.ownerOrganizationId), data.creatorId).insert().getInt
+		val databaseId = apply(None, Some(data.ownerOrganizationId), data.creatorId, Some(data.created)).insert().getInt
 		val newConfig = DatabaseConfigurationModel.insert(databaseId, data.configuration)
 		Database(databaseId, data.copy(configuration = newConfig))
 	}
 }
 
 case class DatabaseModel(id: Option[Int] = None, ownerOrganizationId: Option[Int] = None, creatorId: Option[Int] = None,
-						 deletedAfter: Option[Instant] = None) extends StorableWithFactory[Database]
+						 created: Option[Instant] = None, deletedAfter: Option[Instant] = None)
+	extends StorableWithFactory[Database]
 {
 	override def factory = DatabaseFactory
 	
-	override def valueProperties = Vector("id" -> id, "ownerId" -> ownerOrganizationId, "creatorId" -> creatorId,
-		"deletedAfter" -> deletedAfter)
+	override def valueProperties = Vector("id" -> id, "ownerId" -> ownerOrganizationId, "created" -> created,
+		"creatorId" -> creatorId, "deletedAfter" -> deletedAfter)
 }
