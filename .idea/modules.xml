@@ -7,6 +7,7 @@
       <module fileurl="file://$PROJECT_DIR$/../Utopia/BunnyMunch/BunnyMunch.iml" filepath="$PROJECT_DIR$/../Utopia/BunnyMunch/BunnyMunch.iml" />
       <module fileurl="file://$PROJECT_DIR$/Client/Client.iml" filepath="$PROJECT_DIR$/Client/Client.iml" />
       <module fileurl="file://$PROJECT_DIR$/Core/Core.iml" filepath="$PROJECT_DIR$/Core/Core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Utopia/Exodus/Exodus.iml" filepath="$PROJECT_DIR$/../Utopia/Exodus/Exodus.iml" />
       <module fileurl="file://$PROJECT_DIR$/../Utopia/Flow/Flow.iml" filepath="$PROJECT_DIR$/../Utopia/Flow/Flow.iml" />
       <module fileurl="file://$PROJECT_DIR$/../Utopia/Genesis/Genesis.iml" filepath="$PROJECT_DIR$/../Utopia/Genesis/Genesis.iml" />
       <module fileurl="file://$PROJECT_DIR$/../Utopia/Inception/Inception.iml" filepath="$PROJECT_DIR$/../Utopia/Inception/Inception.iml" />
