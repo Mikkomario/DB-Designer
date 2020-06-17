@@ -15,8 +15,7 @@ import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
 import utopia.reflection.component.swing.button.ImageButton
 import utopia.reflection.component.swing.label.{ImageLabel, TextLabel}
 import utopia.reflection.container.stack.StackLayout.Center
-import utopia.reflection.container.stack.segmented.SegmentedGroup
-import utopia.reflection.container.swing.SegmentedRow
+import utopia.reflection.container.swing.{SegmentGroup, Stack}
 import utopia.reflection.localization.LocalString._
 import utopia.reflection.shape.LengthExtensions._
 
@@ -25,7 +24,7 @@ import utopia.reflection.shape.LengthExtensions._
  * @author Mikko Hilpinen
  * @since 11.1.2020, v0.1
  */
-class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attribute, classManager: ClassDisplayManager)
+class AttributeRowVC(private val group: SegmentGroup, initialAttribute: Attribute, classManager: ClassDisplayManager)
 					(implicit context: ColorContext)
 	extends StackableAwtComponentWrapperWrapper with Refreshable[Attribute]
 {
@@ -65,9 +64,8 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 					if (_) classManager.deleteAttribute(attributeToDelete) }
 		}
 	}
-	
-	private val row = SegmentedRow.partOfGroupWithItems(group, Vector(imageLabel, attNameLabel, editAttributeButton,
-		deleteAttributeButton), margin = margins.small.downscaling, layout = Center)
+	private val row = Stack.rowWithItems(group.wrap(Vector(imageLabel, attNameLabel, editAttributeButton, deleteAttributeButton)),
+		margins.small.downscaling, layout = Center)
 	
 	private lazy val searchKeyDrawer = CustomDrawer(DrawLevel.Foreground) { (drawer, bounds) =>
 		drawer.withEdgeColor(Color.black.withAlpha(0.55)).withStroke(margins.verySmall.toInt)
@@ -108,11 +106,6 @@ class AttributeRowVC(private val group: SegmentedGroup, initialAttribute: Attrib
 	
 	
 	// OTHER	--------------------------
-	
-	/**
-	 * Removes this component from the segmented row group it's part of
-	 */
-	def unregister() = group.remove(row)
 	
 	private def updateFont() = attNameLabel.font =
 	{

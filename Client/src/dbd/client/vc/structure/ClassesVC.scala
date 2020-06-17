@@ -45,8 +45,8 @@ class ClassesVC(targetHeight: Double, initialDatabaseId: Int)
 	private val view = context.use { implicit c =>
 		Stack.buildColumnWithContext() { stack =>
 			stack += classView
-			stack += addClassButton.alignedToSide(Direction2D.Right, useLowPriorityLength = true)
-		}.alignedToSide(Direction2D.Left, useLowPriorityLength = true).framed(margins.medium.any.square, c.containerBackground)
+			stack += addClassButton.alignedToSide(Direction2D.Right)
+		}.alignedToSide(Direction2D.Left).framed(margins.medium.any.square, c.containerBackground)
 	}
 	
 	

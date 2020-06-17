@@ -65,7 +65,7 @@ class ReleaseVC(initialRelease: DisplayedRelease)(onUploadButtonPressed: => Unit
 			mainRow += SeparatorLine()(textContext)
 			mainRow += buttonView
 		}
-		stack += changesStack.alignedToSide(Direction2D.Left, useLowPriorityLength = true)
+		stack += changesStack.alignedToSide(Direction2D.Left)
 	}
 	
 	

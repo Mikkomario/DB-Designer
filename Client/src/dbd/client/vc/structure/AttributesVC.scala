@@ -6,14 +6,12 @@ import dbd.client.vc.GroupHeader
 import dbd.core.model.existing.database.Attribute
 import dbd.core.model.partial.database.NewAttribute
 import utopia.flow.datastructure.mutable.PointerWithEvents
-import utopia.genesis.shape.Axis.X
 import utopia.genesis.shape.shape2D.Direction2D
 import utopia.reflection.component.Refreshable
 import utopia.reflection.component.context.ColorContext
 import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
 import utopia.reflection.component.swing.button.ImageAndTextButton
-import utopia.reflection.container.stack.segmented.SegmentedGroup
-import utopia.reflection.container.swing.Stack
+import utopia.reflection.container.swing.{SegmentGroup, Stack}
 import utopia.reflection.controller.data.ContentManager
 import utopia.reflection.shape.LengthExtensions._
 
@@ -34,7 +32,7 @@ class AttributesVC(initialClassId: Int, initialAttributes: Vector[Attribute] = V
 	
 	private var classId = initialClassId
 	
-	private val segmentGroup = new SegmentedGroup(X)
+	private val segmentGroup = new SegmentGroup()
 	private val attributesStack = Stack.column[AttributeRowVC](margin = margins.small.downscaling)
 	
 	private val view = Stack.buildColumnWithContext(isRelated = true) { mainStack =>
@@ -52,7 +50,7 @@ class AttributesVC(initialClassId: Int, initialAttributes: Vector[Attribute] = V
 							}
 						}
 					}
-				}.alignedToSide(Direction2D.Right, useLowPriorityLength = true)
+				}.alignedToSide(Direction2D.Right)
 			}
 			mainStack += addButton
 		}
@@ -98,7 +96,6 @@ class AttributesVC(initialClassId: Int, initialAttributes: Vector[Attribute] = V
 			new AttributeRowVC(segmentGroup, _, classManager) }, index)
 		
 		override protected def dropDisplaysAt(range: Range) = attributesStack.removeComponentsIn(range)
-			.foreach { _.unregister() }
 		
 		override protected def finalizeRefresh() = attributesStack.revalidate()
 		

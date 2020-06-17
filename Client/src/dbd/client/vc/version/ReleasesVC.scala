@@ -34,7 +34,7 @@ class ReleasesVC(initialDatabaseId: Int) extends StackableAwtComponentWrapperWra
 	private val releaseManager = ContainerContentManager.forImmutableStates[DisplayedRelease, ReleaseVC](releasesStack) {
 		(a, b) => a.release.map { _.id } == b.release.map { _.id } } { r => new ReleaseVC(r)({ onUploadPressed() }) }
 	
-	private val view = releasesStack.alignedToSide(Up, useLowPriorityLength = true)
+	private val view = releasesStack.alignedToSide(Up)
 		.framed(margins.medium.any.square, context.containerBackground)
 	
 	

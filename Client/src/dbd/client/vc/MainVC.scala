@@ -38,7 +38,7 @@ class MainVC extends StackableAwtComponentWrapperWrapper with AwtContainerRelate
 	
 	private val view = Stack.buildColumn(margin = 0.fixed) { stack =>
 		// Adds header that contains the database selection
-		stack += dbVC.alignedToSide(Direction2D.Left, useLowPriorityLength = true).framed(
+		stack += dbVC.alignedToSide(Direction2D.Left).framed(
 			margins.medium.downscaling x StackLength(margins.small, margins.medium), headersContext.containerBackground)
 		// Adds the main content
 		stack += mainTab

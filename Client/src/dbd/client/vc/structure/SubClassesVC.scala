@@ -52,7 +52,7 @@ class SubClassesVC(initialParent: ParentOrSubClass, classManager: ClassDisplayMa
 						case Left(_) => Log.warning("Somehow received an edit sub-class response from add sub-class dialog")
 					} }
 				}
-			}.alignedToSide(Direction2D.Right, useLowPriorityLength = true)
+			}.alignedToSide(Direction2D.Right)
 		}
 	}
 	

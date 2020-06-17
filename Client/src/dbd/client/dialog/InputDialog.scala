@@ -5,16 +5,14 @@ import utopia.reflection.shape.LengthExtensions._
 import dbd.client.controller.Icons
 import utopia.flow.util.WaitUtils
 import utopia.genesis.handling.KeyStateListener
-import utopia.genesis.shape.Axis.X
 import utopia.genesis.shape.shape2D.{Direction2D, Point}
 import utopia.reflection.component.swing.AwtComponentRelated
 import utopia.reflection.component.swing.button.ImageButton
 import utopia.reflection.component.swing.label.TextLabel
 import utopia.reflection.component.{ComponentLike, Focusable}
 import utopia.reflection.container.stack.StackLayout.Center
-import utopia.reflection.container.stack.segmented.SegmentedGroup
 import utopia.reflection.container.swing.window.Popup
-import utopia.reflection.container.swing.{SegmentedRow, Stack}
+import utopia.reflection.container.swing.{SegmentGroup, Stack}
 import utopia.reflection.localization.LocalizedString
 import utopia.reflection.shape.Alignment
 
@@ -23,6 +21,7 @@ import utopia.reflection.shape.Alignment
  * @author Mikko Hilpinen
  * @since 15.1.2020, v0.1
  */
+// TODO: Extend or replace with the Reflection counterpart
 abstract class InputDialog[A] extends InteractionDialog[A]
 {
 	// ATTRIBUTES	---------------------
@@ -90,7 +89,7 @@ abstract class InputDialog[A] extends InteractionDialog[A]
 	{
 		baseContext.inContextWithBackground(dialogBackground).forTextComponents(Alignment.Right).use { implicit fieldContext =>
 			// Places rows in an aligned stack
-			val group = new SegmentedGroup(X)
+			val group = new SegmentGroup()
 			Stack.buildColumnWithContext() { stack =>
 				fields.foreach { row =>
 					val fieldInRow =
@@ -100,8 +99,8 @@ abstract class InputDialog[A] extends InteractionDialog[A]
 						else
 							row.field.alignedToSide(Direction2D.Left)
 					}
-					val rowComponent = SegmentedRow.partOfGroupWithItems(group, Vector(TextLabel.contextual(row.fieldName),
-						fieldInRow), margin = margins.medium.downscaling)
+					val rowComponent = Stack.rowWithItems(group.wrap(Vector(TextLabel.contextual(row.fieldName), fieldInRow)),
+						margins.medium.downscaling)
 					// Some rows have dependent visibility state
 					row.rowVisibilityPointer.foreach { pointer =>
 						rowComponent.isVisible = pointer.value

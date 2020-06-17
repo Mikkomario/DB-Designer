@@ -48,7 +48,7 @@ class LinksVC(initialClass: DisplayedClass, classManager: ClassDisplayManager)(i
 					new EditLinkDialog(None, classToEdit.classData, classManager.linkableClasses(classToEdit.classId))
 						.display(window).foreach { _.foreach { newLink => classManager.addNewLink(newLink)
 					} } }
-			}.alignedToSide(Direction2D.Right, useLowPriorityLength = true)
+			}.alignedToSide(Direction2D.Right)
 		}
 		mainStack += addLinkButton
 	}
