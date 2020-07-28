@@ -3,12 +3,12 @@ package dbd.client.view
 import dbd.client.controller.Icons
 import dbd.client.model.Icon
 import utopia.flow.datastructure.mutable.PointerWithEvents
-import utopia.reflection.component.Refreshable
+import utopia.reflection.component.template.display.Refreshable
 import utopia.reflection.component.context.{ButtonContext, ButtonContextLike}
-import utopia.reflection.component.swing.{DropDown, SearchFrom}
+import utopia.reflection.component.swing.input.{DropDown, SearchFrom}
 import utopia.reflection.component.swing.label.{ImageAndTextLabel, ItemLabel, TextLabel}
 import utopia.reflection.container.stack.StackLayout.Leading
-import utopia.reflection.container.swing.Stack.AwtStackable
+import utopia.reflection.container.swing.layout.multi.Stack.AwtStackable
 import utopia.reflection.localization.{DisplayFunction, LocalizedString}
 import utopia.reflection.shape.LengthExtensions._
 

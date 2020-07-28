@@ -6,11 +6,11 @@ import dbd.client.model.DisplayedLink
 import dbd.core.model.enumeration.LinkTypeCategory.{ManyToMany, ManyToOne, OneToOne}
 import dbd.core.model.existing.database.Class
 import utopia.genesis.image.Image
-import utopia.reflection.component.Refreshable
+import utopia.reflection.component.template.display.Refreshable
 import utopia.reflection.component.context.ColorContext
-import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
+import utopia.reflection.component.swing.template.StackableAwtComponentWrapperWrapper
 import utopia.reflection.component.swing.button.{ButtonImageSet, ImageAndTextButton, ImageButton}
-import utopia.reflection.container.swing.Stack
+import utopia.reflection.container.swing.layout.multi.Stack
 import utopia.reflection.localization.LocalString._
 
 /**

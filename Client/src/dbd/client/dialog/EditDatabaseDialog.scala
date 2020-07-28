@@ -1,7 +1,7 @@
 package dbd.client.dialog
 
 import dbd.core.model.partial.database.DatabaseConfigurationData
-import utopia.reflection.component.swing.TextField
+import utopia.reflection.component.swing.input.TextField
 import utopia.reflection.shape.LengthExtensions._
 
 /**

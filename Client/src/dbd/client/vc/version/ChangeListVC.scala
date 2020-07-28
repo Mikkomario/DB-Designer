@@ -2,14 +2,15 @@ package dbd.client.vc.version
 
 import dbd.client.controller.Icons
 import dbd.client.model.ChangedItems
-import utopia.reflection.component.Refreshable
+import utopia.reflection.component.template.display.Refreshable
 import utopia.reflection.component.context.ColorContext
-import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
+import utopia.reflection.component.swing.template.StackableAwtComponentWrapperWrapper
 import utopia.reflection.component.swing.button.ImageButton
 import utopia.reflection.component.swing.label.TextLabel
 import utopia.reflection.container.stack.StackLayout.Leading
-import utopia.reflection.container.swing.Stack.AwtStackable
-import utopia.reflection.container.swing.{Stack, SwitchPanel}
+import utopia.reflection.container.swing.layout.multi.Stack
+import utopia.reflection.container.swing.layout.multi.Stack.AwtStackable
+import utopia.reflection.container.swing.layout.wrapper.SwitchPanel
 import utopia.reflection.localization.LocalString._
 import utopia.reflection.localization.LocalizedString
 import utopia.reflection.shape.LengthExtensions._
@@ -132,7 +133,7 @@ class ChangeListVC(initialList: ChangedItems, initialIsExpanded: Boolean, initia
 			// Cuts rows when they are full
 			if (currentRowWidth + width > maxItemsPerRow)
 			{
-				rowsBuilder += currentRowBuilder.result
+				rowsBuilder += currentRowBuilder.result()
 				currentRowBuilder = new VectorBuilder[String]
 				currentRowWidth = 0
 			}

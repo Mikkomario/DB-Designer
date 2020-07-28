@@ -1,9 +1,9 @@
 package dbd.client.dialog
 
 import dbd.core.util.VersionNumber
+import utopia.reflection.component.swing.input.{FilterDocument, TextField}
 import utopia.reflection.localization.LocalString._
 import utopia.reflection.component.swing.label.TextLabel
-import utopia.reflection.component.swing.{FilterDocument, TextField}
 import utopia.reflection.text.Regex
 import utopia.reflection.shape.LengthExtensions._
 

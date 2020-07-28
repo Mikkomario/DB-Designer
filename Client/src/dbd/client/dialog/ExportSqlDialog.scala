@@ -5,7 +5,6 @@ import java.time.format.DateTimeFormatter
 
 import dbd.api.database.ConnectionPool
 import dbd.api.database.access.many.database.DbReleases
-import dbd.api.database.access.single
 import dbd.api.database.access.single.database.{DbDatabase, DbRelease}
 import dbd.client.view.Fields
 import dbd.core.model.combined.mysql.ReleasesComparison
@@ -19,7 +18,7 @@ import dbd.core.util.{Log, SqlWriter}
 import utopia.flow.util.TimeExtensions._
 import utopia.flow.util.FileExtensions._
 import utopia.flow.datastructure.mutable.PointerWithEvents
-import utopia.reflection.component.swing.TabSelection
+import utopia.reflection.component.swing.input.TabSelection
 import utopia.reflection.localization.{DisplayFunction, LocalString, LocalizedString}
 
 import scala.collection.immutable.VectorBuilder

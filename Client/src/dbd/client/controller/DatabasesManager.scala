@@ -8,10 +8,10 @@ import dbd.client.database.DatabaseSelection
 import dbd.client.model.template.DatabaseSelectionData
 import dbd.core.model.existing.database.{Database, DatabaseConfiguration}
 import dbd.core.model.partial.database.DatabaseData.NewDatabaseData
-import dbd.core.model.partial.database.{DatabaseConfigurationData, DatabaseData, NewDatabaseConfiguration}
+import dbd.core.model.partial.database.{DatabaseConfigurationData, DatabaseData}
 import dbd.core.util.Log
 import utopia.flow.datastructure.mutable.PointerWithEvents
-import utopia.reflection.component.input.SelectableWithPointers
+import utopia.reflection.component.template.input.SelectableWithPointers
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}

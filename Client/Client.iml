@@ -10,12 +10,12 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="Core" />
     <orderEntry type="library" name="mariadb-java-client-1.5.9" level="project" />
-    <orderEntry type="library" name="scala-sdk-2.13.1" level="application" />
     <orderEntry type="module" module-name="Flow" />
     <orderEntry type="module" module-name="Genesis" />
     <orderEntry type="module" module-name="Inception" />
     <orderEntry type="module" module-name="Reflection" />
     <orderEntry type="module" module-name="Vault" />
     <orderEntry type="module" module-name="Api" />
+    <orderEntry type="library" name="scala-sdk-2.13.3" level="application" />
   </component>
 </module>

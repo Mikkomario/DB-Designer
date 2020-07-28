@@ -7,14 +7,15 @@ import dbd.client.dialog.ExportSqlDialog
 import dbd.client.model.{ChangedItems, DisplayedRelease}
 import dbd.client.vc.SeparatorLine
 import utopia.genesis.shape.shape2D.Direction2D
-import utopia.reflection.component.Refreshable
+import utopia.reflection.component.template.display.Refreshable
 import utopia.reflection.component.context.ColorContext
-import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
+import utopia.reflection.component.swing.template.StackableAwtComponentWrapperWrapper
 import utopia.reflection.component.swing.button.{ImageAndTextButton, ImageButton}
 import utopia.reflection.component.swing.label.{ItemLabel, TextLabel}
 import utopia.reflection.container.stack.StackLayout.Leading
-import utopia.reflection.container.swing.Stack.AwtStackable
-import utopia.reflection.container.swing.{Stack, SwitchPanel}
+import utopia.reflection.container.swing.layout.multi.Stack
+import utopia.reflection.container.swing.layout.multi.Stack.AwtStackable
+import utopia.reflection.container.swing.layout.wrapper.SwitchPanel
 import utopia.reflection.controller.data.ContainerContentManager
 import utopia.reflection.localization.LocalString._
 import utopia.reflection.localization.{DisplayFunction, LocalizedString}

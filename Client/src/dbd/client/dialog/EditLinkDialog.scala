@@ -9,10 +9,10 @@ import dbd.core.model.existing.database.{Attribute, LinkConfiguration}
 import dbd.core.model.partial.database
 import dbd.core.model.partial.database.NewLinkConfiguration
 import utopia.flow.datastructure.mutable.PointerWithEvents
-import utopia.reflection.component.Focusable
 import utopia.reflection.component.context.ButtonContext
-import utopia.reflection.component.swing.TextField
-import utopia.reflection.container.swing.Stack.AwtStackable
+import utopia.reflection.component.swing.input.TextField
+import utopia.reflection.component.template.Focusable
+import utopia.reflection.container.swing.layout.multi.Stack.AwtStackable
 import utopia.reflection.localization.{DisplayFunction, LocalizedString}
 import utopia.reflection.shape.LengthExtensions._
 

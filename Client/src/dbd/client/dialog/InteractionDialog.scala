@@ -7,10 +7,10 @@ import utopia.reflection.shape.LengthExtensions._
 import utopia.genesis.shape.shape2D.Direction2D
 import utopia.reflection.color.ComponentColor
 import utopia.reflection.component.swing.button.ImageAndTextButton
-import utopia.reflection.container.swing.Stack.AwtStackable
-import utopia.reflection.container.swing.Stack
+import utopia.reflection.container.swing.layout.multi.Stack.AwtStackable
+import utopia.reflection.container.swing.layout.multi.Stack
 import utopia.reflection.container.swing.window.WindowResizePolicy.Program
-import utopia.reflection.container.swing.window.dialog.Dialog
+import utopia.reflection.container.swing.window.Dialog
 import utopia.reflection.localization.LocalizedString
 
 object InteractionDialog

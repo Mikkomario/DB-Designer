@@ -14,7 +14,7 @@ import dbd.core.model.partial.database.{NewAttribute, NewAttributeConfiguration,
 import dbd.core.util.Log
 import utopia.flow.datastructure.mutable.PointerWithEvents
 import utopia.flow.event.Changing
-import utopia.reflection.component.PoolWithPointer
+import utopia.reflection.component.template.display.PoolWithPointer
 import utopia.vault.database.Connection
 
 import scala.concurrent.ExecutionContext

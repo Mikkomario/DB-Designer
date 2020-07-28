@@ -6,13 +6,16 @@ import dbd.client.vc.structure.ClassesVC
 import dbd.client.vc.version.ReleasesVC
 import utopia.genesis.shape.Axis.X
 import utopia.genesis.shape.shape2D.Direction2D
-import utopia.reflection.component.Refreshable
-import utopia.reflection.component.swing.{StackableAwtComponentWrapperWrapper, TabSelection}
-import utopia.reflection.container.swing.Stack.AwtStackable
-import utopia.reflection.container.swing.{AwtContainerRelated, Stack, SwitchPanel}
+import utopia.reflection.component.template.display.Refreshable
+import utopia.reflection.container.swing.layout.multi.Stack.AwtStackable
+import utopia.reflection.container.swing.AwtContainerRelated
 import utopia.reflection.localization.{DisplayFunction, LocalString}
 import utopia.reflection.shape.StackLength
-import utopia.reflection.util.Screen
+import utopia.genesis.util.Screen
+import utopia.reflection.component.swing.input.TabSelection
+import utopia.reflection.component.swing.template.StackableAwtComponentWrapperWrapper
+import utopia.reflection.container.swing.layout.multi.Stack
+import utopia.reflection.container.swing.layout.wrapper.SwitchPanel
 
 /**
   * This VC controls the main view

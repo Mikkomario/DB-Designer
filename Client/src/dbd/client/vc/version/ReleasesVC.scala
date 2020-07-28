@@ -10,10 +10,10 @@ import utopia.reflection.shape.LengthExtensions._
 import dbd.client.model.DisplayedRelease
 import dbd.core.util.Log
 import utopia.genesis.shape.shape2D.Direction2D.Up
-import utopia.reflection.component.Refreshable
+import utopia.reflection.component.template.display.Refreshable
 import utopia.reflection.component.context.ColorContext
-import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
-import utopia.reflection.container.swing.Stack
+import utopia.reflection.component.swing.template.StackableAwtComponentWrapperWrapper
+import utopia.reflection.container.swing.layout.multi.Stack
 import utopia.reflection.controller.data.ContainerContentManager
 
 /**

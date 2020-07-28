@@ -4,9 +4,9 @@ import utopia.reflection.localization.LocalString._
 import dbd.client.controller.Icons
 import dbd.core.model.template.ClassLike
 import utopia.reflection.component.context.TextContext
-import utopia.reflection.component.swing.MultiLineTextView
+import utopia.reflection.component.swing.display.MultiLineTextView
 import utopia.reflection.localization.LocalizedString
-import utopia.reflection.util.Screen
+import utopia.genesis.util.Screen
 
 import scala.collection.immutable.HashMap
 

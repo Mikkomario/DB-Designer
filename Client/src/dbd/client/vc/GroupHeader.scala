@@ -2,7 +2,7 @@ package dbd.client.vc
 
 import utopia.reflection.component.context.TextContextLike
 import utopia.reflection.component.swing.label.TextLabel
-import utopia.reflection.container.swing.Stack
+import utopia.reflection.container.swing.layout.multi.Stack
 import utopia.reflection.localization.LocalizedString
 import utopia.reflection.util.ComponentContext
 

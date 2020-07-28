@@ -8,14 +8,15 @@ import dbd.core.model.existing.database.Attribute
 import utopia.genesis.color.Color
 import utopia.genesis.image.Image
 import utopia.genesis.shape.shape2D.Line
-import utopia.reflection.component.Refreshable
+import utopia.reflection.component.template.display.Refreshable
 import utopia.reflection.component.context.ColorContext
 import utopia.reflection.component.drawing.template.{CustomDrawer, DrawLevel}
-import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
+import utopia.reflection.component.swing.template.StackableAwtComponentWrapperWrapper
 import utopia.reflection.component.swing.button.ImageButton
 import utopia.reflection.component.swing.label.{ImageLabel, TextLabel}
 import utopia.reflection.container.stack.StackLayout.Center
-import utopia.reflection.container.swing.{SegmentGroup, Stack}
+import utopia.reflection.container.swing.layout.SegmentGroup
+import utopia.reflection.container.swing.layout.multi.Stack
 import utopia.reflection.localization.LocalString._
 import utopia.reflection.shape.LengthExtensions._
 

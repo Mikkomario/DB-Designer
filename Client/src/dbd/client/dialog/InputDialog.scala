@@ -6,13 +6,14 @@ import dbd.client.controller.Icons
 import utopia.flow.util.WaitUtils
 import utopia.genesis.handling.KeyStateListener
 import utopia.genesis.shape.shape2D.{Direction2D, Point}
-import utopia.reflection.component.swing.AwtComponentRelated
+import utopia.reflection.component.swing.template.AwtComponentRelated
 import utopia.reflection.component.swing.button.ImageButton
 import utopia.reflection.component.swing.label.TextLabel
-import utopia.reflection.component.{ComponentLike, Focusable}
+import utopia.reflection.component.template.{ComponentLike, Focusable}
 import utopia.reflection.container.stack.StackLayout.Center
+import utopia.reflection.container.swing.layout.SegmentGroup
+import utopia.reflection.container.swing.layout.multi.Stack
 import utopia.reflection.container.swing.window.Popup
-import utopia.reflection.container.swing.{SegmentGroup, Stack}
 import utopia.reflection.localization.LocalizedString
 import utopia.reflection.shape.Alignment
 

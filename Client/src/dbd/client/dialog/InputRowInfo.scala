@@ -1,7 +1,7 @@
 package dbd.client.dialog
 
 import utopia.flow.event.Changing
-import utopia.reflection.container.swing.Stack.AwtStackable
+import utopia.reflection.container.swing.layout.multi.Stack.AwtStackable
 import utopia.reflection.localization.LocalizedString
 
 /**

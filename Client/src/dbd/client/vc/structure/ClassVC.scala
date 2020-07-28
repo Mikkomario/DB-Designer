@@ -11,17 +11,19 @@ import utopia.genesis.event.{ConsumeEvent, MouseButton}
 import utopia.genesis.handling.MouseButtonStateListener
 import utopia.genesis.shape.Axis.Y
 import utopia.genesis.shape.shape2D.Direction2D.Up
-import utopia.reflection.component.Refreshable
+import utopia.genesis.shape.shape2D.Insets
+import utopia.reflection.component.template.display.Refreshable
 import utopia.reflection.component.context.ColorContext
 import utopia.reflection.component.drawing.immutable.BorderDrawer
-import utopia.reflection.component.swing.{AnimatedVisibility, StackableAwtComponentWrapperWrapper}
+import utopia.reflection.component.swing.animation.AnimatedVisibility
 import utopia.reflection.component.swing.button.{ImageButton, ImageCheckBox}
 import utopia.reflection.component.swing.label.ItemLabel
+import utopia.reflection.component.swing.template.StackableAwtComponentWrapperWrapper
 import utopia.reflection.container.stack.StackLayout.Center
-import utopia.reflection.container.swing.Stack
+import utopia.reflection.container.swing.layout.multi.Stack
 import utopia.reflection.localization.DisplayFunction
 import utopia.reflection.shape.LengthExtensions._
-import utopia.reflection.shape.{Border, Insets}
+import utopia.reflection.shape.Border
 
 /**
  * Displays interactive UI for a class

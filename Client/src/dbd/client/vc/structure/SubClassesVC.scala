@@ -6,11 +6,11 @@ import dbd.client.model.ParentOrSubClass
 import dbd.client.vc.GroupHeader
 import dbd.core.util.Log
 import utopia.genesis.shape.shape2D.Direction2D
-import utopia.reflection.component.Refreshable
+import utopia.reflection.component.template.display.Refreshable
 import utopia.reflection.component.context.ColorContext
-import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
+import utopia.reflection.component.swing.template.StackableAwtComponentWrapperWrapper
 import utopia.reflection.component.swing.button.ImageAndTextButton
-import utopia.reflection.container.swing.Stack
+import utopia.reflection.container.swing.layout.multi.Stack
 import utopia.reflection.controller.data.ContainerContentManager
 import utopia.reflection.shape.LengthExtensions._
 

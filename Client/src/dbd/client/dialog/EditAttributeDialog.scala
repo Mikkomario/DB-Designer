@@ -7,7 +7,8 @@ import dbd.core.model.existing.database.Attribute
 import dbd.core.model.partial.database
 import dbd.core.model.partial.database.NewAttributeConfiguration
 import utopia.reflection.component.context.ButtonContext
-import utopia.reflection.component.swing.{Switch, TextField}
+import utopia.reflection.component.swing.input.Switch
+import utopia.reflection.component.swing.input.TextField
 import utopia.reflection.localization.DisplayFunction
 import utopia.reflection.shape.LengthExtensions._
 

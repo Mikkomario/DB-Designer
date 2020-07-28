@@ -7,11 +7,12 @@ import dbd.core.model.existing.database.Attribute
 import dbd.core.model.partial.database.NewAttribute
 import utopia.flow.datastructure.mutable.PointerWithEvents
 import utopia.genesis.shape.shape2D.Direction2D
-import utopia.reflection.component.Refreshable
+import utopia.reflection.component.template.display.Refreshable
 import utopia.reflection.component.context.ColorContext
-import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
+import utopia.reflection.component.swing.template.StackableAwtComponentWrapperWrapper
 import utopia.reflection.component.swing.button.ImageAndTextButton
-import utopia.reflection.container.swing.{SegmentGroup, Stack}
+import utopia.reflection.container.swing.layout.SegmentGroup
+import utopia.reflection.container.swing.layout.multi.Stack
 import utopia.reflection.controller.data.ContentManager
 import utopia.reflection.shape.LengthExtensions._
 

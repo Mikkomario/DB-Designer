@@ -7,10 +7,10 @@ import dbd.client.view.Fields
 import dbd.core.model.existing.database.Database
 import dbd.core.model.partial.database.DatabaseData
 import utopia.reflection.component.context.ColorContext
-import utopia.reflection.component.input.SelectableWithPointers
+import utopia.reflection.component.template.input.SelectableWithPointers
 import utopia.reflection.component.swing.button.ImageButton
-import utopia.reflection.component.swing.StackableAwtComponentWrapperWrapper
-import utopia.reflection.container.swing.Stack
+import utopia.reflection.component.swing.template.StackableAwtComponentWrapperWrapper
+import utopia.reflection.container.swing.layout.multi.Stack
 import utopia.reflection.localization.DisplayFunction
 
 /**

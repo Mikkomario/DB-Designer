@@ -13,7 +13,7 @@ import dbd.core.model.partial.database.{NewClassInfo, NewLinkConfiguration, NewS
 import dbd.core.model.template.ClassLike
 import utopia.flow.datastructure.mutable.PointerWithEvents
 import utopia.reflection.component.context.ButtonContext
-import utopia.reflection.component.swing.{Switch, TabSelection, TextField}
+import utopia.reflection.component.swing.input.{Switch, TabSelection, TextField}
 import utopia.reflection.localization.{DisplayFunction, LocalizedString, Localizer}
 import utopia.reflection.shape.LengthExtensions._
 

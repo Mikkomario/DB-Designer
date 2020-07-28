@@ -1,11 +1,11 @@
 package dbd.client.dialog
 
 import utopia.genesis.image.Image
-import utopia.reflection.component.swing.MultiLineTextView
+import utopia.reflection.component.swing.display.MultiLineTextView
 import utopia.reflection.component.swing.label.ImageLabel
-import utopia.reflection.container.swing.Stack
+import utopia.reflection.container.swing.layout.multi.Stack
 import utopia.reflection.localization.LocalizedString
-import utopia.reflection.util.Screen
+import utopia.genesis.util.Screen
 
 /**
  * Used for displaying some information for the user
